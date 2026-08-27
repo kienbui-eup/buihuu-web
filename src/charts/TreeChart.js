@@ -247,7 +247,7 @@ function TreeChartCore(
     .text(d =>
       clipString(
         nameDisplayFormat === chartNameDisplayFormat.surnameThenGiven
-          ? `${d.data.name_surname || '…'},`
+          ? d.data.name_surname || '…'
           : d.data.name_given || '…',
         textWidth(d)
       )

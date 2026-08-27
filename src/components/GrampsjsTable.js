@@ -62,6 +62,42 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
           font-weight: 400;
         }
 
+        /* Một ô rỗng ở bố cục dọc vẫn chiếm nguyên một khối chỉ để in cái nhãn
+           của chính nó — với dữ liệu phả hệ, nơi phần lớn người đời trước không
+           có ngày sinh hay ngày mất, đó là phần lớn màn hình. Bỏ hẳn ô đó đi. */
+        tbody td.is-empty {
+          display: none;
+        }
+
+        /* Tên là thứ người ta quét mắt tìm, nên cho nó nguyên một dòng và bỏ
+           nhãn "Họ và tên" — dòng đầu của mỗi khối thì không cần chú thích. */
+        tbody td[data-key='name'] {
+          grid-column: 1 / -1;
+          font-size: 17px;
+          font-weight: 500;
+        }
+
+        tbody td[data-key='name']::before {
+          display: none;
+        }
+
+        /* Đời đi liền dưới tên như một nhãn nhỏ, không phải một cột ngang hàng
+           với ngày tháng. */
+        tbody td[data-key='generation'] {
+          grid-column: 1 / -1;
+          margin-top: -0.5em;
+        }
+
+        tbody td[data-key='generation']::before {
+          display: inline;
+          margin-bottom: 0;
+          margin-right: 0.4em;
+        }
+
+        tbody td[data-key='generation'] .cell-content {
+          display: inline;
+        }
+
         table.linked tbody tr:hover {
           cursor: pointer;
         }
@@ -326,6 +362,12 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
                         data-label="${this._colLabel(
                           this.columns[colIndex].name
                         )}"
+                        data-key="${this.columns[colIndex].key ?? ''}"
+                        class="${value === '' ||
+                        value === null ||
+                        value === undefined
+                          ? 'is-empty'
+                          : ''}"
                       >
                         <div class="cell-content">
                           ${this.loading

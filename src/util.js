@@ -54,6 +54,7 @@ import './components/GrampsjsIcon.js'
 import {frontendLanguages} from './strings.js'
 
 import {dateToSdn, CALENDARS} from './gcalendar.js'
+import {joinName} from './branding.js'
 
 dayjs.extend(relativeTime)
 
@@ -77,16 +78,28 @@ export function translate(strings, s) {
 }
 
 export function personTitleFromProfile(personProfile) {
-  return `${personProfile.name_given || '…'} ${
-    personProfile.name_surname || '…'
-  } ${personProfile.name_suffix || ''}`.trim()
+  return joinName(
+    personProfile.name_surname || '…',
+    personProfile.name_given || '…',
+    personProfile.name_suffix || ''
+  )
+}
+
+/*
+Đọc giá trị của một thuộc tính theo tên, trên bất kỳ đối tượng Gramps nào.
+
+Thuộc tính là chỗ Gramps để dành cho dữ liệu không khớp trường có sẵn, nên phả
+hệ Việt dùng nó cho "Đời" và "Ngày giỗ". Trả về chuỗi rỗng khi không có, để chỗ
+gọi khỏi phải kiểm tra null.
+*/
+export function getAttributeValue(obj, type) {
+  const attr = obj?.attribute_list?.find(a => a.type === type)
+  return attr?.value ?? ''
 }
 
 export function personProfileDisplayName(profile) {
   return (
-    [profile?.name_given, profile?.name_surname].filter(Boolean).join(' ') ||
-    profile?.name ||
-    ''
+    joinName(profile?.name_surname, profile?.name_given) || profile?.name || ''
   )
 }
 
@@ -94,14 +107,14 @@ function displaySurname(surname) {
   return `${surname.prefix} ${surname.surname} ${surname.connector}`.trim()
 }
 
-export function personDisplayName(person, options = {givenfirst: true}) {
+export function personDisplayName(person, options = {}) {
   const suffix = person.primary_name?.suffix ?? ''
   const given = person.primary_name?.first_name ?? '…'
   const surname =
     person.primary_name?.surname_list?.map(displaySurname)?.join(' ') ?? '…'
-  return options.givenfirst
-    ? `${given} ${surname} ${suffix}`.trim()
-    : `${surname}, ${given} ${suffix}`.trim()
+  // Không còn biến thể "Họ, Tên" của bản gốc: tiếng Việt luôn viết họ trước và
+  // không chen dấu phẩy, nên mọi chỗ gọi đều nhận cùng một dạng.
+  return joinName(surname, given, suffix)
 }
 
 export function reportSelectItemLabel(

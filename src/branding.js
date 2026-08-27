@@ -30,3 +30,43 @@ người xem đặt ngôn ngữ khác. Người dùng vẫn đổi được tron
 đó được lưu lại, nên chỉ ảnh hưởng tới lần vào đầu tiên.
 */
 export const DEFAULT_LANGUAGE = 'vi'
+
+/*
+Thứ tự tên của bản triển khai này.
+
+Bản gốc dựng tên theo lối phương Tây: tên riêng trước, họ sau ("Đức Anh Bùi"),
+hoặc "Bùi, Đức Anh" khi cần xếp theo họ. Tiếng Việt viết họ trước, không có dấu
+phẩy: "Bùi Đức Anh". Đây là quy ước ngôn ngữ, không phải tuỳ chọn của người
+dùng, nên đặt cứng ở đây thay vì làm một mục trong Cài đặt.
+*/
+export const SURNAME_FIRST = true
+
+/*
+Ghép các phần của một tên theo thứ tự của bản triển khai.
+
+Nhận vào phần họ và phần tên riêng đã tách sẵn (mỗi chỗ gọi lấy chúng từ một
+nguồn khác nhau: `profile` rút gọn hay đối tượng `person` đầy đủ), trả về chuỗi
+đã ghép. Bỏ qua phần rỗng để không sinh ra khoảng trắng thừa.
+*/
+export function joinName(surname, given, suffix = '') {
+  const parts = SURNAME_FIRST
+    ? [surname, given, suffix]
+    : [given, surname, suffix]
+  return parts
+    .map(part => (part || '').trim())
+    .filter(Boolean)
+    .join(' ')
+}
+
+/*
+Tên các thuộc tính mang nghĩa riêng của phả hệ Việt Nam.
+
+Bộ dữ liệu nhập vào gắn chúng ở mức thuộc tính của từng người, vì Gramps không
+có trường sẵn cho những khái niệm này:
+  Đời      - thứ tự thế hệ tính từ thuỷ tổ, ví dụ "8"
+  Ngày giỗ - ngày mất theo âm lịch, ví dụ "21/5"
+Gom tên chuỗi về đây để chỗ đọc và chỗ nhập cùng dùng một hằng số.
+*/
+export const ATTR_GENERATION = 'Đời'
+
+export const ATTR_DEATH_ANNIVERSARY = 'Ngày giỗ'

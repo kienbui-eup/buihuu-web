@@ -434,7 +434,7 @@ function remasterChart(
     .text(d =>
       clipString(
         nameDisplayFormat === chartNameDisplayFormat.surnameThenGiven
-          ? `${d.profile?.name_surname},`
+          ? d.profile?.name_surname
           : d.profile?.name_given,
         boxWidthTotal(d)
       )
