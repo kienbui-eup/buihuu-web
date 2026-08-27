@@ -21,13 +21,14 @@ import {
   TREE_CONFIG_PRIMARY_COLOR,
   TREE_CONFIG_SECONDARY_COLOR,
 } from './api.js'
+import {APP_NAME, DEFAULT_LANGUAGE} from './branding.js'
 import './dayjs_locales.js'
 import {
   frontendLanguages,
   getFrontendStrings,
   grampsStrings,
 } from './strings.js'
-import {fireEvent, getBrowserLanguage, apiVersionAtLeast} from './util.js'
+import {fireEvent, apiVersionAtLeast} from './util.js'
 
 import {appStateUpdatePermissions, getInitialAppState} from './appState.js'
 import {
@@ -606,11 +607,9 @@ export class GrampsJs extends LitElement {
       return this._renderPreReadyView(decision)
     }
     if (!this.appState.settings.lang) {
-      // this can only happen if the user has not set the language
-      // AND the browser's language was not detected for some reason.
-      // In that case, we fall back to English.
+      // Người dùng chưa chọn ngôn ngữ: dùng ngôn ngữ mặc định của bản triển khai.
       this.appState.updateSettings({
-        lang: 'en',
+        lang: DEFAULT_LANGUAGE,
       })
     }
     if (this.loadingState === LOADING_STATE_DB_SCHEMA_MISMATCH) {
@@ -747,13 +746,13 @@ export class GrampsJs extends LitElement {
 
     this._loadDbInfo()
 
-    const browserLang = getBrowserLanguage()
-    if (browserLang && !this.appState.settings.lang) {
-      this.appState.updateSettings({lang: browserLang})
-      this._loadFrontendStrings(browserLang)
-    } else if (this.appState.settings.lang) {
-      this._loadFrontendStrings(this.appState.settings.lang)
+    // Trang của một dòng họ Việt Nam: mặc định tiếng Việt thay vì dò theo ngôn
+    // ngữ trình duyệt. Lựa chọn của người dùng trong Cài đặt luôn được ưu tiên.
+    const lang = this.appState.settings.lang || DEFAULT_LANGUAGE
+    if (!this.appState.settings.lang) {
+      this.appState.updateSettings({lang})
     }
+    this._loadFrontendStrings(lang)
 
     this._applyColorScheme()
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
@@ -1048,7 +1047,7 @@ export class GrampsJs extends LitElement {
     const suffix =
       this.appState.treeConfig?.[TREE_CONFIG_APP_TITLE] ||
       this.appState.dbInfo?.database?.name ||
-      'Gramps Web'
+      APP_NAME
     if (OBJECT_PAGES.has(page) && pageId) {
       document.title = `${pageId} · ${suffix}`
       return

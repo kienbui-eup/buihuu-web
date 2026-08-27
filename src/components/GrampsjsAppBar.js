@@ -4,6 +4,7 @@ The dropdown menu for adding objects in the top app bar
 
 import {html, css, LitElement} from 'lit'
 import {classMap} from 'lit/directives/class-map.js'
+import {APP_NAME} from '../branding.js'
 import '@material/mwc-top-app-bar'
 import '@material/web/iconbutton/icon-button.js'
 import '@material/web/progress/circular-progress.js'
@@ -172,7 +173,7 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
             ? this.editTitle
             : this.appState.treeConfig?.[TREE_CONFIG_APP_TITLE] ||
               this.appState?.dbInfo?.database?.name ||
-              'Gramps Web'}
+              APP_NAME}
         </div>
         ${savingIndicator}
         ${this.editMode
