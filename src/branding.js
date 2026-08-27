@@ -70,3 +70,15 @@ Gom tên chuỗi về đây để chỗ đọc và chỗ nhập cùng dùng mộ
 export const ATTR_GENERATION = 'Đời'
 
 export const ATTR_DEATH_ANNIVERSARY = 'Ngày giỗ'
+
+/*
+Người gốc mặc định của cây.
+
+Bản gốc để trống cho tới khi mỗi người tự chọn một "người gốc", vì nó dựng cho
+người nghiên cứu cây nhà mình. Ở đây thì ngược lại: khách vào là con cháu trong
+họ, mở mục Gia phả ra phải thấy cây, không phải thấy dòng chữ "Chưa đặt người
+chính". Mặc định là thuỷ tổ - người đời thứ nhất của dòng họ.
+
+Vẫn chỉ là mặc định: ai đặt người gốc riêng thì lựa chọn đó được giữ.
+*/
+export const DEFAULT_HOME_PERSON = 'I0001'

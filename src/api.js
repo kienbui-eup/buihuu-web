@@ -1,6 +1,7 @@
 import {jwtDecode} from 'jwt-decode'
 
 import {fireEvent, normalizeRect} from './util.js'
+import {DEFAULT_HOME_PERSON} from './branding.js'
 
 export const __APIHOST__ = 'http://localhost:5555'
 
@@ -69,9 +70,15 @@ export function getSettings() {
     const settingStringTree = localStorage.getItem('grampsjs_settings_tree')
     const treeId = getTreeId() || 'unknown'
     const settingsTree = JSON.parse(settingStringTree)?.[treeId] || {}
-    return {...settings, ...settingsTree}
+    // Người gốc là thứ duy nhất có mặc định của bản triển khai: chưa chọn thì
+    // lấy thuỷ tổ, để cây hiện ra ngay từ lần vào đầu tiên.
+    return {
+      homePerson: DEFAULT_HOME_PERSON,
+      ...settings,
+      ...settingsTree,
+    }
   } catch (e) {
-    return {}
+    return {homePerson: DEFAULT_HOME_PERSON}
   }
 }
 
