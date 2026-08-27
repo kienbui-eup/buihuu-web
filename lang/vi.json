@@ -420,5 +420,13 @@
   "All": "Tất cả",
   "Select at least one object type": "Chọn ít nhất một kiểu đối tượng",
   "Full name": "Họ và tên",
-  "Generation": "Đời"
+  "Generation": "Đời",
+  "Upcoming death anniversaries": "Ngày giỗ sắp tới",
+  "No upcoming death anniversaries.": "Chưa có ngày giỗ nào sắp tới.",
+  "Death anniversary": "Giỗ",
+  "lunar": "âm lịch",
+  "Today": "Hôm nay",
+  "Tomorrow": "Ngày mai",
+  "in %s days": "còn %s ngày",
+  "No anniversaries today.": "Hôm nay không có ngày kỷ niệm nào."
 }

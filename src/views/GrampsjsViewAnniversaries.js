@@ -66,7 +66,7 @@ export class GrampsjsViewAnniversaries extends GrampsjsConnectedComponent {
   renderContent() {
     return html`<h3>${this._('Anniversaries')}</h3>
       ${this._data.data.length === 0
-        ? html`<p>${this._('None')}.</p>`
+        ? html`<p>${this._('No anniversaries today.')}</p>`
         : html`
             <md-list class="large">
               ${this._data.data.map(event => this._renderEvent(event))}

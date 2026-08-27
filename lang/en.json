@@ -418,5 +418,13 @@
   "Blog Post": "Blog Post",
   "Failed to fetch the Blog tag": "Failed to fetch the Blog tag",
   "Full name": "Full name",
-  "Generation": "Generation"
+  "Generation": "Generation",
+  "Upcoming death anniversaries": "Upcoming death anniversaries",
+  "No upcoming death anniversaries.": "No upcoming death anniversaries.",
+  "Death anniversary": "Death anniversary",
+  "lunar": "lunar",
+  "Today": "Today",
+  "Tomorrow": "Tomorrow",
+  "in %s days": "in %s days",
+  "No anniversaries today.": "No anniversaries today."
 }

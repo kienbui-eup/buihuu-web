@@ -7,6 +7,7 @@ import {GrampsjsView} from './GrampsjsView.js'
 import './GrampsjsViewRecentlyChanged.js'
 import './GrampsjsViewRecentBlogPosts.js'
 import './GrampsjsViewAnniversaries.js'
+import './GrampsjsViewDeathAnniversaries.js'
 import '../components/GrampsjsHomePerson.js'
 import '../components/GrampsjsStatistics.js'
 import '../components/GrampsjsConnectedNote.js'
@@ -194,6 +195,17 @@ export class GrampsjsViewDashboard extends GrampsjsView {
                     >${this._('Import Family Tree')}</md-outlined-button
                   >
                 </div>
+              </div>
+            `
+          : ''}
+        ${this.appState.dbInfo?.object_counts?.people
+          ? html`
+              <div>
+                <grampsjs-view-death-anniversaries
+                  id="death-anniversaries"
+                  .appState="${this.appState}"
+                >
+                </grampsjs-view-death-anniversaries>
               </div>
             `
           : ''}
