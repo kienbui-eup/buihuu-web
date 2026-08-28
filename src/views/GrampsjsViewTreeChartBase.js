@@ -9,12 +9,14 @@ import '@material/web/iconbutton/icon-button.js'
 
 import {
   mdiAccountDetails,
+  mdiAccountSearch,
   mdiArrowLeft,
   mdiCog,
   mdiHomeAccount,
   mdiPencil,
 } from '@mdi/js'
 import '../components/GrampsjsIcon.js'
+import '../components/GrampsjsObjectPickerDialog.js'
 import {GrampsjsView} from './GrampsjsView.js'
 import {GrampsjsStaleDataMixin} from '../mixins/GrampsjsStaleDataMixin.js'
 import '../components/GrampsjsTooltip.js'
@@ -148,9 +150,33 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
         <div id="controls">${this.renderControls()}</div>
         <div id="chart">${this.renderChart()}</div>
       </div>
+      <grampsjs-object-picker-dialog
+        objectType="person"
+        .appState="${this.appState}"
+        @select-object:selected="${this._handlePersonPicked}"
+      ></grampsjs-object-picker-dialog>
       ${this.appState.permissions.canEdit && !this._editMode
         ? this.renderFab()
         : ''}`
+  }
+
+  // Without this the only way into the chart is the home person and whatever
+  // can be reached by clicking node after node — unworkable in a lineage of
+  // 1504 people where most names repeat.
+  _openPersonPicker() {
+    this.renderRoot.querySelector('grampsjs-object-picker-dialog')?.open('')
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  _handlePersonPicked(event) {
+    const grampsId =
+      event.detail?.object?.gramps_id ?? event.detail?.gramps_id ?? ''
+    if (!grampsId) {
+      return
+    }
+    window.dispatchEvent(
+      new CustomEvent('pedigree:person-selected', {detail: {grampsId}})
+    )
   }
 
   renderFab() {
@@ -216,6 +242,17 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
           for="button-home"
           .appState="${this.appState}"
         >${this._('Home Person')}</grampsjs-tooltip>
+        <md-icon-button
+          @click=${this._openPersonPicker}
+          style="margin-bottom:-10px;"
+          aria-label="${this._('Search')}"
+          id="btn-goto-person"
+        ><grampsjs-icon path="${mdiAccountSearch}" color="currentColor"
+          ></grampsjs-icon></md-icon-button>
+        <grampsjs-tooltip
+          for="btn-goto-person"
+          .appState="${this.appState}"
+        >${this._('Search')}</grampsjs-tooltip>
         <md-icon-button
           @click=${this._handleBack}
           ?disabled=${this.disableBack}

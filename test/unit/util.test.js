@@ -59,17 +59,18 @@ describe('translate', () => {
 
 describe('personTitleFromProfile', () => {
   it('combines given and surname', () => {
+    // Vietnamese order: the surname leads, see SURNAME_FIRST in branding.js
     expect(
       personTitleFromProfile({name_given: 'John', name_surname: 'Smith'})
-    ).to.equal('John Smith')
+    ).to.equal('Smith John')
   })
 
   it('uses ellipsis for missing given name', () => {
-    expect(personTitleFromProfile({name_surname: 'Smith'})).to.equal('… Smith')
+    expect(personTitleFromProfile({name_surname: 'Smith'})).to.equal('Smith …')
   })
 
   it('uses ellipsis for missing surname', () => {
-    expect(personTitleFromProfile({name_given: 'John'})).to.equal('John …')
+    expect(personTitleFromProfile({name_given: 'John'})).to.equal('… John')
   })
 
   it('includes suffix', () => {
@@ -79,7 +80,7 @@ describe('personTitleFromProfile', () => {
         name_surname: 'Smith',
         name_suffix: 'Jr.',
       })
-    ).to.equal('John Smith Jr.')
+    ).to.equal('Smith John Jr.')
   })
 })
 
@@ -92,13 +93,13 @@ describe('personDisplayName', () => {
     },
   }
 
-  it('given-first by default', () => {
-    expect(personDisplayName(person)).to.equal('John Smith')
+  it('surname first by default', () => {
+    expect(personDisplayName(person)).to.equal('Smith John')
   })
 
-  it('surname-first when option set', () => {
+  it('keeps the surname first when the given-first option is off', () => {
     expect(personDisplayName(person, {givenfirst: false})).to.equal(
-      'Smith, John'
+      'Smith John'
     )
   })
 
@@ -146,7 +147,7 @@ describe('familyTitleFromProfile', () => {
         father: {name_given: 'John', name_surname: 'Smith'},
         mother: {name_given: 'Jane', name_surname: 'Doe'},
       })
-    ).to.equal('John Smith & Jane Doe')
+    ).to.equal('Smith John & Doe Jane')
   })
 
   it('returns empty string when both missing', () => {

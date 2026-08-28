@@ -10,6 +10,7 @@ export class GrampsjsViewHourglassChart extends GrampsjsViewTreeChartBase {
     this._setAnc = true
     this._setDesc = true
     this.defaults.nAnc = 2
+    this.defaults.nDesc = 2
   }
 
   get nAnc() {

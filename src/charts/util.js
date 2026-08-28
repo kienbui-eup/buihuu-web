@@ -230,3 +230,17 @@ export const LegendColorBar = (
     .attr('dy', '0.4em')
     .text(d => `${d}`)
 }
+
+// The Bùi Hữu tree records a "Đời" (generation) attribute for every person and,
+// for most of them, a lunar memorial date instead of birth/death years. Charts
+// are unreadable without the generation — 586 of 1504 people share their full
+// name with someone else — and the memorial date only fits the box once the
+// "Giỗ ngày " prefix is dropped.
+export const getGeneration = person => {
+  const attributes = person?.attribute_list || []
+  const attribute = attributes.find(attr => attr.type === 'Đời')
+  return attribute?.value || ''
+}
+
+export const shortenMemorialDate = date =>
+  (date || '').replace(/^Giỗ ngày\s+/, '')

@@ -5,6 +5,7 @@ import {curveBumpX, link, symbolTriangle, symbol} from 'd3-shape'
 import {zoom} from 'd3-zoom'
 import {chartNameDisplayFormat, fireEvent} from '../util.js'
 import {appendAddPersonButton} from './addPersonButton.js'
+import {getGeneration, shortenMemorialDate} from './util.js'
 
 const genderColor = {
   0: 'var(--color-girl)',
@@ -275,16 +276,29 @@ function TreeChartCore(
       )
     )
 
+  // Third line: the birth date when there is one, otherwise the generation —
+  // in this tree only 47 of 1504 people have a birth date, so the line would
+  // sit empty for almost everyone while the generation is what tells two
+  // same-named relatives apart.
+  const thirdLine = d => {
+    const birthDate = d.data.person?.profile?.birth?.date
+    if (birthDate) {
+      return `*${birthDate}`
+    }
+    const generation = getGeneration(d.data.person)
+    return generation ? `Đời ${generation}` : ''
+  }
+
   node
     .append('text')
-    .filter(d => d.data.person?.profile?.birth?.date)
+    .filter(d => thirdLine(d))
     .attr('y', -boxHeight / 2 + 25 + 17 * 2)
     .attr('x', d => -boxWidth / 2 + textPadding(d))
     .attr('text-anchor', 'start')
     .attr('font-weight', '350')
     .attr('fill', 'var(--grampsjs-body-font-color-90)')
     .attr('paint-order', 'stroke')
-    .text(d => clipString(`*${d.data.person.profile.birth.date}`, textWidth(d)))
+    .text(d => clipString(thirdLine(d), textWidth(d)))
 
   node
     .append('text')
@@ -296,7 +310,12 @@ function TreeChartCore(
     .attr('fill', 'var(--grampsjs-body-font-color-90)')
 
     .attr('paint-order', 'stroke')
-    .text(d => clipString(`†${d.data.person.profile.death.date}`, textWidth(d)))
+    .text(d =>
+      clipString(
+        `†${shortenMemorialDate(d.data.person.profile.death.date)}`,
+        textWidth(d)
+      )
+    )
 
   if (canEdit) {
     appendAddPersonButton(
@@ -433,6 +452,11 @@ export function TreeChart(dataDescendants, dataAncestors, chartsettings) {
   yOffset = yMin
   if (chartsettings.bboxHeight > height) {
     yOffset -= (chartsettings.bboxHeight - height) / 2
+  } else {
+    // Taller than the viewport: anchoring on the top edge scrolls the person
+    // the chart is about out of sight and shows their remotest ancestors
+    // instead. Keep them centred — they sit at y = 0 by construction.
+    yOffset = -chartsettings.bboxHeight / 2
   }
   svg.attr('viewBox', [
     xOffset,

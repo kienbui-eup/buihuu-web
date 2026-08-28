@@ -4,6 +4,7 @@ import {linkVertical} from 'd3-shape'
 import {Graphviz} from '@hpcc-js/wasm'
 import {chartNameDisplayFormat} from '../util.js'
 import {appendAddPersonButton} from './addPersonButton.js'
+import {getGeneration, shortenMemorialDate} from './util.js'
 
 const sexColor = {
   F: 'var(--color-girl)',
@@ -368,6 +369,9 @@ function remasterChart(
         xCoord: x - boxWidth / 2 + 4,
         yCoord: y - boxHeight / 2,
         profile: d.profile,
+        // carried along for the generation label, which lives in the person's
+        // attributes rather than the profile
+        person: d.data,
         imageUrl: imageCount > maxImages ? '' : imageUrl,
         handle: found.groups.handle,
       })
@@ -464,8 +468,19 @@ function remasterChart(
       )
     )
 
+  // Birth date when known, otherwise the generation: see TreeChart.js — dates
+  // of birth are the exception in this tree, generations are recorded for all.
+  const thirdLine = d => {
+    const birthDate = d.profile?.birth?.date
+    if (birthDate) {
+      return `*${birthDate}`
+    }
+    const generation = getGeneration(d.person)
+    return generation ? `Đời ${generation}` : ''
+  }
+
   nodes
-    .filter(d => d.profile?.birth?.date && d.nodetype === 'person')
+    .filter(d => thirdLine(d) && d.nodetype === 'person')
     .append('text')
     .attr('text-anchor', 'start')
     .attr('font-weight', '350')
@@ -473,7 +488,7 @@ function remasterChart(
     .attr('paint-order', 'stroke')
     .attr('x', d => textPadding(d))
     .attr('y', 25 + 17 * 2)
-    .text(d => clipString(`*${d.profile.birth.date}`, boxWidthTotal(d)))
+    .text(d => clipString(thirdLine(d), boxWidthTotal(d)))
 
   nodes
     .filter(d => d.profile?.death?.date && d.nodetype === 'person')
@@ -484,7 +499,12 @@ function remasterChart(
     .attr('paint-order', 'stroke')
     .attr('x', d => textPadding(d))
     .attr('y', 25 + 17 * 3)
-    .text(d => clipString(`†${d.profile.death.date}`, boxWidthTotal(d)))
+    .text(d =>
+      clipString(
+        `†${shortenMemorialDate(d.profile.death.date)}`,
+        boxWidthTotal(d)
+      )
+    )
 
   // images
   nodes
