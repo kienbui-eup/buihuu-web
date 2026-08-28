@@ -1,11 +1,12 @@
 import {min, max} from 'd3-array'
-import {create} from 'd3-selection'
+import {create, select} from 'd3-selection'
 import {hierarchy, tree} from 'd3-hierarchy'
 import {curveBumpX, link, symbolTriangle, symbol} from 'd3-shape'
 import {zoom} from 'd3-zoom'
 import {chartNameDisplayFormat, fireEvent} from '../util.js'
+import {joinName} from '../branding.js'
 import {appendAddPersonButton} from './addPersonButton.js'
-import {getGeneration, shortenMemorialDate} from './util.js'
+import {personCardLines} from './util.js'
 
 const genderColor = {
   0: 'var(--color-girl)',
@@ -216,11 +217,10 @@ function TreeChartCore(
   const textPadding = d =>
     getImageUrl(d) ? 2 * imgRadius + 2 * imgPadding : 2 * imgPadding
 
-  const clipString = (s, length) => {
+  const clipString = (s, length, fontSize = 13) => {
     if (!s) {
       return ''
     }
-    const fontSize = 13
     const nChar = length / (fontSize * 0.6)
     if (s.length <= nChar) {
       return s
@@ -236,86 +236,48 @@ function TreeChartCore(
       ? boxWidth - 2 * imgPadding - 2 * imgRadius
       : boxWidth - 2 * imgPadding
 
+  // Ô người viết theo lối gia phả Việt: họ tên liền một dòng, rồi tên tự, đời
+  // và ngày giỗ. Xem personCardLines trong ./util.js.
+  const lineHeight = 17
+
+  const fullName = d =>
+    nameDisplayFormat === chartNameDisplayFormat.surnameThenGiven
+      ? joinName(d.data.name_surname, d.data.name_given)
+      : joinName(d.data.name_given, d.data.name_surname)
+
   node
-    .append('text')
     .filter(d => d.data.name_given || d.data.name_surname)
-    .attr('y', -boxHeight / 2 + 25)
-    .attr('x', d => -boxWidth / 2 + textPadding(d))
-    .attr('text-anchor', 'start')
-    .attr('font-weight', '500')
-    .attr('fill', 'var(--grampsjs-body-font-color-90)')
-    .attr('paint-order', 'stroke')
-    .text(d =>
-      clipString(
-        nameDisplayFormat === chartNameDisplayFormat.surnameThenGiven
-          ? d.data.name_surname || '…'
-          : d.data.name_given || '…',
-        textWidth(d)
+    .each(function drawCard(d) {
+      const lines = personCardLines(
+        d.data.person,
+        d.data.person?.profile,
+        fullName(d) || '…'
       )
-    )
+      // Ít dòng thì căn giữa theo chiều cao ô, để ô của người chỉ còn mỗi cái
+      // tên không bị dồn lên mép trên.
+      const top =
+        -boxHeight / 2 +
+        (boxHeight - (lines.length - 1) * lineHeight) / 2 +
+        lineHeight / 4
 
-  node
-    .append('text')
-    .filter(d => d.data.name_given || d.data.name_surname)
-    .attr('y', -boxHeight / 2 + 25 + 17)
-    .attr('x', d => -boxWidth / 2 + textPadding(d))
-    .attr('width', 50)
-    .attr('text-anchor', 'start')
-    .attr('font-weight', '500')
-    .attr('fill', 'var(--grampsjs-body-font-color-90)')
-    .attr('paint-order', 'stroke')
-    .attr('text-overflow', 'ellipsis')
-    .attr('overflow', 'hidden')
-    .attr('width', 25)
-    .text(d =>
-      clipString(
-        nameDisplayFormat === chartNameDisplayFormat.surnameThenGiven
-          ? d.data.name_given || '…'
-          : d.data.name_surname || '…',
-        textWidth(d)
-      )
-    )
-
-  // Third line: the birth date when there is one, otherwise the generation —
-  // in this tree only 47 of 1504 people have a birth date, so the line would
-  // sit empty for almost everyone while the generation is what tells two
-  // same-named relatives apart.
-  const thirdLine = d => {
-    const birthDate = d.data.person?.profile?.birth?.date
-    if (birthDate) {
-      return `*${birthDate}`
-    }
-    const generation = getGeneration(d.data.person)
-    return generation ? `Đời ${generation}` : ''
-  }
-
-  node
-    .append('text')
-    .filter(d => thirdLine(d))
-    .attr('y', -boxHeight / 2 + 25 + 17 * 2)
-    .attr('x', d => -boxWidth / 2 + textPadding(d))
-    .attr('text-anchor', 'start')
-    .attr('font-weight', '350')
-    .attr('fill', 'var(--grampsjs-body-font-color-90)')
-    .attr('paint-order', 'stroke')
-    .text(d => clipString(thirdLine(d), textWidth(d)))
-
-  node
-    .append('text')
-    .filter(d => d.data.person?.profile?.death?.date)
-    .attr('y', -boxHeight / 2 + 25 + 17 * 3)
-    .attr('x', d => -boxWidth / 2 + textPadding(d))
-    .attr('text-anchor', 'start')
-    .attr('font-weight', '350')
-    .attr('fill', 'var(--grampsjs-body-font-color-90)')
-
-    .attr('paint-order', 'stroke')
-    .text(d =>
-      clipString(
-        `†${shortenMemorialDate(d.data.person.profile.death.date)}`,
-        textWidth(d)
-      )
-    )
+      select(this)
+        .selectAll('text.card-line')
+        .data(lines)
+        .join('text')
+        .attr('class', 'card-line')
+        .attr('x', -boxWidth / 2 + textPadding(d))
+        .attr('y', (line, i) => top + i * lineHeight)
+        .attr('text-anchor', 'start')
+        .attr('font-size', line => line.size)
+        .attr('font-weight', line => line.weight)
+        .attr('fill', line =>
+          line.muted
+            ? 'var(--grampsjs-body-font-color-70)'
+            : 'var(--grampsjs-body-font-color-90)'
+        )
+        .attr('paint-order', 'stroke')
+        .text(line => clipString(line.text, textWidth(d), line.size))
+    })
 
   if (canEdit) {
     appendAddPersonButton(

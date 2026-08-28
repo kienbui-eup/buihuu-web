@@ -3,8 +3,9 @@ import {zoom} from 'd3-zoom'
 import {linkVertical} from 'd3-shape'
 import {Graphviz} from '@hpcc-js/wasm'
 import {chartNameDisplayFormat} from '../util.js'
+import {joinName} from '../branding.js'
 import {appendAddPersonButton} from './addPersonButton.js'
-import {getGeneration, shortenMemorialDate} from './util.js'
+import {personCardLines} from './util.js'
 
 const sexColor = {
   F: 'var(--color-girl)',
@@ -306,11 +307,10 @@ class Relgraph {
   }
 }
 
-const clipString = (s, length) => {
+const clipString = (s, length, fontSize = 13) => {
   if (!s) {
     return ''
   }
-  const fontSize = 13
   const nChar = length / (fontSize * 0.6)
   if (s.length <= nChar) {
     return s
@@ -420,29 +420,14 @@ function remasterChart(
     .attr('rx', 8)
     .attr('ry', 8)
 
-  nodes
-    .filter(
-      d =>
-        (d.profile?.name_given || d.profile?.name_surname) &&
-        d.nodetype === 'person'
-    )
-    .append('text')
-    .attr('text-anchor', 'start')
-    .attr('font-weight', '500')
-    .attr('fill', 'var(--grampsjs-body-font-color-90)')
-    .attr('paint-order', 'stroke')
-    .attr('text-overflow', 'ellipsis')
-    .attr('overflow', 'hidden')
-    .attr('x', d => textPadding(d))
-    .attr('y', 25)
-    .text(d =>
-      clipString(
-        nameDisplayFormat === chartNameDisplayFormat.surnameThenGiven
-          ? d.profile?.name_surname
-          : d.profile?.name_given,
-        boxWidthTotal(d)
-      )
-    )
+  // Ô người viết theo lối gia phả Việt, giống biểu đồ cây: họ tên liền một
+  // dòng, rồi tên tự, đời và ngày giỗ. Xem personCardLines trong ./util.js.
+  const lineHeight = 17
+
+  const fullName = d =>
+    nameDisplayFormat === chartNameDisplayFormat.surnameThenGiven
+      ? joinName(d.profile?.name_surname, d.profile?.name_given)
+      : joinName(d.profile?.name_given, d.profile?.name_surname)
 
   nodes
     .filter(
@@ -450,61 +435,29 @@ function remasterChart(
         (d.profile?.name_given || d.profile?.name_surname) &&
         d.nodetype === 'person'
     )
-    .append('text')
-    .attr('text-anchor', 'start')
-    .attr('font-weight', '500')
-    .attr('fill', 'var(--grampsjs-body-font-color-90)')
-    .attr('paint-order', 'stroke')
-    .attr('text-overflow', 'ellipsis')
-    .attr('overflow', 'hidden')
-    .attr('x', d => textPadding(d))
-    .attr('y', 25 + 17)
-    .text(d =>
-      clipString(
-        nameDisplayFormat === chartNameDisplayFormat.surnameThenGiven
-          ? d.profile?.name_given
-          : d.profile?.name_surname,
-        boxWidthTotal(d)
-      )
-    )
+    .each(function drawCard(d) {
+      const lines = personCardLines(d.person, d.profile, fullName(d) || '…')
+      const top =
+        (boxHeight - (lines.length - 1) * lineHeight) / 2 + lineHeight / 4
 
-  // Birth date when known, otherwise the generation: see TreeChart.js — dates
-  // of birth are the exception in this tree, generations are recorded for all.
-  const thirdLine = d => {
-    const birthDate = d.profile?.birth?.date
-    if (birthDate) {
-      return `*${birthDate}`
-    }
-    const generation = getGeneration(d.person)
-    return generation ? `Đời ${generation}` : ''
-  }
-
-  nodes
-    .filter(d => thirdLine(d) && d.nodetype === 'person')
-    .append('text')
-    .attr('text-anchor', 'start')
-    .attr('font-weight', '350')
-    .attr('fill', 'var(--grampsjs-body-font-color-90)')
-    .attr('paint-order', 'stroke')
-    .attr('x', d => textPadding(d))
-    .attr('y', 25 + 17 * 2)
-    .text(d => clipString(thirdLine(d), boxWidthTotal(d)))
-
-  nodes
-    .filter(d => d.profile?.death?.date && d.nodetype === 'person')
-    .append('text')
-    .attr('text-anchor', 'start')
-    .attr('font-weight', '350')
-    .attr('fill', 'var(--grampsjs-body-font-color-90)')
-    .attr('paint-order', 'stroke')
-    .attr('x', d => textPadding(d))
-    .attr('y', 25 + 17 * 3)
-    .text(d =>
-      clipString(
-        `†${shortenMemorialDate(d.profile.death.date)}`,
-        boxWidthTotal(d)
-      )
-    )
+      select(this)
+        .selectAll('text.card-line')
+        .data(lines)
+        .join('text')
+        .attr('class', 'card-line')
+        .attr('x', textPadding(d))
+        .attr('y', (line, i) => top + i * lineHeight)
+        .attr('text-anchor', 'start')
+        .attr('font-size', line => line.size)
+        .attr('font-weight', line => line.weight)
+        .attr('fill', line =>
+          line.muted
+            ? 'var(--grampsjs-body-font-color-70)'
+            : 'var(--grampsjs-body-font-color-90)'
+        )
+        .attr('paint-order', 'stroke')
+        .text(line => clipString(line.text, boxWidthTotal(d), line.size))
+    })
 
   // images
   nodes
