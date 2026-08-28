@@ -8,9 +8,10 @@ export class GrampsjsViewDescendantChart extends GrampsjsViewTreeChartBase {
   constructor() {
     super()
     this._setDesc = true
-    // One generation of children says almost nothing about a lineage of 17
-    // generations; three fills the screen without slowing the chart down.
-    this.defaults.nDesc = 3
+    // Một đời con gần như không nói gì về một dòng họ 17 đời. Năm đời là chỗ
+    // cân bằng: từ thuỷ tổ xuống vẫn gọn, mà từ một cụ đời giữa thì đã thấy
+    // trọn nhánh con cháu còn chép trong phả.
+    this.defaults.nDesc = 5
   }
 
   get nDesc() {

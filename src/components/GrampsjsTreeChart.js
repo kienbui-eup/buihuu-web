@@ -75,6 +75,54 @@ class GrampsjsTreeChart extends GrampsjsChartBase {
 
   updated() {
     this._updateMenuAnchor()
+    this._fitChartToViewport()
+  }
+
+  // Khung nhìn được tính lúc dựng cây từ bề rộng ước lượng theo số đời, mà con
+  // số đó không kể tới ô rộng hơn dự tính hay nhánh vợ nở ra hai bên: cây mười
+  // bảy đời vì thế bị cắt mất mấy ô ngoài cùng. Đo lại bằng kích thước thật của
+  // phần đã vẽ, sau khi nó đã nằm trong DOM, rồi nới khung cho vừa.
+  //
+  // Chỉ làm khi người xem chưa tự phóng to hay kéo cây - nếu không, mỗi lần vẽ
+  // lại sẽ giật họ về toàn cảnh.
+  _fitChartToViewport() {
+    const zoomed =
+      this._savedZoom &&
+      (this._savedZoom.k !== 1 ||
+        this._savedZoom.x !== 0 ||
+        this._savedZoom.y !== 0)
+    if (zoomed) {
+      return
+    }
+    const svg = this.renderRoot
+      ?.getElementById('container')
+      ?.querySelector('svg')
+    const content = svg?.querySelector('#chart-content')
+    if (!content) {
+      return
+    }
+    let box
+    try {
+      box = content.getBBox()
+    } catch (error) {
+      return
+    }
+    const width = this.containerWidth
+    const height = this.containerHeight
+    if (!box?.width || !box?.height || !width || !height) {
+      return
+    }
+    const margin = 24
+    const fit = Math.min(
+      1,
+      width / (box.width + 2 * margin),
+      height / (box.height + 2 * margin)
+    )
+    const viewWidth = width / fit
+    const viewHeight = height / fit
+    const x = box.x + box.width / 2 - viewWidth / 2
+    const y = box.y + box.height / 2 - viewHeight / 2
+    svg.setAttribute('viewBox', `${x} ${y} ${viewWidth} ${viewHeight}`)
   }
 
   renderChart() {

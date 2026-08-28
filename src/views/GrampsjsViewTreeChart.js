@@ -8,7 +8,9 @@ export class GrampsjsViewTreeChart extends GrampsjsViewTreeChartBase {
   constructor() {
     super()
     this._setAnc = true
-    this.defaults.nAnc = 3
+    // Cả dòng, không cắt: bảng phả hệ giấy của họ vẽ trọn từ thuỷ tổ xuống, và
+    // tổ tiên của người ở đời sâu nhất cũng chỉ có 32 người.
+    this.defaults.nAnc = 20
   }
 
   get nAnc() {

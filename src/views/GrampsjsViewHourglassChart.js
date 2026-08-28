@@ -9,8 +9,8 @@ export class GrampsjsViewHourglassChart extends GrampsjsViewTreeChartBase {
     super()
     this._setAnc = true
     this._setDesc = true
-    this.defaults.nAnc = 2
-    this.defaults.nDesc = 2
+    this.defaults.nAnc = 20
+    this.defaults.nDesc = 3
   }
 
   get nAnc() {
