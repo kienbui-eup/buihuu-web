@@ -388,31 +388,41 @@ export function TreeChart(dataDescendants, dataAncestors, chartsettings) {
   let xOffset = 0
   let yOffset = 0
 
+  // Trục thời gian chạy từ trái sang phải: đời trước bên trái, đời sau bên phải.
+  //
+  // Bản gốc xếp ngược lại - hậu duệ toả sang trái, tổ tiên sang phải. Gia phả
+  // Việt đọc theo chiều thuỷ tổ trước rồi lần xuống các đời sau, cùng chiều với
+  // chiều đọc chữ, nên hai nửa đổi vai cho nhau: hậu duệ vẽ LTR và đứng yên tại
+  // gốc, tổ tiên vẽ RTL và lùi sang trái đúng bằng bề rộng của mình, trừ đi ô
+  // gốc mà hai nửa dùng chung.
   if (dataDescendants) {
     const chartD = chartContent.append('g')
-    const [xD, yD, widthD, heightD, overlap] = TreeChartCore(
-      chartD,
-      dataDescendants,
-      {...chartsettings, orientation: 'RTL', depth: chartsettings.nDesc}
-    )
-    chartD.attr('transform', `translate(${-widthD + overlap},0)`)
+    const [xD, yD, widthD, heightD] = TreeChartCore(chartD, dataDescendants, {
+      ...chartsettings,
+      orientation: 'LTR',
+      depth: chartsettings.nDesc,
+    })
+    chartD.attr('transform', 'translate(0,0)')
     yMin = Math.min(yMin, yD)
     yMax = Math.max(yMax, yD + heightD)
     xMin = Math.min(xMin, xD)
-    width += widthD - overlap
+    width += widthD
   }
   if (dataAncestors) {
     const chartA = chartContent.append('g')
-    const [xA, yA, widthA, heightA] = TreeChartCore(chartA, dataAncestors, {
-      ...chartsettings,
-      orientation: 'LTR',
-      depth: chartsettings.nAnc,
-    })
-    chartA.attr('transform', 'translate(0,0)')
+    const [xA, yA, widthA, heightA, overlap] = TreeChartCore(
+      chartA,
+      dataAncestors,
+      {...chartsettings, orientation: 'RTL', depth: chartsettings.nAnc}
+    )
+    chartA.attr('transform', `translate(${-widthA + overlap},0)`)
     yMin = Math.min(yMin, yA)
     yMax = Math.max(yMax, yA + heightA)
-    xMin = Math.min(xMin, xA)
-    width += widthA
+    // Nửa tổ tiên bị dịch sang trái bằng transform ở trên, nên biên trái thật của
+    // nó không phải xA mà là xA cộng nửa ô gốc — chính là overlap/2. Lấy thẳng xA
+    // thì viewBox mở quá xa về bên trái và ô ngoài cùng bên phải bị cắt mất.
+    xMin = Math.min(xMin, xA + overlap / 2)
+    width += widthA - overlap
   }
 
   xOffset = xMin
