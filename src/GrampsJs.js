@@ -22,6 +22,7 @@ import {
   TREE_CONFIG_SECONDARY_COLOR,
 } from './api.js'
 import {APP_NAME, DEFAULT_LANGUAGE} from './branding.js'
+import {applyVietnameseGlossary} from './glossary.js'
 import './dayjs_locales.js'
 import {
   frontendLanguages,
@@ -846,7 +847,10 @@ export class GrampsJs extends LitElement {
 
   async _loadFrontendStrings(lang) {
     const additionalStrings = await getFrontendStrings(lang)
-    const strings = {...this.appState.i18n.strings, ...additionalStrings}
+    const strings = applyVietnameseGlossary(
+      {...this.appState.i18n.strings, ...additionalStrings},
+      lang
+    )
     this._updateAppState({i18n: {strings, lang}})
   }
 
@@ -1198,6 +1202,8 @@ export class GrampsJs extends LitElement {
         const additionalStrings = await getFrontendStrings(lang)
         _strings = Object.assign(additionalStrings, _strings)
       }
+      // lớp thuật ngữ gia phả tiếng Việt nói tiếng nói sau cùng
+      _strings = applyVietnameseGlossary(_strings, lang)
       this._updateAppState({i18n: {strings: _strings, lang}})
     }
     this._loadingStrings = false
