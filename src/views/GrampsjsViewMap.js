@@ -21,11 +21,13 @@ import {
 } from '../util.js'
 import {GrampsjsStaleDataMixin} from '../mixins/GrampsjsStaleDataMixin.js'
 import {queryNominatim, getMapViewport, saveMapViewport} from '../api.js'
+import {DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM} from '../branding.js'
 
 const EMPTY_ARRAY = []
 
-const DEFAULT_CENTER = [20, 0]
-const DEFAULT_ZOOM = 2
+// Mở ở nhà thờ tổ thay vì tâm thế giới: xem branding.js.
+const DEFAULT_CENTER = DEFAULT_MAP_CENTER
+const DEFAULT_ZOOM = DEFAULT_MAP_ZOOM
 
 export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
   static get styles() {
@@ -551,10 +553,17 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
           place?.backlinks?.event?.map(handle =>
             this._dataEvents?.find(event => event.handle === handle)
           ) ?? []
-        if (placeEvents.length === 0) return false
+        // Chỉ những sự kiện có năm thật mới tham gia lọc theo thời gian. Địa
+        // điểm không có mốc năm nào (nhà thờ tổ, thôn, mộ chỉ ghi ngày giỗ âm
+        // lịch dạng chữ) là mốc cố định của làng, luôn hiện; bản gốc ẩn chúng
+        // và bản đồ của một dòng họ vì thế trống trơn.
+        const hasYear = date =>
+          (date?.dateval?.[2] ?? 0) > 0 || (date?.dateval?.[6] ?? 0) > 0
+        const datedEvents = placeEvents.filter(event => hasYear(event?.date))
+        if (datedEvents.length === 0) return true
         const yearMin = this._year - this._yearSpan
         const yearMax = this._year + this._yearSpan
-        return placeEvents.some(event =>
+        return datedEvents.some(event =>
           isDateBetweenYears(event?.date, yearMin, yearMax)
         )
       }
@@ -660,8 +669,12 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
       if (this._selectedPerson && this._personPlaceHandles.length) {
         this._fitPersonPlaces(this._personPlaceHandles)
       } else if (!this._handlesHighlight.length && !getMapViewport()) {
+        // Địa điểm của một dòng họ nằm gọn trong một thôn: mức phóng 6 của bản
+        // gốc (cỡ một nước) chỉ cho thấy một chấm. Có toạ độ thì phóng tới cấp
+        // làng, không có thì về nhà thờ tổ.
         const center = this._getMapCenter()
-        this._mapEl?.jumpTo(center[0], center[1], 6)
+        const zoom = this._hasAnyCoords() ? 14 : DEFAULT_ZOOM
+        this._mapEl?.jumpTo(center[0], center[1], zoom)
       }
     } else if ('error' in data) {
       this.error = true
@@ -718,6 +731,10 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
       this.error = true
       this._errorMessage = data.error
     }
+  }
+
+  _hasAnyCoords() {
+    return this._dataPlaces.some(p => this._hasCoords(p))
   }
 
   _getMapCenter() {

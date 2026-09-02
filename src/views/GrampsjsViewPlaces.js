@@ -67,12 +67,13 @@ export class GrampsjsViewPlaces extends GrampsjsViewObjectsBase {
     `
   }
 
-  // eslint-disable-next-line class-methods-use-this
   _formatRow(row) {
+    const type = row?.place_type?.string || row?.place_type || ''
     return {
       grampsId: row.gramps_id,
       title: row.name.value,
-      type: row?.place_type?.string || row?.place_type || '',
+      // Loại địa điểm là chuỗi kiểu Gramps ("Locality"), dịch qua glossary.
+      type: type ? this._(type) : '',
       change: prettyTimeDiffTimestamp(row.change, this.appState.i18n.lang),
     }
   }

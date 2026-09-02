@@ -82,3 +82,19 @@ chính". Mặc định là thuỷ tổ - người đời thứ nhất của dòn
 Vẫn chỉ là mặc định: ai đặt người gốc riêng thì lựa chọn đó được giữ.
 */
 export const DEFAULT_HOME_PERSON = 'I0001'
+
+/*
+Tâm bản đồ mặc định: nhà thờ tổ họ Bùi Hữu, thôn Chỉ Bồ, xã Thụy Trường.
+
+Bản gốc mở bản đồ ở tâm thế giới [20, 0] mức phóng 2 vì không biết người dùng ở
+đâu. Ở đây thì biết: mọi mộ phần và nhà thờ tổ đều nằm trong một thôn ở Thái
+Thụy, nên bản đồ mở thẳng ở đó.
+
+Toạ độ là ước lượng theo tâm xã Thụy Trường (Wikidata Q10826720, 20,609°B
+106,609°Đ); chưa có nguồn công khai nào ghi toạ độ thôn Chỉ Bồ hay nhà thờ tổ.
+Khi đo được tại chỗ thì sửa hai số này, và sửa cả địa điểm cùng tên trong
+phahe-import/phahe/emit.py để hai nơi khớp nhau.
+*/
+export const DEFAULT_MAP_CENTER = [20.6089, 106.6092]
+
+export const DEFAULT_MAP_ZOOM = 15

@@ -124,15 +124,22 @@ export const VI_GLOSSARY = {
   'Very Low': 'Rất thấp',
   'Very High': 'Rất cao',
 
-  // Địa danh theo cấp hành chính Việt Nam
+  // Địa danh theo cấp hành chính Việt Nam. Pipeline phahe-import dùng đúng bộ
+  // này: Province = tỉnh, District = huyện, Municipality = xã, Village = thôn,
+  // Locality = xứ đồng (nơi đặt mộ), Building = nhà thờ tổ.
   Country: 'Quốc gia',
   State: 'Tỉnh/Thành phố',
+  Province: 'Tỉnh',
   County: 'Huyện/Quận',
-  City: 'Xã/Phường/Thị trấn',
-  Locality: 'Thôn/Xóm',
+  District: 'Huyện',
+  City: 'Thành phố',
+  Municipality: 'Xã',
+  Town: 'Thị trấn',
+  Village: 'Thôn',
+  Hamlet: 'Xóm',
+  Locality: 'Xứ đồng',
   Street: 'Đường/Ngõ',
-  Village: 'Làng',
-  Hamlet: 'Thôn',
+  Building: 'Công trình',
   Parish: 'Giáo xứ',
 
   // Vai trò trong một sự kiện
