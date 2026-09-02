@@ -3,6 +3,7 @@ import {css, html} from 'lit'
 import {GrampsjsView} from './GrampsjsView.js'
 import {GrampsjsStaleDataMixin} from '../mixins/GrampsjsStaleDataMixin.js'
 import '../components/GrampsjsBlogPost.js'
+import '../components/GrampsjsBlogLayout.js'
 
 const BASE_DIR = ''
 
@@ -32,10 +33,18 @@ export class GrampsjsViewBlogPost extends GrampsjsStaleDataMixin(GrampsjsView) {
     this._dataSources = []
     this._dataNotes = []
     this._firstLoaded = false
+    this._fetchRequest = 0
   }
 
   renderContent() {
-    return html` ${this.renderPosts()} `
+    return html`
+      <grampsjs-blog-layout
+        .appState=${this.appState}
+        .active=${this.active}
+        .currentId=${this.grampsId}
+        >${this.renderPosts()}</grampsjs-blog-layout
+      >
+    `
   }
 
   renderPosts() {
@@ -78,7 +87,7 @@ export class GrampsjsViewBlogPost extends GrampsjsStaleDataMixin(GrampsjsView) {
   }
 
   _getNotesUrl() {
-    const grampsId = this._dataSources[0]?.extended?.notes[0]?.gramps_id
+    const grampsId = this._dataSources[0]?.extended?.notes?.[0]?.gramps_id
     if (!grampsId) {
       return ''
     }
@@ -108,22 +117,28 @@ export class GrampsjsViewBlogPost extends GrampsjsStaleDataMixin(GrampsjsView) {
   }
 
   async _fetchData() {
+    const request = ++this._fetchRequest
     this.loading = true
+    this._dataNotes = []
     const uri = `/api/sources/?gramps_id=${this.grampsId}&locale=${
       this.appState.i18n.lang || 'en'
     }&profile=all&backlinks=true&extend=all`
     await this.appState.apiGet(uri).then(data => {
+      if (request !== this._fetchRequest) return
       if ('data' in data) {
         this.error = false
         this._dataSources = data.data
       } else if ('error' in data) {
+        this._dataSources = []
         this.error = true
         this._errorMessage = data.error
       }
     })
+    if (request !== this._fetchRequest) return
     const uriNotes = this._getNotesUrl()
     if (uriNotes) {
       await this.appState.apiGet(uriNotes).then(data => {
+        if (request !== this._fetchRequest) return
         if ('data' in data) {
           this.error = false
           this._dataNotes = data.data
@@ -133,6 +148,7 @@ export class GrampsjsViewBlogPost extends GrampsjsStaleDataMixin(GrampsjsView) {
         }
       })
     }
+    if (request !== this._fetchRequest) return
     this.loading = false
     this._firstLoaded = true
   }

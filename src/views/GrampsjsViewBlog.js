@@ -4,6 +4,7 @@ import {mdiPlus} from '@mdi/js'
 import '@material/web/fab/fab.js'
 import {GrampsjsView} from './GrampsjsView.js'
 import '../components/GrampsjsBlogPostPreview.js'
+import '../components/GrampsjsBlogLayout.js'
 import '../components/GrampsjsIcon.js'
 
 import {GrampsjsStaleDataMixin} from '../mixins/GrampsjsStaleDataMixin.js'
@@ -84,8 +85,10 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
 
   renderContent() {
     return html`
-      ${this.renderPosts()}
-      ${this._totalCount > 0 ? this.renderPagination() : ''}
+      <grampsjs-blog-layout .appState=${this.appState} .active=${this.active}>
+        ${this.renderPosts()}
+        ${this._totalCount > 0 ? this.renderPagination() : ''}
+      </grampsjs-blog-layout>
       ${this.appState.permissions.canAdd ? this.renderFab() : ''}
     `
   }
