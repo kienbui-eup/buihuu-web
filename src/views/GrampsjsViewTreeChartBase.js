@@ -7,14 +7,7 @@ import '@material/web/button/text-button.js'
 import '@material/web/fab/fab.js'
 import '@material/web/iconbutton/icon-button.js'
 
-import {
-  mdiAccountDetails,
-  mdiAccountSearch,
-  mdiArrowLeft,
-  mdiCog,
-  mdiHomeAccount,
-  mdiPencil,
-} from '@mdi/js'
+import {mdiPencil} from '@mdi/js'
 import '../components/GrampsjsIcon.js'
 import '../components/GrampsjsObjectPickerDialog.js'
 import {GrampsjsView} from './GrampsjsView.js'
@@ -33,50 +26,61 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
       iconButtonColorStyles,
       css`
         :host {
+          display: block;
           margin: 0;
-          margin-top: -4px;
-          margin-bottom: -25px;
         }
 
-        #controls {
-          position: absolute;
-          background-color: var(--md-sys-color-surface-container-low);
-          border: 1px solid var(--md-sys-color-outline-variant);
-          border-radius: 4px;
-          z-index: 1;
-          padding: 0 10px;
+        .chart-shell {
+          position: relative;
+          --grampsjs-chart-height: max(
+            260px,
+            calc(
+              100dvh - var(--tree-content-top, 64px) -
+                var(--tree-bottom-inset, 0px)
+            )
+          );
         }
 
         #chart {
-          --grampsjs-chart-height: calc(100vh - 165px);
           height: var(--grampsjs-chart-height);
-          margin-left: -40px;
-          margin-right: -40px;
-          margin-bottom: -25px;
         }
 
-        @media (max-width: 768px) {
-          #chart {
-            --grampsjs-chart-height: max(260px, calc(100dvh - 235px));
-            margin-left: -20px;
-            margin-right: -20px;
+        @media (max-width: 991px) {
+          .chart-shell {
+            --tree-bottom-inset: calc(65px + env(safe-area-inset-bottom, 0px));
           }
-        }
-
-        #controls {
-          --grampsjs-icon-button-color: var(--md-sys-color-on-surface-variant);
-          --grampsjs-icon-button-disabled-color: var(
-            --grampsjs-body-font-color-10
-          );
-          --grampsjs-icon-button-disabled-opacity: 1;
-        }
-
-        #controls md-icon-button {
-          --md-icon-button-icon-size: 26px;
         }
 
         #menu-controls mwc-textfield {
           width: 6em;
+        }
+
+        #menu-controls table {
+          width: 100%;
+        }
+
+        #menu-controls td {
+          padding: 8px;
+        }
+
+        @media (max-width: 600px) {
+          #menu-controls tr,
+          #menu-controls td {
+            display: block;
+          }
+
+          #menu-controls tr + tr {
+            margin-top: 16px;
+          }
+
+          #menu-controls td {
+            padding: 0 0 8px;
+          }
+
+          #menu-controls mwc-select {
+            width: 100%;
+            min-width: 0;
+          }
         }
 
         md-fab {
@@ -133,18 +137,78 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
     this._fetchId = 0
     this._boundToggleEditMode = this._toggleEditMode.bind(this)
     this._boundDisableEditMode = this._disableEditMode.bind(this)
+    this._boundHeaderResize = () => this._updateChartSize()
+    this._boundToolsRequest = () => this._publishHeaderTools()
+    this._boundTreeAction = (action, value) =>
+      this._handleTreeAction(action, value)
   }
 
   connectedCallback() {
     super.connectedCallback()
     window.addEventListener('edit-mode:toggle', this._boundToggleEditMode)
     window.addEventListener('edit-mode:off', this._boundDisableEditMode)
+    window.addEventListener('page-header:resize', this._boundHeaderResize)
+    window.addEventListener('resize', this._boundHeaderResize)
+    window.addEventListener('tree:tools-request', this._boundToolsRequest)
+  }
+
+  firstUpdated() {
+    super.firstUpdated()
+    this._updateChartSize()
+  }
+
+  updated(changed) {
+    super.updated(changed)
+    this._publishHeaderTools()
+    this._updateChartSize()
+  }
+
+  _updateChartSize() {
+    if (!this.active) return
+    const chart = this.renderRoot.querySelector('#chart')
+    const shell = this.renderRoot.querySelector('.chart-shell')
+    if (chart)
+      shell?.style.setProperty(
+        '--tree-content-top',
+        `${Math.max(0, chart.getBoundingClientRect().top + window.scrollY)}px`
+      )
+  }
+
+  _publishHeaderTools() {
+    if (!this.active || !this.treeView) return
+    fireEvent(window, 'tree:tools', {
+      owner: this,
+      view: this.treeView,
+      disableBack: this.disableBack,
+      disableHome: this.disableHome,
+      summary: this.loading ? 'Đang tải gia phả…' : this.renderSummary(),
+      onAction: this._boundTreeAction,
+    })
+  }
+
+  _handleTreeAction(action, value) {
+    if (!this.active) return
+    const actions = {
+      home: () => this._backToHomePerson(),
+      back: () => this._handleBack(),
+      person: () => this._goToPerson(),
+      preferences: () => this._openMenuControls(),
+      overview: () => this._showOverview(),
+      collapse: () => this._collapseLineage(),
+      focus: () => this._focusSelected(),
+      view: () => fireEvent(this, 'tree:view', {view: value}),
+    }
+    actions[action]?.()
   }
 
   disconnectedCallback() {
     super.disconnectedCallback()
     window.removeEventListener('edit-mode:toggle', this._boundToggleEditMode)
     window.removeEventListener('edit-mode:off', this._boundDisableEditMode)
+    window.removeEventListener('page-header:resize', this._boundHeaderResize)
+    window.removeEventListener('resize', this._boundHeaderResize)
+    window.removeEventListener('tree:tools-request', this._boundToolsRequest)
+    fireEvent(window, 'tree:tools-clear', {owner: this})
   }
 
   get nAnc() {
@@ -164,10 +228,10 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
   }
 
   renderContent() {
-    return html`<div style="position: relative;">
-        <div id="controls">${this.renderControls()}</div>
+    return html`<div class="chart-shell">
         <div id="chart">${this.renderChart()}</div>
       </div>
+      ${this.renderControls()}
       <grampsjs-object-picker-dialog
         objectType="person"
         .appState="${this.appState}"
@@ -193,7 +257,9 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
     }
     if (grampsId === this.grampsId) {
       this.renderRoot
-        .querySelector('grampsjs-tree-chart, grampsjs-lineage-chart')
+        .querySelector(
+          'grampsjs-tree-chart, grampsjs-lineage-chart, grampsjs-relationship-chart'
+        )
         ?.focusPerson()
     }
     window.dispatchEvent(
@@ -256,160 +322,96 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
 
   renderControls() {
     return html`
-        <md-icon-button
-          @click=${this._backToHomePerson}
-          style="margin-bottom:-10px;"
-          ?disabled=${this.disableHome}
-          aria-label="${this._('Home Person')}"
-          id="button-home"
-        ><grampsjs-icon path="${mdiHomeAccount}" color="currentColor"
-          ></grampsjs-icon></md-icon-button>
-        <grampsjs-tooltip
-          for="button-home"
-          .appState="${this.appState}"
-        >${this._('Home Person')}</grampsjs-tooltip>
-        <md-icon-button
-          @click=${this._openPersonPicker}
-          style="margin-bottom:-10px;"
-          aria-label="${this._('Search')}"
-          id="btn-goto-person"
-        ><grampsjs-icon path="${mdiAccountSearch}" color="currentColor"
-          ></grampsjs-icon></md-icon-button>
-        <grampsjs-tooltip
-          for="btn-goto-person"
-          .appState="${this.appState}"
-        >${this._('Search')}</grampsjs-tooltip>
-        <md-icon-button
-          @click=${this._handleBack}
-          ?disabled=${this.disableBack}
-          style="margin-bottom:-10px;"
-          aria-label="${this._('_Back')}"
-          id="btn-back"
-        ><grampsjs-icon path="${mdiArrowLeft}" color="currentColor"
-          ></grampsjs-icon></md-icon-button>
-        <grampsjs-tooltip
-          for="btn-back"
-          .appState="${this.appState}"
-        >${this._('_Back')}</grampsjs-tooltip>
-        <md-icon-button
-          @click=${this._goToPerson}
-          aria-label="${this._('Person Details')}"
-          id="btn-person"
-        ><grampsjs-icon path="${mdiAccountDetails}" color="currentColor"
-          ></grampsjs-icon></md-icon-button>
-        <grampsjs-tooltip
-          for="btn-person"
-          .appState="${this.appState}"
-        >${this._('Person Details')}</grampsjs-tooltip>
-        <md-icon-button
-          id="btn-controls"
-          aria-label="${this._('Preferences')}"
-          @click=${this._openMenuControls}
-        ><grampsjs-icon path="${mdiCog}" color="currentColor"
-          ></grampsjs-icon></md-icon-button>
-        <grampsjs-tooltip
-          for="btn-controls"
-          .appState="${this.appState}"
-        >${this._('Preferences')}</grampsjs-tooltip>
-    <md-dialog id="menu-controls">
-          <div slot="content">
-            <table>
-            ${
-              this._setAnc
-                ? html` <tr>
-                    <td>${this._('Max Ancestor Generations')}</td>
+      <md-dialog id="menu-controls">
+        <div slot="headline">Tùy chọn gia phả</div>
+        <div slot="content">
+          <table>
+            ${this._setAnc
+              ? html` <tr>
+                  <td>${this._('Max Ancestor Generations')}</td>
+                  <td>
+                    <mwc-textfield
+                      value=${this.nAnc}
+                      type="number"
+                      min="1"
+                      @change=${this._handleChangeAnc}
+                    ></mwc-textfield>
+                  </td>
+                </tr>`
+              : ''}${this._setDesc
+              ? html`
+                  <tr>
+                    <td>${this._('Max Descendant Generations')}</td>
+                    <td>
+                      <mwc-textfield
+                        value=${this.nDesc}
+                        type="number"
+                        min="0"
+                        @change=${this._handleChangeDesc}
+                      ></mwc-textfield>
+                    </td>
+                  </tr>
+                `
+              : ''}${this._setSep
+              ? html`
+                  <tr>
+                    <td>${this._('Max Degree of Separation')}</td>
                     <td>
                       <mwc-textfield
                         value=${this.nAnc}
                         type="number"
-                        min="1"
+                        min="0"
                         @change=${this._handleChangeAnc}
                       ></mwc-textfield>
                     </td>
-                  </tr>`
-                : ''
-            }${
-      this._setDesc
-        ? html`
+                  </tr>
+                `
+              : ''}${this._setMaxImages
+              ? html`
+                  <tr>
+                    <td>${this._('Max Number of Images displayed')}</td>
+                    <td>
+                      <mwc-textfield
+                        value=${this.nMaxImages}
+                        type="number"
+                        min="0"
+                        size="5"
+                        @change=${this._handleChangeMaxImages}
+                      ></mwc-textfield>
+                    </td>
+                  </tr>
+                `
+              : ''}
             <tr>
-              <td>${this._('Max Descendant Generations')}</td>
+              <td>${this._('Name Display Format')}</td>
               <td>
-                <mwc-textfield
-                  value=${this.nDesc}
-                  type="number"
-                  min="0"
-                  @change=${this._handleChangeDesc}
-                ></mwc-textfield>
+                <mwc-select
+                  fixedMenuPosition
+                  id="name-display-format"
+                  @change=${this._handleChangeNameDisplayFormat}
+                >
+                  ${map(
+                    Object.values(chartNameDisplayFormat),
+                    i => html` <mwc-list-item
+                      value="${i}"
+                      ?selected="${i === this.nameDisplayFormat}"
+                      >${this._(i)}</mwc-list-item
+                    >`
+                  )}
+                </mwc-select>
               </td>
             </tr>
-          `
-        : ''
-    }${
-      this._setSep
-        ? html`
-            <tr>
-              <td>${this._('Max Degree of Separation')}</td>
-              <td>
-                <mwc-textfield
-                  value=${this.nAnc}
-                  type="number"
-                  min="0"
-                  @change=${this._handleChangeAnc}
-                ></mwc-textfield>
-              </td>
-            </tr>
-          `
-        : ''
-    }${
-      this._setMaxImages
-        ? html`
-            <tr>
-              <td>${this._('Max Number of Images displayed')}</td>
-              <td>
-                <mwc-textfield
-                  value=${this.nMaxImages}
-                  type="number"
-                  min="0"
-                  size="5"
-                  @change=${this._handleChangeMaxImages}
-                ></mwc-textfield>
-              </td>
-            </tr>
-          `
-        : ''
-    }
-              <tr>
-                <td>${this._('Name Display Format')}</td>
-                <td>
-                    <mwc-select
-                      fixedMenuPosition
-                      id="name-display-format"
-                      @change=${this._handleChangeNameDisplayFormat}
-                    >
-                      ${map(
-                        Object.values(chartNameDisplayFormat),
-                        i => html` <mwc-list-item
-                          value="${i}"
-                          ?selected="${i === this.nameDisplayFormat}"
-                          >${this._(i)}</mwc-list-item
-                        >`
-                      )}
-                    </mwc-select>
-                </td>
-              </tr>
-            </table>
-          </div>
-          <div slot="actions">
-            <md-text-button @click="${this._resetLevels}"
-              >${this._('Reset')}</md-text-button
-            >
-            <md-text-button @click="${this._closeMenuControls}"
-              >${this._('Close')}</md-text-button
-            >
-          </div>
-        </md-dialog>
-      </div>
-
+          </table>
+        </div>
+        <div slot="actions">
+          <md-text-button @click="${this._resetLevels}"
+            >${this._('Reset')}</md-text-button
+          >
+          <md-text-button @click="${this._closeMenuControls}"
+            >${this._('Close')}</md-text-button
+          >
+        </div>
+      </md-dialog>
     `
   }
 

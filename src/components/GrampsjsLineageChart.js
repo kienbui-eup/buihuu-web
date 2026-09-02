@@ -61,10 +61,7 @@ export class GrampsjsLineageChart extends GrampsjsTreeChart {
   _togglePerson(grampsId) {
     const handle = this._index.ids.get(grampsId)
     if (!handle) return
-    if (this._expanded.has(handle)) this._expanded.delete(handle)
-    else this._expanded.add(handle)
-    this.focusPerson()
-    fireEvent(this, 'pedigree:person-selected', {grampsId})
+    fireEvent(this, 'tree:show-branch', {grampsId})
   }
 
   collapseAll() {
@@ -91,15 +88,15 @@ export class GrampsjsLineageChart extends GrampsjsTreeChart {
     const box = content.getBBox()
     const scale = Math.min(
       1,
-      (this.containerWidth - 48) / box.width,
-      (this.containerHeight - 88) / box.height
+      (this.containerWidth - 32) / box.width,
+      (this.containerHeight - 32) / box.height
     )
     const width = this.containerWidth / scale
     const height = this.containerHeight / scale
     svg.setAttribute(
       'viewBox',
       `${box.x + box.width / 2 - width / 2} ${
-        box.y - 64 / scale
+        box.y - 16 / scale
       } ${width} ${height}`
     )
     this._overview = false
@@ -114,7 +111,7 @@ export class GrampsjsLineageChart extends GrampsjsTreeChart {
       childrenTriangle: false,
       getImageUrl: () => '',
       gapX: 24,
-      gapY: 44,
+      gapY: 30,
       bboxWidth: this.containerWidth,
       bboxHeight: this.containerHeight,
       nameDisplayFormat: this.nameDisplayFormat,
@@ -123,6 +120,7 @@ export class GrampsjsLineageChart extends GrampsjsTreeChart {
       initialViewBox: this._savedViewBox,
       selectedGrampsId: this.grampsId,
       onPersonClick: id => this._togglePerson(id),
+      personActionLabel: 'Xem hậu duệ',
     })
   }
 

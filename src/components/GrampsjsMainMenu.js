@@ -39,6 +39,8 @@ import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import './GrampsjsIcon.js'
 import './GrampsjsHeritageMark.js'
+import {handleSearchLink} from '../pageSearch.js'
+import {fireEvent} from '../util.js'
 
 const BASE_DIR = ''
 
@@ -200,6 +202,13 @@ class GrampsjsMainMenu extends GrampsjsAppStateMixin(LitElement) {
       type="link"
       href="${BASE_DIR}${href}"
       ?selected="${selected}"
+      @click=${event => {
+        if (href === '/search') {
+          handleSearchLink(event, this)
+          if (event.defaultPrevented && this.appState.screenSize === 'small')
+            fireEvent(this, 'drawer:close')
+        }
+      }}
     >
       ${this._icon(icon, selected)} ${label}
     </md-list-item>`

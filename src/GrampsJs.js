@@ -30,6 +30,7 @@ import {
   grampsStrings,
 } from './strings.js'
 import {fireEvent, apiVersionAtLeast} from './util.js'
+import {requestPageSearch} from './pageSearch.js'
 
 import {appStateUpdatePermissions, getInitialAppState} from './appState.js'
 import {
@@ -739,6 +740,7 @@ export class GrampsJs extends LitElement {
       this.loadingState = LOADING_STATE_NO_TREE
     })
     this.addEventListener('drawer:toggle', this._toggleDrawer)
+    this.addEventListener('drawer:close', this._closeDrawer)
     window.addEventListener('keydown', event => this._handleKey(event))
     window.addEventListener('shortcuts:show', event =>
       this._handleShowShortcuts(event)
@@ -1373,7 +1375,7 @@ export class GrampsJs extends LitElement {
     } else if (e.key === 'n') {
       this._shortcutPressed = 'n'
     } else if (e.key === 's') {
-      fireEvent(this, 'nav', {path: 'search'})
+      requestPageSearch(this)
     } else if (e.key === 'e') {
       fireEvent(this, 'edit-mode:toggle')
     } else if (e.key === '?') {

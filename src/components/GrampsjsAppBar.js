@@ -23,6 +23,8 @@ import '@material/web/button/text-button.js'
 import './GrampsjsAddMenu.js'
 import './GrampsjsSettingsMenu.js'
 import './GrampsjsTooltip.js'
+import './GrampsjsTreeToolbar.js'
+import {requestPageSearch, pageSearchLabel} from '../pageSearch.js'
 
 import {fireEvent} from '../util.js'
 import {TREE_CONFIG_APP_TITLE} from '../api.js'
@@ -35,6 +37,54 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
       sharedStyles,
       appBarIconButtonStyles,
       css`
+        :host {
+          display: block;
+        }
+        :host([tree-page]) {
+          position: sticky;
+          top: 0;
+          z-index: 21;
+        }
+        .tree-header {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 0 4px;
+          padding: 0 8px;
+          min-height: 64px;
+          background: var(--grampsjs-top-app-bar-background-color);
+          color: var(--grampsjs-top-app-bar-font-color);
+        }
+        .tree-header #app-title {
+          font: 600 18px var(--grampsjs-heading-font-family);
+          margin-right: 8px;
+        }
+        .tree-header md-icon-button {
+          width: 44px;
+          height: 44px;
+          flex: 0 0 44px;
+        }
+        .tree-header grampsjs-tree-toolbar {
+          flex: 1;
+          min-width: 440px;
+        }
+        @media (max-width: 991px) {
+          .tree-header {
+            min-height: 56px;
+            gap: 0;
+            padding: 4px 8px;
+          }
+          .tree-header #app-title {
+            flex: 1;
+            font-size: 18px;
+          }
+          .tree-header grampsjs-tree-toolbar {
+            order: 2;
+            flex: 1 1 100%;
+            min-width: 0;
+            padding-top: 4px;
+          }
+        }
         mwc-top-app-bar {
           --mdc-typography-headline6-font-family: var(
             --grampsjs-heading-font-family
@@ -55,8 +105,7 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
             --mdc-typography-headline6-font-size: 16px;
           }
 
-          /* Tìm kiếm vẫn luôn có trên thanh điều hướng dưới. */
-          #button-search {
+          #button-add {
             display: none;
           }
         }
@@ -108,6 +157,8 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
       hideDeleteButton: {type: Boolean},
       saving: {type: Boolean},
       saveComplete: {type: Boolean},
+      treePage: {type: Boolean, attribute: 'tree-page', reflect: true},
+      _treeTools: {state: true},
     }
   }
 
@@ -120,6 +171,53 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
     this.hideDeleteButton = false
     this.saving = false
     this.saveComplete = false
+    this.treePage = false
+    this._treeTools = null
+    this._boundTreeTools = event => {
+      this._treeTools = event.detail
+    }
+    this._boundTreeToolsClear = event => {
+      if (this._treeTools?.owner === event.detail.owner) this._treeTools = null
+    }
+    this._boundEditOn = event => this._enableEditMode(event)
+    this._boundEditOff = () => this._disableEditMode()
+    this._boundCloseRequest = () => this._handleCloseRequest()
+  }
+
+  willUpdate() {
+    this.treePage = this.appState.path.page === 'tree'
+  }
+
+  updated(changed) {
+    super.updated(changed)
+    if (this.treePage && changed.has('treePage'))
+      fireEvent(window, 'tree:tools-request')
+    fireEvent(window, 'page-header:resize')
+  }
+
+  _renderTreeHeader(savingIndicator) {
+    const searchLabel = pageSearchLabel('tree')
+    return html`<header class="tree-header" aria-label="Gia phả">
+      <md-icon-button aria-label=${this._('Menu')} @click=${this._toggleDrawer}
+        ><grampsjs-icon path=${mdiMenu} color="currentColor"></grampsjs-icon
+      ></md-icon-button>
+      <div id="app-title">Gia phả</div>
+      <grampsjs-tree-toolbar
+        .state=${this._treeTools || {view: 'main'}}
+      ></grampsjs-tree-toolbar>
+      ${savingIndicator}
+      <md-icon-button
+        id="button-search"
+        title=${searchLabel}
+        aria-label=${searchLabel}
+        @click=${() => requestPageSearch(this)}
+        ><grampsjs-icon path=${mdiMagnify} color="currentColor"></grampsjs-icon
+      ></md-icon-button>
+      <grampsjs-settings-menu
+        id="button-settings"
+        .appState=${this.appState}
+      ></grampsjs-settings-menu>
+    </header>`
   }
 
   render() {
@@ -151,6 +249,9 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
             >${this._('Saved')}</grampsjs-tooltip
           >`
       : ''
+
+    if (this.treePage && !this.editMode)
+      return this._renderTreeHeader(savingIndicator)
 
     return html`
       <mwc-top-app-bar class="${classMap({edit: this.editMode})}">
@@ -250,16 +351,19 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
               <md-icon-button
                 slot="actionItems"
                 id="button-search"
-                aria-label="${this._('Search')}"
-                @click="${() => this._handleNav('search')}"
+                aria-label=${pageSearchLabel(this.appState.path.page)}
+                @click=${() => requestPageSearch(this)}
               >
                 <grampsjs-icon
                   path="${mdiMagnify}"
                   color="currentColor"
                 ></grampsjs-icon>
               </md-icon-button>
-              <grampsjs-tooltip for="button-search" .appState="${this.appState}"
-                >${this._('Search')}</grampsjs-tooltip
+              <grampsjs-tooltip
+                for="button-search"
+                .appState="${this.appState}"
+                .content=${pageSearchLabel(this.appState.path.page)}
+                >${pageSearchLabel(this.appState.path.page)}</grampsjs-tooltip
               >
             `}
       </mwc-top-app-bar>
@@ -351,11 +455,28 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
 
   connectedCallback() {
     super.connectedCallback()
-    window.addEventListener('edit-mode:on', e => this._enableEditMode(e))
-    window.addEventListener('edit-mode:off', e => this._disableEditMode(e))
-    window.addEventListener('edit-mode:close-request', e =>
-      this._handleCloseRequest(e)
+    window.addEventListener('edit-mode:on', this._boundEditOn)
+    window.addEventListener('edit-mode:off', this._boundEditOff)
+    window.addEventListener('edit-mode:close-request', this._boundCloseRequest)
+    window.addEventListener('tree:tools', this._boundTreeTools)
+    window.addEventListener('tree:tools-clear', this._boundTreeToolsClear)
+    this._headerObserver = new ResizeObserver(() =>
+      fireEvent(window, 'page-header:resize')
     )
+    this._headerObserver.observe(this)
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback()
+    window.removeEventListener('edit-mode:on', this._boundEditOn)
+    window.removeEventListener('edit-mode:off', this._boundEditOff)
+    window.removeEventListener(
+      'edit-mode:close-request',
+      this._boundCloseRequest
+    )
+    window.removeEventListener('tree:tools', this._boundTreeTools)
+    window.removeEventListener('tree:tools-clear', this._boundTreeToolsClear)
+    this._headerObserver?.disconnect()
   }
 }
 

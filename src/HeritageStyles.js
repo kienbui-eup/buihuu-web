@@ -1,35 +1,15 @@
 import {css} from 'lit'
 
-// Khung trang phả: góc vuông, hai nét chỉ và dấu góc nhỏ, dùng chung các thẻ.
+// Nền giấy và một đường viền cho mỗi khối, tránh khung lồng trong khung.
 export const heritageFrameStyles = css`
   :host {
     --grampsjs-frame-radius: 2px;
-    --grampsjs-frame-paper: linear-gradient(
-          var(--md-sys-color-primary),
-          var(--md-sys-color-primary)
-        )
-        left top / 16px 2px no-repeat,
-      linear-gradient(var(--md-sys-color-primary), var(--md-sys-color-primary))
-        left top / 2px 16px no-repeat,
-      linear-gradient(var(--md-sys-color-primary), var(--md-sys-color-primary))
-        right bottom / 16px 2px no-repeat,
-      linear-gradient(var(--md-sys-color-primary), var(--md-sys-color-primary))
-        right bottom / 2px 16px no-repeat,
-      linear-gradient(var(--md-sys-color-surface), var(--md-sys-color-surface))
-        center / calc(100% - 12px) calc(100% - 12px) no-repeat,
-      linear-gradient(
-          var(--md-sys-color-outline-variant),
-          var(--md-sys-color-outline-variant)
-        )
-        center / calc(100% - 10px) calc(100% - 10px) no-repeat,
-      linear-gradient(var(--md-sys-color-surface), var(--md-sys-color-surface))
-        center / calc(100% - 2px) calc(100% - 2px) no-repeat,
-      var(--md-sys-color-outline-variant);
+    --grampsjs-frame-paper: var(--md-sys-color-surface);
   }
 
   .heritage-frame {
     position: relative;
-    border: 1px solid transparent;
+    border: 1px solid var(--md-sys-color-outline-variant);
     border-radius: var(--grampsjs-frame-radius);
     background: var(--grampsjs-frame-paper);
     box-sizing: border-box;

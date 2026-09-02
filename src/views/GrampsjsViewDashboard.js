@@ -8,7 +8,7 @@ import {
 } from '@mdi/js'
 import {fireEvent} from '../util.js'
 import {heritageFrameStyles} from '../HeritageStyles.js'
-import '../components/GrampsjsHeritageMark.js'
+import '../components/GrampsjsHomePreface.js'
 import '../components/GrampsjsIcon.js'
 
 import '@material/web/button/text-button'
@@ -20,7 +20,6 @@ import './GrampsjsViewRecentBlogPosts.js'
 import './GrampsjsViewAnniversaries.js'
 import './GrampsjsViewDeathAnniversaries.js'
 import '../components/GrampsjsHomePerson.js'
-import '../components/GrampsjsConnectedNote.js'
 import '../components/GrampsjsImg.js'
 import {
   TREE_CONFIG_HOME_PAGE_NOTE,
@@ -51,39 +50,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         :host {
           max-width: 1200px;
         }
-        .welcome {
-          position: relative;
-          border-bottom: 1px solid var(--md-sys-color-outline-variant);
-          padding: 24px 0 32px;
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
-          gap: 24px;
-          align-items: center;
-        }
-        .eyebrow {
-          font-size: 12px;
-          font-weight: 600;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          color: var(--md-sys-color-primary);
-          margin: 0 0 8px;
-        }
-        h1 {
-          margin: 0;
-          font-size: clamp(40px, 5vw, 64px);
-          line-height: 1.2;
-          color: var(--md-sys-color-primary);
-        }
-        .origin {
-          font-size: 14px;
-          color: var(--md-sys-color-on-surface-variant);
-          margin: 12px 0 0;
-        }
-        .motto {
-          margin: 12px 0 0;
-          font: 400 16px/1.7 var(--grampsjs-body-font-family);
-          color: var(--md-sys-color-on-surface-variant);
-        }
         .search {
           display: flex;
           gap: 12px;
@@ -96,8 +62,9 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           background: var(--md-sys-color-surface);
         }
         .search:focus-within {
+          border-color: var(--md-sys-color-primary);
           outline: 2px solid var(--md-sys-color-primary);
-          outline-offset: 2px;
+          outline-offset: -2px;
         }
         .search input {
           flex: 1;
@@ -201,35 +168,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           flex-wrap: wrap;
         }
 
-        .home-page-block {
-          width: 100%;
-          margin-top: 2em;
-          margin-bottom: 1em;
-          overflow: hidden;
-          clear: both;
-        }
-
-        .home-page-block:not(.home-page-block-combined) {
-          padding-left: 1em;
-          box-sizing: border-box;
-        }
-
-        .home-page-block-combined {
-          display: flex;
-          gap: 3em;
-          align-items: center;
-        }
-
-        .home-page-block-combined .home-page-image {
-          flex: 0 0 auto;
-          margin-top: 1em;
-        }
-
-        .home-page-block-combined .home-page-note {
-          flex: 1;
-          min-width: 0;
-        }
-
         .home-page-image-only {
           display: flex;
           justify-content: center;
@@ -238,26 +176,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         }
 
         @media screen and (max-width: 768px) {
-          .welcome {
-            display: block;
-            padding: 8px 0 20px;
-            gap: 12px;
-          }
-          .welcome grampsjs-heritage-mark {
-            position: absolute;
-            top: 10px;
-            right: 0;
-          }
-          .welcome h1,
-          .eyebrow {
-            padding-right: 72px;
-          }
-          .origin {
-            line-height: 1.7;
-          }
-          .motto {
-            font-size: 14px;
-          }
           .search {
             margin: 20px 0;
             gap: 8px;
@@ -290,67 +208,16 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           .panel {
             padding: 22px 18px;
           }
-
-          .home-page-block-combined {
-            flex-direction: column;
-          }
-
-          .home-page-block-combined .home-page-image {
-            flex: unset;
-            width: 100%;
-          }
         }
       `,
     ]
   }
 
-  _renderHomePageBlock() {
-    const noteHandle =
-      this.appState.treeConfig?.[TREE_CONFIG_HOME_PAGE_NOTE] ?? ''
-    const imageHandle =
-      this.appState.treeConfig?.[TREE_CONFIG_HOME_PAGE_IMAGE] ?? ''
-
-    if (!noteHandle) return html``
-
-    if (imageHandle) {
-      return html`
-        <div class="home-page-block home-page-block-combined">
-          <div class="home-page-image">
-            <grampsjs-img
-              handle="${imageHandle}"
-              size="300"
-              displayHeight="180"
-            ></grampsjs-img>
-          </div>
-          <div class="home-page-note">
-            <grampsjs-connected-note
-              handle="${noteHandle}"
-              .framed="${false}"
-              .appState="${this.appState}"
-            ></grampsjs-connected-note>
-          </div>
-        </div>
-      `
-    }
-
-    return html`
-      <div class="home-page-block">
-        <grampsjs-connected-note
-          handle="${noteHandle}"
-          .framed="${false}"
-          .appState="${this.appState}"
-        ></grampsjs-connected-note>
-      </div>
-    `
-  }
-
   _renderHomePageImage() {
-    const noteHandle =
-      this.appState.treeConfig?.[TREE_CONFIG_HOME_PAGE_NOTE] ?? ''
     const imageHandle =
       this.appState.treeConfig?.[TREE_CONFIG_HOME_PAGE_IMAGE] ?? ''
 
-    if (!imageHandle || noteHandle) return html``
+    if (!imageHandle) return html``
 
     return html`
       <div class="home-page-image-only">
@@ -389,15 +256,11 @@ export class GrampsjsViewDashboard extends GrampsjsView {
     const hasPeople = Boolean(this.appState.dbInfo?.object_counts?.people)
     const {canEdit} = this.appState.permissions
     return html`
-      <header class="welcome">
-        <div>
-          <p class="eyebrow">Gia phả dòng họ</p>
-          <h1>Bùi Hữu</h1>
-          <p class="motto">Gìn giữ cội nguồn · Kết nối cháu con</p>
-          <p class="origin">Chỉ Bồ · Thụy Trường · Thái Thụy · Thái Bình</p>
-        </div>
-        <grampsjs-heritage-mark></grampsjs-heritage-mark>
-      </header>
+      <grampsjs-home-preface
+        .appState=${this.appState}
+        .noteHandle=${this.appState.treeConfig?.[TREE_CONFIG_HOME_PAGE_NOTE] ??
+        ''}
+      ></grampsjs-home-preface>
       <form class="search" role="search" @submit="${this._searchPeople}">
         <grampsjs-icon
           path="${mdiMagnify}"
@@ -432,7 +295,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           'Tưởng nhớ tổ tiên'
         )}
       </nav>
-      ${this._renderHomePageBlock()}
       <div class="dashboard-grid">
         <div>
           ${!hasPeople && canEdit

@@ -5,6 +5,7 @@ The dropdown menu for adding objects in the top app bar
 import {html, css, LitElement} from 'lit'
 import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
+import {fireEvent, objectTypeToEndpoint} from '../util.js'
 
 import '../views/GrampsjsViewPeople.js'
 import '../views/GrampsjsViewFamilies.js'
@@ -91,6 +92,37 @@ class GrampsjsPages extends GrampsjsAppStateMixin(LitElement) {
     this.settings = {}
     this.homePersonDetails = {}
     this.dbInfo = {}
+    this._boundPageSearch = event => this._handlePageSearch(event)
+  }
+
+  connectedCallback() {
+    super.connectedCallback()
+    window.addEventListener('page:search', this._boundPageSearch)
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback()
+    window.removeEventListener('page:search', this._boundPageSearch)
+  }
+
+  _handlePageSearch(event) {
+    const view = this.renderRoot.querySelector('.page[active]')
+    if (!view) return
+    event.preventDefault()
+    if (typeof view.openSearch === 'function') {
+      view.openSearch()
+      return
+    }
+    const page = this.appState.path.page
+    const type = Object.keys(objectTypeToEndpoint).find(
+      key =>
+        key === page ||
+        objectTypeToEndpoint[key] === page ||
+        (key === 'media' && page === 'medialist')
+    )
+    const search = this.renderRoot.querySelector('grampsjs-view-search')
+    search.setSearchScope(type)
+    fireEvent(this, 'nav', {path: 'search'})
   }
 
   render() {

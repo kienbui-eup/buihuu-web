@@ -1,35 +1,18 @@
-import {css, html} from 'lit'
+import {html} from 'lit'
 import {GrampsjsViewTreeChartBase} from './GrampsjsViewTreeChartBase.js'
 import '../components/GrampsjsLineageChart.js'
 import '../components/GrampsjsTreeChartAddPerson.js'
+import {loadTreePeople} from '../charts/treeData.js'
+import {DEFAULT_TREE_VIEW} from '../treeDefaults.js'
 
 export class GrampsjsViewTreeChart extends GrampsjsViewTreeChartBase {
-  static get styles() {
-    return [
-      super.styles,
-      css`
-        .lineage-summary {
-          margin: 0 0 12px;
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          gap: 4px 12px;
-        }
-        .lineage-summary p {
-          margin: 0;
-          flex: 1 1 100%;
-          font-size: 13px;
-        }
-        #chart {
-          --grampsjs-chart-height: max(260px, calc(100dvh - 235px));
-        }
-        @media (max-width: 768px) {
-          #chart {
-            --grampsjs-chart-height: max(260px, calc(100dvh - 335px));
-          }
-        }
-      `,
-    ]
+  static get properties() {
+    return {treeView: {type: String}}
+  }
+
+  constructor() {
+    super()
+    this.treeView = DEFAULT_TREE_VIEW
   }
 
   get nameDisplayFormat() {
@@ -61,14 +44,9 @@ export class GrampsjsViewTreeChart extends GrampsjsViewTreeChartBase {
     this._pendingKey = key
     const fetchId = ++this._fetchId
     this.loading = true
-    // Không giới hạn số đời. Chọn người hay mở nhánh dùng lại dữ liệu đã tải.
-    const fields =
-      'handle,gramps_id,gender,primary_name,alternate_names,attribute_list,profile,extended'
-    const result = await this.appState.apiGet(
-      `/api/people/?locale=${encodeURIComponent(
-        this.appState.i18n.lang || 'en'
-      )}&profile=self&extend=primary_parent_family,family_list&keys=${fields}`
-    )
+    const result = await loadTreePeople(this.appState, force).catch(() => ({
+      error: 'Không tải được cây gia phả. Vui lòng thử lại.',
+    }))
     if (fetchId !== this._fetchId) return
     this.loading = false
     this._pendingKey = null
@@ -96,6 +74,11 @@ export class GrampsjsViewTreeChart extends GrampsjsViewTreeChartBase {
     this.renderRoot.querySelector('grampsjs-lineage-chart')?.showOverview()
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  renderSummary() {
+    return 'Chạm một người để xem hậu duệ.'
+  }
+
   renderChart() {
     return html`
       <div @add-new-person-relation="${this._handleAddPersonRelation}">
@@ -115,15 +98,6 @@ export class GrampsjsViewTreeChart extends GrampsjsViewTreeChartBase {
 
   renderContent() {
     return html`
-      <div class="lineage-summary">
-        <p>
-          ${this.loading
-            ? 'Đang tải các đời…'
-            : 'Đủ các đời · Theo dòng trưởng. Bấm để mở/thu nhánh con.'}
-        </p>
-        <md-text-button @click=${this._showOverview}>Toàn cây</md-text-button>
-        <md-text-button @click=${this._collapseLineage}>Thu gọn</md-text-button>
-      </div>
       ${super.renderContent()}
       <grampsjs-tree-chart-add-person
         .appState=${this.appState}

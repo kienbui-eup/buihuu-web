@@ -1,5 +1,13 @@
 # Phông chữ giao diện gia phả
 
+Trang lời tựa dùng Charm đậm cho tiêu đề nét bút và EB Garamond có sẵn cho
+chính văn. Đã kiểm tra các ký tự tiếng Việt trong cả phông thường và nghiêng.
+Charm được rút gọn cùng nhóm Unicode bên dưới, giữ các tính năng OpenType;
+giấy phép đi kèm ở `charm-OFL.txt`.
+
+- `Charm-Bold-Vietnamese.woff2`: https://raw.githubusercontent.com/google/fonts/main/ofl/charm/Charm-Bold.ttf
+  SHA-256 tệp nguồn: `6e1fa92fda7ab74fcce8ed5d7a9de10a0fb43d777590e8ef9f6931da6e932481`.
+
 Be Vietnam Pro: nội dung 400/500/600/700 và nghiêng 400. Noto Serif: tiêu đề,
 trục độ đậm 400–700, độ rộng 100%. Các tệp WOFF2 giữ nhóm Latin, tiếng Việt,
 dấu kết hợp và dấu câu; không giữ các bảng chữ khác. Giấy phép SIL OFL được

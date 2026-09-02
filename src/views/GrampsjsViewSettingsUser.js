@@ -28,7 +28,12 @@ import {
 } from '../api.js'
 import {apiVersionAtLeast, fireEvent} from '../util.js'
 import {applyScheme, DEFAULT_PRIMARY, DEFAULT_SECONDARY} from '../theme.js'
-import {DEFAULT_TREE_VIEW, TREE_VIEWS} from '../treeDefaults.js'
+import {
+  DEFAULT_TREE_VIEW,
+  TREE_VIEWS,
+  TREE_VIEW_LABELS,
+  normalizeTreeView,
+} from '../treeDefaults.js'
 
 const PERSISTENT_ACCESS_TOKEN_SCOPES = [
   {
@@ -303,9 +308,7 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
 
   renderTreePreferences() {
     const savedView = this.appState.settings.treeDefaultView
-    const defaultView = TREE_VIEWS.includes(savedView)
-      ? savedView
-      : DEFAULT_TREE_VIEW
+    const defaultView = normalizeTreeView(savedView)
     return html`
       <div class="tree-preferences">
         <md-filled-select
@@ -329,12 +332,7 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
   }
 
   _treeViewLabel(view) {
-    switch (view) {
-      case 'relationship':
-        return 'Relationship Graph'
-      default:
-        return 'Ancestor Tree'
-    }
+    return TREE_VIEW_LABELS[normalizeTreeView(view)]
   }
 
   _handleDefaultTreeViewChange(event) {

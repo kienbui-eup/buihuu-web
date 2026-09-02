@@ -8,6 +8,24 @@ import {appendAddPersonButton} from './addPersonButton.js'
 import {personCardLines} from './util.js'
 import {appendHeritageFrame} from './heritageFrame.js'
 
+const layouts = new WeakMap()
+
+function graphLayout(data, graph, boxWidth, boxHeight) {
+  if (!layouts.has(data)) layouts.set(data, new Map())
+  const cache = layouts.get(data)
+  const key = `${boxWidth}:${boxHeight}`
+  if (!cache.has(key)) {
+    const promise = Graphviz.load()
+      .then(graphviz => graphviz.layout(graph.getDot(), 'svg', 'dot'))
+      .catch(error => {
+        cache.delete(key)
+        throw error
+      })
+    cache.set(key, promise)
+  }
+  return cache.get(key)
+}
+
 const sexColor = {
   F: 'var(--color-girl)',
   M: 'var(--color-boy)',
@@ -183,7 +201,7 @@ function generateDot(graph) {
   dot = `
     digraph gramps {
       compound=true
-      ranksep=2.8
+      ranksep=0.9
       labelloc="t"
       charset="UTF-8"
       pad=2
@@ -201,7 +219,15 @@ function generateDot(graph) {
 
 class Relgraph {
   constructor(data, boxWidth, boxHeight, grampsId) {
-    this.data = data
+    this.data = data.map(person => ({
+      ...person,
+      profile: {...person.profile, gramps_id: person.gramps_id},
+      extended: {
+        ...person.extended,
+        families: person.extended?.families || [],
+        primary_parent_family: person.extended?.primary_parent_family || {},
+      },
+    }))
     this.boxWidth = boxWidth
     this.boxHeight = boxHeight
     this.rootPersonGrampsId = grampsId
@@ -397,7 +423,23 @@ function remasterChart(
     .enter()
     .append('g')
     .attr('transform', d => `translate(${d.xCoord} ${d.yCoord})`)
-    .attr('class', d => `node ${d.nodetype}`)
+    .attr(
+      'class',
+      d =>
+        `node ${d.nodetype}${
+          d.handle === graph.rootPerson?.handle ? ' selected' : ''
+        }`
+    )
+    .attr('data-gramps-id', d =>
+      d.nodetype === 'person' ? d.profile?.gramps_id : null
+    )
+    .attr('role', d => (d.nodetype === 'person' && !canEdit ? 'button' : null))
+    .attr('tabindex', d => (d.nodetype === 'person' && !canEdit ? 0 : null))
+    .attr('aria-label', d =>
+      d.nodetype === 'person'
+        ? joinName(d.profile?.name_surname, d.profile?.name_given)
+        : null
+    )
 
   nodes
     .filter(d => d.nodetype === 'person')
@@ -522,6 +564,17 @@ function remasterChart(
     .filter(d => d.nodetype === 'person')
     .style('cursor', canEdit ? 'default' : 'pointer')
     .on('click', canEdit ? null : clicked)
+    .on(
+      'keydown',
+      canEdit
+        ? null
+        : (event, d) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault()
+              clicked(event, d)
+            }
+          }
+    )
     .on('mouseenter', function (event, d) {
       if (canEdit) return
       if (window.matchMedia('(hover: none)').matches) return
@@ -564,10 +617,10 @@ function remasterChart(
       ?.match(/-?[\d.]+,-?[\d.]+/g) // Find all "x,y" pairs
       ?.map(d => d.split(',').map(Number)) // Convert to [x, y] arrays
     // we use only the start and end point
-    const firstAndLastPoint = [points[0], points[points.length - 1]]
     if (!points) {
       return
     }
+    const firstAndLastPoint = [points[0], points[points.length - 1]]
     // we replace the polyline with a smooth connector from start to end
     edges
       .append('path')
@@ -596,13 +649,6 @@ function remasterChart(
       targetsvg.attr('transform', `translate(${rpc.x} ${rpc.y})`)
     })
 
-  // highlight root person
-  nodes
-    .filter(d => d.handle === graph.rootPerson?.handle)
-    .select('.personBox')
-    .style('stroke', 'var(--md-sys-color-primary)')
-    .style('stroke-width', 2)
-
   // kill hidden graphviz generated svg
   gvchartx.remove()
 }
@@ -623,6 +669,8 @@ export function RelationshipChart(
     nameDisplayFormat = chartNameDisplayFormat.surnameThenGiven,
     canEdit = false,
     initialZoom = null,
+    initialViewBox = null,
+    onReady = null,
   }
 ) {
   const resultnode = create('div').style('width', '100%')
@@ -638,44 +686,65 @@ export function RelationshipChart(
     .attr('font-size', 13)
 
   const chartContent = svg.append('g').attr('id', 'chart-content')
+  svg.attr('aria-busy', 'true')
+  const loading = svg
+    .append('text')
+    .attr('x', 20)
+    .attr('y', 85)
+    .attr('fill', 'currentColor')
+    .text('Đang dựng biểu đồ…')
 
   if (initialZoom) {
     svg.node().__zoom = initialZoom
     chartContent.attr('transform', initialZoom.toString())
   }
   const graph = new Relgraph(data, boxWidth, boxHeight, grampsId)
-  const dot = graph.getDot()
-  Graphviz.load().then(graphviz => {
-    graphviz.dot(dot)
-    divhidden.html(graphviz.layout(dot, 'svg', 'dot'))
-    remasterChart(
-      divhidden,
-      chartContent.append('g'),
-      graph,
-      boxWidth,
-      boxHeight,
-      imgPadding,
-      getImageUrl,
-      maxImages,
-      nameDisplayFormat,
-      canEdit
-    )
-    svg.attr('viewBox', [
-      -bboxWidth / 2,
-      -bboxHeight / 2,
-      bboxWidth,
-      bboxHeight,
-    ])
-    if (shrinkToFit) {
-      const bbox = svg.node().getBBox()
-      if (bbox.height > bboxHeight) {
-        svg
-          .attr('viewBox', [bbox.x, bbox.y - 20, bbox.width, bbox.height + 40])
-          .attr('height', bboxHeight)
-          .attr('width', bboxWidth)
+  graphLayout(data, graph, boxWidth, boxHeight)
+    .then(markup => {
+      divhidden.html(markup)
+      remasterChart(
+        divhidden,
+        chartContent.append('g'),
+        graph,
+        boxWidth,
+        boxHeight,
+        imgPadding,
+        getImageUrl,
+        maxImages,
+        nameDisplayFormat,
+        canEdit
+      )
+      svg.attr('viewBox', [
+        -bboxWidth / 2,
+        -bboxHeight / 2,
+        bboxWidth,
+        bboxHeight,
+      ])
+      if (shrinkToFit) {
+        const bbox = svg.node().getBBox()
+        if (bbox.height > bboxHeight) {
+          svg
+            .attr('viewBox', [
+              bbox.x,
+              bbox.y - 20,
+              bbox.width,
+              bbox.height + 40,
+            ])
+            .attr('height', bboxHeight)
+            .attr('width', bboxWidth)
+        }
       }
-    }
-  })
+      if (initialViewBox) svg.attr('viewBox', initialViewBox)
+      loading.remove()
+      svg.attr('aria-busy', 'false')
+      onReady?.(svg.node())
+    })
+    .catch(() => {
+      loading
+        .text('Không dựng được biểu đồ. Vui lòng thử lại.')
+        .attr('role', 'status')
+      svg.attr('aria-busy', 'false')
+    })
 
   return svg.node()
 }

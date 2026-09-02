@@ -1,35 +1,19 @@
-import {html, css} from 'lit'
-
-import {GrampsjsViewTreeChartBase} from './GrampsjsViewTreeChartBase.js'
+import {html} from 'lit'
+import {GrampsjsViewTreeChart} from './GrampsjsViewTreeChart.js'
+import {RelationshipScopeIndex} from '../charts/relationshipScope.js'
+import {personProfileDisplayName} from '../util.js'
 import '../components/GrampsjsRelationshipChart.js'
-import '../components/GrampsjsTreeChartAddPerson.js'
 
-export class GrampsjsViewRelationshipChart extends GrampsjsViewTreeChartBase {
-  static get styles() {
-    return [
-      super.styles,
-      css`
-        :host {
-          margin: 0;
-        }
-      `,
-    ]
+export class GrampsjsViewRelationshipChart extends GrampsjsViewTreeChart {
+  static get properties() {
+    return {scope: {type: String}}
   }
 
   constructor() {
     super()
-    this._setSep = true
+    this.scope = 'descendants'
     this._setMaxImages = true
-    this.color = ''
-    this.defaults.nAnc = 2
-  }
-
-  get nAnc() {
-    return this.appState?.settings?.relationshipChartAnc ?? this.defaults.nAnc
-  }
-
-  set nAnc(value) {
-    this.appState.updateSettings({relationshipChartAnc: value}, false)
+    this.defaults.nMaxImages = 0
   }
 
   get nMaxImages() {
@@ -58,46 +42,62 @@ export class GrampsjsViewRelationshipChart extends GrampsjsViewTreeChartBase {
   }
 
   _resetLevels() {
-    this.nAnc = this.defaults.nAnc
     this.nMaxImages = this.defaults.nMaxImages
     this.nameDisplayFormat = this.defaults.nameDisplayFormat
   }
 
-  _getPersonRules(grampsId) {
-    return {
-      function: 'or',
-      rules: [
-        {
-          name: 'DegreesOfSeparation',
-          values: [grampsId, this.nAnc],
-        },
-      ],
+  get selection() {
+    if (this._scopeSource !== this._data) {
+      this._scopeSource = this._data
+      this._scopeIndex = new RelationshipScopeIndex(this._data)
+      this._scopeResults = new Map()
     }
+    const key = `${this.scope}:${this.grampsId}`
+    if (!this._scopeResults.has(key)) {
+      this._scopeResults.set(
+        key,
+        this._scopeIndex.select(this.grampsId, this.scope)
+      )
+    }
+    return this._scopeResults.get(key)
+  }
+
+  _showOverview() {
+    this.renderRoot.querySelector('grampsjs-relationship-chart')?.showOverview()
+  }
+
+  _focusSelected() {
+    this.renderRoot.querySelector('grampsjs-relationship-chart')?.focusPerson()
   }
 
   renderChart() {
     return html`
-      <div @add-new-person-relation="${this._handleAddPersonRelation}">
+      <div @add-new-person-relation=${this._handleAddPersonRelation}>
         <grampsjs-relationship-chart
           grampsId=${this.grampsId}
-          nAnc=${this.nAnc + 1}
+          scope=${this.scope}
           nMaxImages=${this.nMaxImages}
           nameDisplayFormat=${this.nameDisplayFormat}
-          ?canEdit="${this._editMode}"
-          .data=${this._data}
-        >
-        </grampsjs-relationship-chart>
+          ?canEdit=${this._editMode}
+          .data=${this.selection.people}
+        ></grampsjs-relationship-chart>
       </div>
     `
   }
 
-  renderContent() {
-    return html`
-      ${super.renderContent()}
-      <grampsjs-tree-chart-add-person
-        .appState="${this.appState}"
-      ></grampsjs-tree-chart-add-person>
-    `
+  renderSummary() {
+    const selection = this.selection
+    const person = this._scopeIndex.people.get(
+      this._scopeIndex.ids.get(this.grampsId)
+    )
+    const name = personProfileDisplayName(person?.profile)
+    let summary = `Hậu duệ của ${name}`
+    if (this.scope === 'all') summary = 'Toàn bộ gia phả'
+    if (this.scope === 'branch')
+      summary = selection.missingBranch
+        ? `Chưa có nhãn chi/ngành. Đang xem nhánh từ ${name}.`
+        : selection.label || 'Toàn nhánh đang xem'
+    return `${selection.people.length} người · ${summary}`
   }
 }
 

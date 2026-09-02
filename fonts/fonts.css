@@ -1,5 +1,13 @@
 /* Phông Latin và tiếng Việt lưu tại chỗ; giấy phép kèm trong thư mục fonts. */
 @font-face {
+  font-family: 'Charm';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./Charm-Bold-Vietnamese.woff2') format('woff2');
+}
+
+@font-face {
   font-family: 'Be Vietnam Pro';
   font-style: normal;
   font-weight: 400;

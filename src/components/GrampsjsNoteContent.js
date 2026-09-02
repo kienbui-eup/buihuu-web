@@ -61,6 +61,60 @@ export class GrampsjsNoteContent extends LitElement {
           widows: 2;
         }
 
+        .note.manuscript {
+          font-weight: 400;
+          text-align: justify;
+        }
+
+        .manuscript p {
+          margin: 0 0 1em;
+          text-indent: 1.5em;
+          orphans: 3;
+          widows: 3;
+        }
+
+        .manuscript .manuscript-preamble {
+          text-align: center;
+          text-indent: 0;
+          font-style: italic;
+          font-size: 0.95em;
+          margin: 0 0 0.65em;
+        }
+
+        .manuscript .manuscript-preamble:first-child {
+          font-style: normal;
+          letter-spacing: 0.06em;
+          color: var(--md-sys-color-primary);
+        }
+
+        .manuscript .manuscript-opening {
+          margin-top: 1.5em;
+          text-indent: 0;
+        }
+
+        .manuscript .manuscript-opening::first-letter {
+          float: left;
+          margin: 7px 8px 0 0;
+          font-size: 3.1em;
+          line-height: 0.85;
+          color: var(--md-sys-color-primary);
+        }
+
+        .manuscript .manuscript-closing {
+          margin-top: 1.5em;
+          padding-top: 0.75em;
+          border-top: 1px solid var(--md-sys-color-outline-variant);
+          text-align: right;
+          text-indent: 0;
+          font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+          .note.manuscript {
+            text-align: left;
+          }
+        }
+
         .note-container.frame {
           border-left: 3px solid var(--md-sys-color-outline-variant);
           padding: 4px 24px;
@@ -87,6 +141,7 @@ export class GrampsjsNoteContent extends LitElement {
       content: {type: String},
       framed: {type: Boolean},
       columns: {type: Boolean},
+      manuscript: {type: Boolean},
     }
   }
 
@@ -94,6 +149,7 @@ export class GrampsjsNoteContent extends LitElement {
     super()
     this.framed = false
     this.columns = false
+    this.manuscript = false
   }
 
   render() {
@@ -101,7 +157,11 @@ export class GrampsjsNoteContent extends LitElement {
       <div class="note-container ${this.framed ? 'frame' : ''}">
         <div
           id="note-content"
-          class="${classMap({note: true, columns: this.columns})}"
+          class="${classMap({
+            note: true,
+            columns: this.columns,
+            manuscript: this.manuscript,
+          })}"
         ></div>
         <slot></slot>
       </div>
@@ -111,7 +171,26 @@ export class GrampsjsNoteContent extends LitElement {
   updated() {
     const noteContent = this.shadowRoot.getElementById('note-content')
     noteContent.innerHTML = linkUrls(this.content)
-    this.columns = noteContent.textContent.length > 1000
+    this.columns = !this.manuscript && noteContent.textContent.length > 1000
+    if (this.manuscript) {
+      const paragraphs = [...noteContent.querySelectorAll('p')]
+      const opening = paragraphs.findIndex(
+        paragraph => paragraph.textContent.trim().length > 160
+      )
+      if (opening >= 0) {
+        paragraphs.slice(0, opening).forEach(paragraph => {
+          paragraph.classList.add('manuscript-preamble')
+        })
+        paragraphs[opening].classList.add('manuscript-opening')
+        const closing = paragraphs[paragraphs.length - 1]
+        if (
+          closing !== paragraphs[opening] &&
+          closing.textContent.length < 160
+        ) {
+          closing.classList.add('manuscript-closing')
+        }
+      }
+    }
     this._wireLinks(noteContent)
   }
 

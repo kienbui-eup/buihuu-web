@@ -40,6 +40,7 @@ function TreeChartCore(
     canEdit = false,
     selectedGrampsId = '',
     onPersonClick = null,
+    personActionLabel = '',
   } = {}
 ) {
   // Create a hierarchical data structure based on the input data
@@ -111,12 +112,16 @@ function TreeChartCore(
     .attr('role', onPersonClick ? 'button' : null)
     .attr('tabindex', onPersonClick ? 0 : null)
     .attr('aria-expanded', d =>
-      onPersonClick && d.data.expandable ? String(d.data.expanded) : null
+      onPersonClick && !personActionLabel && d.data.expandable
+        ? String(d.data.expanded)
+        : null
     )
     .attr('aria-label', d =>
       onPersonClick
         ? `${joinName(d.data.name_surname, d.data.name_given)}${
-            d.data.expandable
+            personActionLabel
+              ? `: ${personActionLabel}`
+              : d.data.expandable
               ? d.data.expanded
                 ? ': Thu gọn hậu duệ'
                 : `: Mở ${d.data.hiddenCount} nhánh con`
@@ -203,7 +208,7 @@ function TreeChartCore(
   // Dấu mở nhánh nằm ngoài phần tên, cả ô là vùng bấm trên điện thoại.
   if (onPersonClick) {
     const toggles = node
-      .filter(d => d.data.expandable)
+      .filter(d => !personActionLabel && d.data.expandable)
       .append('g')
       .attr('transform', `translate(0,${boxHeight / 2 + 14})`)
       .attr('pointer-events', 'none')

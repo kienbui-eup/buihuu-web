@@ -27,7 +27,7 @@ export class GrampsjsArticleContents extends LitElement {
         }
         details {
           background: var(--grampsjs-frame-paper);
-          border: 1px solid transparent;
+          border: 1px solid var(--md-sys-color-outline-variant);
           border-radius: var(--grampsjs-frame-radius);
           padding: 5px;
         }

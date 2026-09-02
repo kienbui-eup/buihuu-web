@@ -70,7 +70,7 @@ export class GrampsjsObjectPreview extends GrampsjsAppStateMixin(LitElement) {
           max-height: min(520px, calc(100dvh - 16px));
           background: var(--grampsjs-frame-paper);
           color: var(--md-sys-color-on-surface);
-          border: 1px solid transparent;
+          border: 1px solid var(--md-sys-color-outline-variant);
           border-radius: var(--grampsjs-frame-radius);
           padding: 6px;
           box-shadow: 0 8px 24px var(--grampsjs-body-font-color-10),

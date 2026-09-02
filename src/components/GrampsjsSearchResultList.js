@@ -22,8 +22,8 @@ export class GrampsjsSearchResultList extends GrampsjsAppStateMixin(
       listAvatarStyles,
       css`
         md-list {
-          padding: 8px;
-          background: var(--grampsjs-frame-paper);
+          padding: 0;
+          background: transparent;
           border-radius: var(--grampsjs-frame-radius);
         }
 

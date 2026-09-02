@@ -73,7 +73,7 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
         @pedigree:show-children="${this._handleShowChildren}"
         style="position:relative;"
       >
-        <div id="container" class="heritage-frame">${this.renderChart()}</div>
+        <div id="container">${this.renderChart()}</div>
         ${this.renderChildrenMenu()}
       </div>
     `
@@ -170,7 +170,7 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
       const mobileScale = 0.85
       const viewWidth = width / mobileScale
       const viewHeight = height / mobileScale
-      const rootMargin = 100 / mobileScale
+      const rootMargin = 60 / mobileScale
       let y = -viewHeight / 2
       if (!this.ancestors) {
         y = -rootMargin
@@ -186,7 +186,10 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
     const viewWidth = width / fit
     const viewHeight = height / fit
     const x = box.x + box.width / 2 - viewWidth / 2
-    const y = box.y + box.height / 2 - viewHeight / 2
+    const y =
+      this.descendants && !this.ancestors
+        ? box.y - margin / fit
+        : box.y + box.height / 2 - viewHeight / 2
     svg.setAttribute('viewBox', `${x} ${y} ${viewWidth} ${viewHeight}`)
   }
 

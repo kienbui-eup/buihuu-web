@@ -19,6 +19,7 @@ import {GrampsjsView} from './GrampsjsView.js'
 import '../components/GrampsjsIcon.js'
 import {fireEvent} from '../util.js'
 import {ATTR_DEATH_ANNIVERSARY} from '../branding.js'
+import {normalizeSearchText} from '../pageSearch.js'
 import {
   collectAnniversaries,
   groupByLunarMonth,
@@ -53,6 +54,19 @@ export class GrampsjsViewLichGio extends GrampsjsView {
           color: var(--grampsjs-body-font-color-70);
         }
 
+        #anniversary-search {
+          box-sizing: border-box;
+          width: 100%;
+          max-width: 440px;
+          min-height: 44px;
+          padding: 10px 12px;
+          font: inherit;
+          color: var(--md-sys-color-on-surface);
+          background: var(--md-sys-color-surface);
+          border: 1px solid var(--md-sys-color-outline-variant);
+          border-radius: 4px;
+        }
+
         h3 {
           margin: 1.6em 0 0.4em;
           font-weight: 500;
@@ -67,6 +81,7 @@ export class GrampsjsViewLichGio extends GrampsjsView {
       _people: {type: Array},
       _loaded: {type: Boolean},
       _fetching: {type: Boolean},
+      _search: {state: true},
     }
   }
 
@@ -75,6 +90,13 @@ export class GrampsjsViewLichGio extends GrampsjsView {
     this._people = []
     this._loaded = false
     this._fetching = false
+    this._search = ''
+  }
+
+  openSearch() {
+    const field = this.renderRoot.querySelector('#anniversary-search')
+    field?.scrollIntoView({block: 'center'})
+    field?.focus({preventScroll: true})
   }
 
   updated(changed) {
@@ -108,7 +130,11 @@ export class GrampsjsViewLichGio extends GrampsjsView {
   }
 
   renderContent() {
-    const entries = collectAnniversaries(this._people)
+    const query = normalizeSearchText(this._search)
+    const allEntries = collectAnniversaries(this._people)
+    const entries = allEntries.filter(entry =>
+      normalizeSearchText(entry.name).includes(query)
+    )
     const groups = groupByLunarMonth(entries)
     return html`
       <h2>${this._('Death anniversary calendar')}</h2>
@@ -117,10 +143,20 @@ export class GrampsjsViewLichGio extends GrampsjsView {
           'Every death anniversary in the clan for the next twelve months, by lunar month. Dates in the circles are the solar dates for this year.'
         )}
       </p>
+      <input
+        id="anniversary-search"
+        type="search"
+        aria-label="Tìm trong ngày giỗ"
+        placeholder="Tìm tên trong ngày giỗ"
+        .value=${this._search}
+        @input=${event => {
+          this._search = event.target.value
+        }}
+      />
       <div class="toolbar">
         <md-filled-tonal-button
           @click="${this._download}"
-          ?disabled="${entries.length === 0}"
+          ?disabled="${allEntries.length === 0}"
         >
           ${this._('Download calendar (.ics)')}
           <grampsjs-icon
@@ -136,6 +172,9 @@ export class GrampsjsViewLichGio extends GrampsjsView {
         </span>
       </div>
       ${groups.map(group => this._renderGroup(group))}
+      ${query && !entries.length && !this.loading
+        ? html`<p>Không tìm thấy tên phù hợp.</p>`
+        : ''}
     `
   }
 

@@ -126,10 +126,11 @@ describe('tải nhanh toàn bộ đời và bỏ tab cũ', () => {
     expect(view._data).toHaveLength(6)
   })
 
-  it('chỉ còn cây tổ tiên và quan hệ; lựa chọn cũ về cây tổ tiên', () => {
-    expect(TREE_VIEWS).toEqual(['ancestor', 'relationship'])
-    for (const old of ['descendant', 'hourglass', 'fan'])
+  it('gộp thành bốn chế độ trong một màn hình gia phả', () => {
+    expect(TREE_VIEWS).toEqual(['main', 'descendants', 'branch', 'all'])
+    for (const old of ['ancestor', 'hourglass', 'fan'])
       expect(getTreeViewTabIndex(old)).toBe(0)
     expect(getTreeViewTabIndex('relationship')).toBe(1)
+    expect(getTreeViewTabIndex('descendant')).toBe(1)
   })
 })

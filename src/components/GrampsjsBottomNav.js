@@ -17,6 +17,7 @@ import {
 import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import './GrampsjsIcon.js'
+import {handleSearchLink, pageSearchLabel} from '../pageSearch.js'
 
 const LIST_PAGES = new Set([
   'people',
@@ -142,6 +143,12 @@ class GrampsjsBottomNav extends GrampsjsAppStateMixin(LitElement) {
     return html`${items.map(
       item => html`<a
         href="${item.href}"
+        aria-label=${item.href === '/search'
+          ? pageSearchLabel(page)
+          : item.label}
+        @click=${event => {
+          if (item.href === '/search') handleSearchLink(event, this)
+        }}
         aria-current="${item.active ? 'page' : 'false'}"
       >
         <span class="pill">
