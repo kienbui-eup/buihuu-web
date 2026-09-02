@@ -1,11 +1,12 @@
 import {css, html} from 'lit'
 
 import {GrampsjsView} from './GrampsjsView.js'
+import {GrampsjsStaleDataMixin} from '../mixins/GrampsjsStaleDataMixin.js'
 import '../components/GrampsjsBlogPost.js'
 
 const BASE_DIR = ''
 
-export class GrampsjsViewBlogPost extends GrampsjsView {
+export class GrampsjsViewBlogPost extends GrampsjsStaleDataMixin(GrampsjsView) {
   static get styles() {
     return [
       super.styles,
@@ -69,6 +70,10 @@ export class GrampsjsViewBlogPost extends GrampsjsView {
   }
 
   firstUpdated() {
+    this._fetchData()
+  }
+
+  handleUpdateStaleData() {
     this._fetchData()
   }
 
