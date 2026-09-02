@@ -155,6 +155,7 @@
     "dompurify": "^3.4.5",
     "jsondiffpatch": "^0.7.6",
     "jwt-decode": "^4.0.0",
+    "lean-qr": "^2.7.3",
     "lit": "^3.2.1",
     "maplibre-gl": "^5.22.0",
     "marked": "^18.0.4",

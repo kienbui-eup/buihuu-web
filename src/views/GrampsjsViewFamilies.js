@@ -4,7 +4,11 @@ Families list view
 
 import {html} from 'lit'
 import {GrampsjsViewObjectsBase} from './GrampsjsViewObjectsBase.js'
-import {prettyTimeDiffTimestamp, filterCounts} from '../util.js'
+import {
+  prettyTimeDiffTimestamp,
+  filterCounts,
+  personProfileDisplayName,
+} from '../util.js'
 import '../components/GrampsjsFilterProperties.js'
 import '../components/GrampsjsFilterTags.js'
 import '../components/GrampsjsFilterPrivate.js'
@@ -79,12 +83,8 @@ export class GrampsjsViewFamilies extends GrampsjsViewObjectsBase {
   _formatRow(row) {
     return {
       grampsId: row.gramps_id,
-      father: `${row?.profile?.father?.name_surname || '…'}, ${
-        row?.profile?.father?.name_given || '…'
-      }`,
-      mother: `${row?.profile?.mother?.name_surname || '…'}, ${
-        row?.profile?.mother?.name_given || '…'
-      }`,
+      father: personProfileDisplayName(row?.profile?.father) || '…',
+      mother: personProfileDisplayName(row?.profile?.mother) || '…',
       relationship: row?.profile?.relationship,
       marriageDate: row?.profile?.marriage?.date,
       marriagePlace: row?.profile?.marriage?.place_name,

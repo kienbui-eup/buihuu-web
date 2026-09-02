@@ -28,6 +28,7 @@ import '../views/GrampsjsViewTask.js'
 import '../views/GrampsjsViewTasks.js'
 import '../views/GrampsjsViewBlog.js'
 import '../views/GrampsjsViewBlogPost.js'
+import '../views/GrampsjsViewLichGio.js'
 import '../views/GrampsjsViewNotificationLog.js'
 import '../views/GrampsjsViewCitation.js'
 import '../views/GrampsjsViewDashboard.js'
@@ -115,6 +116,12 @@ class GrampsjsPages extends GrampsjsAppStateMixin(LitElement) {
         grampsId="${this.appState.path.pageId}"
         .appState="${this.appState}"
       ></grampsjs-view-blog-post>
+
+      <grampsjs-view-lich-gio
+        class="page"
+        ?active=${this.appState.path.page === 'lich-gio'}
+        .appState="${this.appState}"
+      ></grampsjs-view-lich-gio>
 
       <grampsjs-view-people
         class="page"

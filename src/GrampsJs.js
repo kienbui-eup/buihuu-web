@@ -43,6 +43,7 @@ import {
   selectPreReadyView,
 } from './routing.js'
 import './components/GrampsjsAppBar.js'
+import './components/GrampsjsBottomNav.js'
 import './components/GrampsjsDnaTabBar.js'
 import './components/GrampsjsCreateTree.js'
 import './components/GrampsjsFirstRun.js'
@@ -112,6 +113,7 @@ const PAGE_TITLES = {
   search: 'Search',
   settings: 'Settings',
   anniversaries: 'Anniversaries',
+  'lich-gio': 'Death anniversaries',
 }
 
 export class GrampsJs extends LitElement {
@@ -169,6 +171,11 @@ export class GrampsJs extends LitElement {
 
         main {
           padding: 0;
+        }
+
+        /* Chỗ trống dưới cùng để thanh điều hướng điện thoại không đè lên nội dung */
+        .bottom-nav-spacer {
+          height: calc(64px + env(safe-area-inset-bottom, 0px));
         }
 
         .page {
@@ -670,6 +677,12 @@ export class GrampsJs extends LitElement {
               .pageId2="${this.appState.path.pageId2}"
             >
             </grampsjs-pages>
+            ${this.appState.screenSize === 'small'
+              ? html`<div class="bottom-nav-spacer"></div>
+                  <grampsjs-bottom-nav
+                    .appState="${this.appState}"
+                  ></grampsjs-bottom-nav>`
+              : ''}
           </main>
         </div>
       </mwc-drawer>

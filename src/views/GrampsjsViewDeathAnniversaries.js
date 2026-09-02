@@ -15,13 +15,9 @@ import '@material/web/list/list'
 import '@material/web/list/list-item'
 
 import {GrampsjsConnectedComponent} from '../components/GrampsjsConnectedComponent.js'
-import {
-  fireEvent,
-  getAttributeValue,
-  personProfileDisplayName,
-} from '../util.js'
-import {ATTR_DEATH_ANNIVERSARY, ATTR_GENERATION} from '../branding.js'
-import {parseLunarDayMonth, nextAnniversary} from '../lunar.js'
+import {fireEvent} from '../util.js'
+import {ATTR_DEATH_ANNIVERSARY} from '../branding.js'
+import {collectAnniversaries} from '../gioCalendar.js'
 
 const MAX_SHOWN = 8
 
@@ -53,6 +49,11 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
 
         .soon {
           opacity: 1;
+        }
+
+        p.more {
+          margin-top: 0.6em;
+          font-size: 0.95em;
         }
       `,
     ]
@@ -86,43 +87,31 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
             <md-list class="large">
               ${upcoming.map(entry => this._renderEntry(entry))}
             </md-list>
+            <p class="more">
+              <a href="/lich-gio" class="link"
+                >${this._('See the whole year')}</a
+              >
+            </p>
           `}`
   }
 
-  /*
-  Người có ngày giỗ đọc được, kèm lần giỗ kế tiếp, sắp xếp theo gần nhất.
-
-  Một ngày giỗ ghi sai định dạng thì bỏ qua lặng lẽ: dữ liệu phả hệ chép tay
-  luôn có vài ô lệch chuẩn, và một dòng hỏng không đáng làm hỏng cả danh sách.
-  */
-  _upcoming() {
-    const people = this._data?.data ?? []
-    const today = new Date()
-    return people
-      .map(person => {
-        const lunar = parseLunarDayMonth(
-          getAttributeValue(person, ATTR_DEATH_ANNIVERSARY)
-        )
-        if (lunar === null) return null
-        const next = nextAnniversary(lunar.day, lunar.month, today)
-        if (next === null) return null
-        return {person, lunar, next}
-      })
-      .filter(Boolean)
-      .sort((a, b) => a.next.daysAway - b.next.daysAway)
-      .slice(0, MAX_SHOWN)
+  _openCalendar() {
+    fireEvent(this, 'nav', {path: 'lich-gio'})
   }
 
-  _renderEntry({person, lunar, next}) {
+  _upcoming() {
+    return collectAnniversaries(this._data?.data ?? []).slice(0, MAX_SHOWN)
+  }
+
+  _renderEntry({person, lunar, next, name, generation}) {
     const [day, month] = next.solar
-    const generation = getAttributeValue(person, ATTR_GENERATION)
     return html`
       <md-list-item
         type="button"
         @click="${() => this._handleClick(person)}"
         @keydown="${this._handleKeyDown}"
       >
-        <span slot="headline">${personProfileDisplayName(person.profile)}</span>
+        <span slot="headline">${name}</span>
         <span slot="start" class="date ${next.daysAway <= 7 ? 'soon' : ''}"
           >${day}/${month}</span
         >

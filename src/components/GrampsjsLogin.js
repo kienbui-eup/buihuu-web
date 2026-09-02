@@ -180,6 +180,22 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
           margin-top: 2em;
           margin-bottom: 2em;
         }
+
+        .family-code h3 {
+          margin: 0 0 0.3em;
+          font-size: 1.05em;
+        }
+
+        .family-code p.hint {
+          font-size: 0.9em;
+          color: var(--grampsjs-body-font-color-70);
+          margin: 0 0 1em;
+        }
+
+        .family-code md-outlined-button {
+          width: 100%;
+          height: 48px;
+        }
       `,
     ]
   }
@@ -305,6 +321,7 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
                     >${this._('Lost password?')}</span
                   >
                 </p>
+                ${this._renderFamilyCode()}
               `}
           ${this.oidcConfig?.enabled &&
           this.oidcConfig?.providers &&
@@ -336,6 +353,54 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
     fireEvent(this, 'nav', {path})
   }
 
+  /*
+  Xem bằng mã dòng họ.
+
+  Các trang dòng họ ở Việt Nam đều mở phả đồ bằng một mã chung cả họ biết, không
+  bắt từng người lập tài khoản. Ở đây mã đó là mật khẩu của một tài khoản khách
+  chỉ xem (vai trò Guest), tên tài khoản đặt trong config.js. Không cấu hình thì
+  khối này không hiện.
+  */
+  _renderFamilyCode() {
+    if (!window.grampsjsConfig?.guestUsername) return ''
+    return html`
+      <hr />
+      <div class="family-code">
+        <h3>${this._('View with the family code')}</h3>
+        <p class="hint">
+          ${this._(
+            'People in the clan do not need an account. Enter the code the clan shares to open the family tree.'
+          )}
+        </p>
+        <div class="text-field-wrapper">
+          <input
+            id="family-code"
+            name="family-code"
+            type="password"
+            autocomplete="off"
+            autocapitalize="off"
+            placeholder=" "
+          />
+          <label for="family-code">${this._('Family code')}</label>
+        </div>
+        <md-outlined-button @click="${this._submitFamilyCode}">
+          ${this._('Open the family tree')}
+        </md-outlined-button>
+      </div>
+    `
+  }
+
+  async _submitFamilyCode() {
+    const code = this.shadowRoot.getElementById('family-code')?.value
+    if (!code) return
+    const res = await apiGetTokens(window.grampsjsConfig.guestUsername, code)
+    if ('error' in res) {
+      this._showError(res.error)
+    } else {
+      document.location.href = '/'
+    }
+  }
+
   _getOIDCButtonText(providerId, providerName) {
     return `${this._('Continue with %s', providerName)}`
   }
@@ -351,6 +416,10 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
   _handleFormKeydown(event) {
     if (event.key === 'Enter' && event.target.tagName === 'INPUT') {
       event.preventDefault()
+      if (event.target.id === 'family-code') {
+        this._submitFamilyCode()
+        return
+      }
       event.currentTarget.requestSubmit()
     }
   }

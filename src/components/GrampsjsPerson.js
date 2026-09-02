@@ -2,20 +2,25 @@ import {html, css} from 'lit'
 import '@material/web/button/outlined-button'
 import '@material/web/chips/chip-set'
 import '@material/web/chips/filter-chip'
+import '@material/web/dialog/dialog'
+import '@material/web/button/text-button'
 import {
   mdiFamilyTree,
   mdiDna,
   mdiSearchWeb,
   mdiTimelineOutline,
   mdiMap,
+  mdiQrcode,
 } from '@mdi/js'
+import {generate} from 'lean-qr'
+import {toSvgDataURL} from 'lean-qr/extras/svg'
 import {GrampsjsObject} from './GrampsjsObject.js'
 import {asteriskIcon, crossIcon} from '../icons.js'
 import './GrampsjsImg.js'
 import './GrampsjsEditGender.js'
 import './GrampsjsPersonRelationship.js'
 import './GrampsjsFormExternalSearch.js'
-import {fireEvent, objectIconPath} from '../util.js'
+import {fireEvent, objectIconPath, personProfileDisplayName} from '../util.js'
 
 export class GrampsjsPerson extends GrampsjsObject {
   static get styles() {
@@ -34,6 +39,29 @@ export class GrampsjsPerson extends GrampsjsObject {
             --md-sys-color-on-surface-variant
           );
         }
+
+        #qr-dialog .qr {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.8em;
+          text-align: center;
+        }
+
+        #qr-dialog img {
+          width: 240px;
+          height: 240px;
+          max-width: 70vw;
+          max-height: 70vw;
+          background: #fff;
+          border-radius: 8px;
+        }
+
+        #qr-dialog .url {
+          font-size: 0.8em;
+          color: var(--grampsjs-body-font-color-70);
+          word-break: break-all;
+        }
       `,
     ]
   }
@@ -44,6 +72,7 @@ export class GrampsjsPerson extends GrampsjsObject {
       timelineData: {type: Array},
       _showFamilyEvents: {type: Boolean},
       _showRelatedEvents: {type: Boolean},
+      _qrDataUrl: {type: String},
     }
   }
 
@@ -57,6 +86,7 @@ export class GrampsjsPerson extends GrampsjsObject {
     this.timelineData = []
     this._showFamilyEvents = false
     this._showRelatedEvents = false
+    this._qrDataUrl = ''
   }
 
   renderProfile() {
@@ -74,9 +104,70 @@ export class GrampsjsPerson extends GrampsjsObject {
         : html`<p class="button-list">
             ${this._renderTreeBtn()} ${this._renderTimelineBtn()}
             ${this._renderMapBtn()} ${this._renderDnaBtn()}
-            ${this._renderExternalSearchBtn()}
+            ${this._renderExternalSearchBtn()} ${this._renderQrBtn()}
           </p>`}
+      ${this.preview ? '' : this._renderQrDialog()}
     `
+  }
+
+  /*
+  Mã QR dẫn thẳng tới trang người này, để in lên sổ họ, ảnh thờ hay bia mộ.
+  Các trang dòng họ Việt đều có; ở đây chỉ là đường dẫn hiện tại vẽ thành mã,
+  không gửi gì ra ngoài.
+  */
+  _personUrl() {
+    return `${window.location.origin}/person/${this.data?.gramps_id ?? ''}`
+  }
+
+  _renderQrBtn() {
+    return html`
+      <md-outlined-button @click="${this._openQr}">
+        ${this._('QR code')}
+        <grampsjs-icon
+          path="${mdiQrcode}"
+          color="var(--mdc-theme-primary)"
+          slot="icon"
+        ></grampsjs-icon>
+      </md-outlined-button>
+    `
+  }
+
+  _renderQrDialog() {
+    return html`
+      <md-dialog id="qr-dialog">
+        <div slot="headline">${this._('QR code')}</div>
+        <div slot="content" class="qr">
+          ${this._qrDataUrl
+            ? html`<img src="${this._qrDataUrl}" alt="QR" />`
+            : ''}
+          <div>
+            <strong>${this._displayName()}</strong>
+            <div class="url">${this._personUrl()}</div>
+            <div>${this._('Scan to open this page')}</div>
+          </div>
+        </div>
+        <div slot="actions">
+          <md-text-button @click="${this._closeQr}"
+            >${this._('Close')}</md-text-button
+          >
+        </div>
+      </md-dialog>
+    `
+  }
+
+  _openQr() {
+    const code = generate(this._personUrl())
+    this._qrDataUrl = toSvgDataURL(code, {
+      on: '#000000',
+      off: '#ffffff',
+      padX: 2,
+      padY: 2,
+    })
+    this.shadowRoot.getElementById('qr-dialog')?.show()
+  }
+
+  _closeQr() {
+    this.shadowRoot.getElementById('qr-dialog')?.close()
   }
 
   _displayName() {
@@ -98,7 +189,8 @@ export class GrampsjsPerson extends GrampsjsObject {
             ${given.substring(callIndex + call.length)}
           `
         : given
-    return html`${given} ${surname} ${suffix}`
+    // Họ trước, tên sau, theo lối Việt; tên gọi (call name) vẫn được tô đậm.
+    return html`${surname} ${given} ${suffix}`
   }
 
   _renderBirth() {
@@ -355,11 +447,7 @@ export class GrampsjsPerson extends GrampsjsObject {
         if (!this._showRelatedEvents) continue
       }
       const isRelated = !familyEventHandles.has(te.handle)
-      const personName = isRelated
-        ? [te.person?.name_given, te.person?.name_surname]
-            .filter(Boolean)
-            .join(' ')
-        : ''
+      const personName = isRelated ? personProfileDisplayName(te.person) : ''
       entries.push({
         sortKey: timelineOrder.get(te.handle),
         data: {

@@ -102,7 +102,8 @@ function TreeChartCore(
     .append('g')
     .attr('transform', `translate(${-xOffset},${0})`)
 
-  chart
+  // Giữ lại selection đường nối để tô đậm dòng dõi khi rê chuột lên một ô.
+  const linkPaths = chart
     .append('g')
     .attr('fill', 'none')
     .attr('stroke', stroke)
@@ -113,6 +114,7 @@ function TreeChartCore(
     .selectAll('path')
     .data(root.links())
     .join('path')
+    .attr('class', 'tree-link')
     .attr('d', d => {
       const sourceX = d.source.x
       const sourceY =
@@ -317,10 +319,24 @@ function TreeChartCore(
     .attr('width', 70)
     .attr('xlink:href', getImageUrl)
 
+  // Nổi bật dòng dõi: rê chuột lên một người thì đường nối từ người đó ngược
+  // lên gốc của biểu đồ đậm lên. Đây là câu hỏi hay gặp nhất khi tra cứu, "tôi
+  // thuộc nhánh nào", và phả đồ giấy trả lời bằng cách dò ngược theo nét kẻ.
+  function highlightLineage(d, on) {
+    const lineage = new Set(d.ancestors())
+    linkPaths
+      .filter(l => lineage.has(l.target) && lineage.has(l.source))
+      .attr('stroke', on ? 'var(--mdc-theme-primary)' : stroke)
+      .attr('stroke-opacity', on ? 1 : strokeOpacity)
+      .attr('stroke-width', on ? strokeWidth * 3 : strokeWidth)
+      .raise()
+  }
+
   node
     .style('cursor', canEdit ? 'default' : 'pointer')
     .on('click', canEdit ? null : clicked)
     .on('mouseenter', function (event, d) {
+      if (d.data?.person) highlightLineage(d, true)
       if (canEdit) return
       if (window.matchMedia('(hover: none)').matches) return
       const grampsId = d.data?.person?.gramps_id

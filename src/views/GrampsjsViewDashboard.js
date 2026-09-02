@@ -174,12 +174,19 @@ export class GrampsjsViewDashboard extends GrampsjsView {
     `
   }
 
+  /*
+  Trang chủ xếp theo thứ tự người trong họ cần: lời tựa và ảnh (khối cấu hình
+  của cây), ngày giỗ sắp tới, bài viết mới, rồi thuỷ tổ và số liệu. Hai khối
+  "kỷ niệm dương lịch" và "mới sửa" là công cụ của người biên tập, chỉ hiện với
+  người có quyền sửa.
+  */
   renderContent() {
+    const hasPeople = Boolean(this.appState.dbInfo?.object_counts?.people)
+    const {canEdit} = this.appState.permissions
     return html`
       ${this._renderHomePageBlock()}
       <div class="column">
-        ${this.appState.dbInfo?.object_counts?.people === 0 &&
-        this.appState.permissions.canEdit
+        ${!hasPeople && canEdit
           ? html`
               <div>
                 <h3>Get started</h3>
@@ -198,7 +205,7 @@ export class GrampsjsViewDashboard extends GrampsjsView {
               </div>
             `
           : ''}
-        ${this.appState.dbInfo?.object_counts?.people
+        ${hasPeople
           ? html`
               <div>
                 <grampsjs-view-death-anniversaries
@@ -209,7 +216,28 @@ export class GrampsjsViewDashboard extends GrampsjsView {
               </div>
             `
           : ''}
-        ${this.appState.dbInfo?.object_counts?.people || this.homePersonGrampsId
+        <div>
+          <grampsjs-view-recent-blog-posts
+            id="recent-blog"
+            .appState="${this.appState}"
+          >
+          </grampsjs-view-recent-blog-posts>
+        </div>
+        ${canEdit && this.appState.dbInfo?.object_counts?.events
+          ? html`
+              <div>
+                <grampsjs-view-anniversaries
+                  id="anniversaries"
+                  .appState="${this.appState}"
+                >
+                </grampsjs-view-anniversaries>
+              </div>
+            `
+          : ''}
+      </div>
+      <div class="column">
+        ${this._renderHomePageImage()}
+        ${hasPeople || this.homePersonGrampsId
           ? html`
               <div>
                 <grampsjs-home-person
@@ -222,34 +250,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
               </div>
             `
           : ''}
-        ${this.appState.dbInfo?.object_counts?.events
-          ? html`
-              <div>
-                <grampsjs-view-anniversaries
-                  id="anniversaries"
-                  .appState="${this.appState}"
-                >
-                </grampsjs-view-anniversaries>
-              </div>
-            `
-          : ''}
-        <div>
-          <grampsjs-view-recently-changed
-            id="recently-changed"
-            .appState="${this.appState}"
-          >
-          </grampsjs-view-recently-changed>
-        </div>
-      </div>
-      <div class="column">
-        ${this._renderHomePageImage()}
-        <div>
-          <grampsjs-view-recent-blog-posts
-            id="recent-blog"
-            .appState="${this.appState}"
-          >
-          </grampsjs-view-recent-blog-posts>
-        </div>
         <div>
           <grampsjs-statistics
             .data="${this.dbInfo?.object_counts || {}}"
@@ -258,6 +258,17 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           >
           </grampsjs-statistics>
         </div>
+        ${canEdit
+          ? html`
+              <div>
+                <grampsjs-view-recently-changed
+                  id="recently-changed"
+                  .appState="${this.appState}"
+                >
+                </grampsjs-view-recently-changed>
+              </div>
+            `
+          : ''}
       </div>
     `
   }

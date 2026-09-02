@@ -7,6 +7,7 @@ import {sharedStyles} from '../SharedStyles.js'
 import './GrampsjsSearchResultList.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import './GrampsjsFormSelectObject.js'
+import {DEFAULT_HOME_PERSON} from '../branding.js'
 
 export class GrampsjsHomePerson extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
@@ -35,7 +36,11 @@ export class GrampsjsHomePerson extends GrampsjsAppStateMixin(LitElement) {
 
   render() {
     return html`
-      <h3>${this._('Home Person')}</h3>
+      <h3>
+        ${this.homePersonGrampsId === DEFAULT_HOME_PERSON
+          ? this._('Founding ancestor')
+          : this._('Home Person')}
+      </h3>
 
       ${this.homePersonGrampsId
         ? html`

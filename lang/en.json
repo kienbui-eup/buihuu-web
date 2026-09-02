@@ -426,5 +426,21 @@
   "Today": "Today",
   "Tomorrow": "Tomorrow",
   "in %s days": "in %s days",
-  "No anniversaries today.": "No anniversaries today."
+  "No anniversaries today.": "No anniversaries today.",
+  "Death anniversary calendar": "Death anniversary calendar",
+  "Death anniversaries": "Death anniversaries",
+  "Every death anniversary in the clan for the next twelve months, by lunar month. Dates in the circles are the solar dates for this year.": "Every death anniversary in the clan for the next twelve months, by lunar month. Dates in the circles are the solar dates for this year.",
+  "Download calendar (.ics)": "Download calendar (.ics)",
+  "people with a death anniversary": "people with a death anniversary",
+  "Lunar month %s": "Lunar month %s",
+  "See the whole year": "See the whole year",
+  "Tools": "Tools",
+  "View with the family code": "View with the family code",
+  "People in the clan do not need an account. Enter the code the clan shares to open the family tree.": "People in the clan do not need an account. Enter the code the clan shares to open the family tree.",
+  "Family code": "Family code",
+  "Open the family tree": "Open the family tree",
+  "QR code": "QR code",
+  "Scan to open this page": "Scan to open this page",
+  "Founding ancestor": "Founding ancestor",
+  "Lineage": "Lineage"
 }

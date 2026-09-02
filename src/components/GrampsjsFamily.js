@@ -4,7 +4,7 @@ import '@material/web/iconbutton/icon-button.js'
 
 import {mdiLinkOff, mdiLinkPlus, mdiPencil, mdiPlus} from '@mdi/js'
 
-import {fireEvent, objectIconPath} from '../util.js'
+import {fireEvent, objectIconPath, personProfileDisplayName} from '../util.js'
 import './GrampsjsIcon.js'
 import './GrampsjsObjectLink.js'
 import './GrampsjsFormEditFamily.js'
@@ -84,10 +84,8 @@ export class GrampsjsFamily extends GrampsjsObject {
 
   _renderTitle() {
     return html`
-      ${this.data?.profile?.father?.name_given || '…'}
-      ${this.data?.profile?.father?.name_surname || '…'} &amp;
-      ${this.data?.profile?.mother?.name_given || '…'}
-      ${this.data?.profile?.mother?.name_surname || '…'}
+      ${personProfileDisplayName(this.data?.profile?.father) || '…'} &amp;
+      ${personProfileDisplayName(this.data?.profile?.mother) || '…'}
     `
   }
 
@@ -164,8 +162,8 @@ export class GrampsjsFamily extends GrampsjsObject {
                 ? html`<grampsjs-object-link
                       object-type="person"
                       gramps-id="${profile.gramps_id}"
-                      >${profile.name_given || '…'}
-                      ${profile.name_surname || '…'}</grampsjs-object-link
+                      >${personProfileDisplayName(profile) ||
+                      '…'}</grampsjs-object-link
                     >
                     ${birthDate || deathDate
                       ? html`<span class="parent-dates">
