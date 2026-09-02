@@ -35,11 +35,15 @@ export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
           min-width: 0;
         }
         .layout {
-          max-width: 74rem;
-          margin-inline: auto;
+          width: 100%;
         }
         .content {
           min-width: 0;
+        }
+        ::slotted(grampsjs-article-contents) {
+          position: static;
+          margin-bottom: 16px;
+          --grampsjs-contents-max-height: 36dvh;
         }
         aside {
           margin-bottom: 24px;
@@ -157,8 +161,8 @@ export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
         }
         :host([wide]) .layout {
           display: grid;
-          grid-template-columns: minmax(0, 1fr) 19rem;
-          gap: 28px;
+          grid-template-columns: minmax(0, 1fr) clamp(17rem, 22%, 21rem);
+          gap: clamp(20px, 2vw, 32px);
           align-items: start;
         }
         :host([wide]) aside {
@@ -167,6 +171,9 @@ export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
           position: sticky;
           top: 80px;
           margin: 0;
+          max-height: calc(100dvh - 104px);
+          overflow-y: auto;
+          scrollbar-width: thin;
         }
         :host([wide]) .content {
           grid-column: 1;
@@ -224,8 +231,10 @@ export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
 
   updated(changed) {
     super.updated(changed)
-    if (changed.has('wide')) {
-      this.shadowRoot.querySelector('details').open = this.wide
+    if (changed.has('wide') || changed.has('currentId')) {
+      this.shadowRoot.querySelector('details').open =
+        this.wide && !this.currentId
+      this._syncContents()
     }
     if (
       changed.has('currentId') ||
@@ -246,6 +255,13 @@ export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
       nav.getBoundingClientRect().top -
       nav.clientHeight / 2 +
       current.offsetHeight / 2
+  }
+
+  _syncContents() {
+    const slot = this.shadowRoot.querySelector('slot[name="contents"]')
+    for (const element of slot?.assignedElements() || []) {
+      element.sidebar = this.wide
+    }
   }
 
   getUrl() {
@@ -273,6 +289,7 @@ export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
     return html`
       <div class="layout">
         <aside aria-label="Xem nhanh danh sách bài viết">
+          <slot name="contents" @slotchange=${this._syncContents}></slot>
           <details
             class="heritage-frame"
             @keydown=${this._handleKeydown}
@@ -280,7 +297,7 @@ export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
           >
             <summary>
               <grampsjs-icon .path=${mdiBookOpenPageVariant}></grampsjs-icon>
-              <span class="title">Danh sách bài viết</span>
+              <span class="title">Danh mục bài viết</span>
               <grampsjs-icon
                 class="chevron"
                 .path=${mdiChevronDown}

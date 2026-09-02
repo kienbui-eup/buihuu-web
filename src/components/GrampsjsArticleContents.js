@@ -62,7 +62,12 @@ export class GrampsjsArticleContents extends LitElement {
         }
         nav {
           border-top: 1px solid var(--md-sys-color-outline-variant);
-          max-height: min(50dvh, 400px);
+          max-height: min(
+            50dvh,
+            400px,
+            var(--grampsjs-contents-max-height, 100dvh),
+            var(--grampsjs-contents-available-height, 100dvh)
+          );
           overflow-y: auto;
           overscroll-behavior: contain;
           padding: 8px;
@@ -112,7 +117,11 @@ export class GrampsjsArticleContents extends LitElement {
           gap: 6px;
         }
         :host([sidebar]) nav {
-          max-height: calc(100dvh - 164px);
+          max-height: min(
+            calc(100dvh - 164px),
+            var(--grampsjs-contents-max-height, 100dvh),
+            var(--grampsjs-contents-available-height, 100dvh)
+          );
           padding: 6px;
           scrollbar-width: thin;
         }
@@ -233,10 +242,10 @@ export class GrampsjsArticleContents extends LitElement {
       available =
         window.innerHeight - nav.getBoundingClientRect().top - bottomSpace
     }
-    nav.style.maxHeight = `${Math.max(
-      120,
-      this.sidebar ? available : Math.min(400, available)
-    )}px`
+    nav.style.setProperty(
+      '--grampsjs-contents-available-height',
+      `${Math.max(120, this.sidebar ? available : Math.min(400, available))}px`
+    )
   }
 }
 

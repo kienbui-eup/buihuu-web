@@ -21,15 +21,13 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
         }
 
         .reading-layout {
-          max-width: 44rem;
-          margin-inline: auto;
+          width: 100%;
         }
 
         .reading-layout.with-sidebar {
           display: grid;
-          grid-template-columns: minmax(0, 44rem) 16rem;
-          column-gap: 2rem;
-          max-width: 62rem;
+          grid-template-columns: minmax(0, 1fr) clamp(17rem, 22%, 21rem);
+          column-gap: clamp(20px, 2vw, 32px);
           align-items: start;
         }
 
@@ -88,6 +86,7 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
           --grampsjs-note-line-height: 1.7em;
           --grampsjs-note-font-size: 18px;
           --grampsjs-note-font-family: var(--grampsjs-body-font-family);
+          --grampsjs-note-column-width: auto;
         }
 
         #btn-details {
@@ -121,6 +120,7 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
       note: {type: Object},
       _sections: {state: true},
       _wideContents: {state: true},
+      externalContents: {type: Boolean},
     }
   }
 
@@ -130,6 +130,7 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
     this.note = {}
     this._sections = []
     this._wideContents = false
+    this.externalContents = false
   }
 
   connectedCallback() {
@@ -151,7 +152,9 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
     }
     return html`
       <div
-        class="reading-layout ${this._wideContents && this._sections.length
+        class="reading-layout ${!this.externalContents &&
+        this._wideContents &&
+        this._sections.length
           ? 'with-sidebar'
           : ''}"
       >
@@ -170,7 +173,7 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
             ? html`<div id="image">${this._renderImage()}</div>`
             : ''}
         </header>
-        ${this._sections.length
+        ${!this.externalContents && this._sections.length
           ? html`<grampsjs-article-contents
               .sections=${this._sections}
               .articleId=${this.source.gramps_id}
@@ -223,6 +226,18 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
     this._sections = getArticleSections(
       content.shadowRoot.querySelector('#note-content')
     )
+    if (this.externalContents) {
+      this.dispatchEvent(
+        new CustomEvent('article-sections:changed', {
+          bubbles: true,
+          composed: true,
+          detail: {
+            articleId: this.source.gramps_id,
+            sections: this._sections.map(({key, label}) => ({key, label})),
+          },
+        })
+      )
+    }
   }
 
   _scrollToSection(event) {

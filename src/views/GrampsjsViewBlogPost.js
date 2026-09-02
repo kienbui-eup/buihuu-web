@@ -4,6 +4,7 @@ import {GrampsjsView} from './GrampsjsView.js'
 import {GrampsjsStaleDataMixin} from '../mixins/GrampsjsStaleDataMixin.js'
 import '../components/GrampsjsBlogPost.js'
 import '../components/GrampsjsBlogLayout.js'
+import '../components/GrampsjsArticleContents.js'
 
 const BASE_DIR = ''
 
@@ -12,6 +13,14 @@ export class GrampsjsViewBlogPost extends GrampsjsStaleDataMixin(GrampsjsView) {
     return [
       super.styles,
       css`
+        :host {
+          margin: 24px;
+        }
+        @media (max-width: 768px) {
+          :host {
+            margin: 20px 16px;
+          }
+        }
         .muted {
           opacity: 0.4;
         }
@@ -24,6 +33,7 @@ export class GrampsjsViewBlogPost extends GrampsjsStaleDataMixin(GrampsjsView) {
       grampsId: {type: String},
       _dataSources: {type: Array},
       _dataNotes: {type: Array},
+      _sections: {state: true},
     }
   }
 
@@ -34,6 +44,7 @@ export class GrampsjsViewBlogPost extends GrampsjsStaleDataMixin(GrampsjsView) {
     this._dataNotes = []
     this._firstLoaded = false
     this._fetchRequest = 0
+    this._sections = []
   }
 
   renderContent() {
@@ -42,8 +53,17 @@ export class GrampsjsViewBlogPost extends GrampsjsStaleDataMixin(GrampsjsView) {
         .appState=${this.appState}
         .active=${this.active}
         .currentId=${this.grampsId}
-        >${this.renderPosts()}</grampsjs-blog-layout
       >
+        ${this._sections.length
+          ? html`<grampsjs-article-contents
+              slot="contents"
+              .sections=${this._sections}
+              .articleId=${this.grampsId}
+              @article-section:select=${this._selectSection}
+            ></grampsjs-article-contents>`
+          : ''}
+        ${this.renderPosts()}
+      </grampsjs-blog-layout>
     `
   }
 
@@ -71,6 +91,8 @@ export class GrampsjsViewBlogPost extends GrampsjsStaleDataMixin(GrampsjsView) {
   renderPost(source, note) {
     return html`
       <grampsjs-blog-post
+        .externalContents=${true}
+        @article-sections:changed=${this._handleSectionsChanged}
         .source="${source}"
         .note="${note}"
         .appState="${this.appState}"
@@ -80,6 +102,16 @@ export class GrampsjsViewBlogPost extends GrampsjsStaleDataMixin(GrampsjsView) {
 
   firstUpdated() {
     this._fetchData()
+  }
+
+  _handleSectionsChanged(event) {
+    if (event.detail.articleId === this.grampsId) {
+      this._sections = event.detail.sections
+    }
+  }
+
+  _selectSection(event) {
+    this.shadowRoot.querySelector('grampsjs-blog-post')?._scrollToSection(event)
   }
 
   handleUpdateStaleData() {
@@ -119,6 +151,7 @@ export class GrampsjsViewBlogPost extends GrampsjsStaleDataMixin(GrampsjsView) {
   async _fetchData() {
     const request = ++this._fetchRequest
     this.loading = true
+    this._sections = []
     this._dataNotes = []
     const uri = `/api/sources/?gramps_id=${this.grampsId}&locale=${
       this.appState.i18n.lang || 'en'

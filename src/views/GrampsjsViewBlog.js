@@ -16,8 +16,12 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
     return [
       super.styles,
       css`
+        :host {
+          margin: 24px;
+        }
+
         h2 {
-          margin-left: 15px;
+          margin-left: 0;
         }
 
         .muted {
@@ -29,7 +33,7 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
           gap: 1em;
           grid-template-columns: repeat(
             auto-fill,
-            minmax(min(420px, 100%), 1fr)
+            minmax(min(320px, 100%), 1fr)
           );
         }
 
@@ -52,10 +56,19 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
           right: 32px;
         }
 
+        grampsjs-blog-layout[wide] ~ md-fab {
+          right: calc(clamp(17rem, 22vw, 21rem) + 48px);
+        }
+
         @media (max-width: 991px) {
           md-fab {
             bottom: calc(80px + env(safe-area-inset-bottom, 0px));
             right: 16px;
+          }
+        }
+        @media (max-width: 768px) {
+          :host {
+            margin: 20px 16px;
           }
         }
       `,
@@ -95,7 +108,11 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
 
   renderFab() {
     return html`
-      <md-fab variant="secondary" @click=${this._handleClickAdd}>
+      <md-fab
+        variant="secondary"
+        aria-label="Thêm bài viết"
+        @click=${this._handleClickAdd}
+      >
         <grampsjs-icon
           slot="icon"
           .path="${mdiPlus}"

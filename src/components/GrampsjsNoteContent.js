@@ -55,7 +55,7 @@ export class GrampsjsNoteContent extends LitElement {
         }
 
         .note.columns {
-          column-width: 30em;
+          column-width: var(--grampsjs-note-column-width, 30em);
           column-gap: 2em;
           orphans: 2;
           widows: 2;
