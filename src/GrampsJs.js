@@ -986,6 +986,11 @@ export class GrampsJs extends LitElement {
   }
 
   _loadHomePersonInfo() {
+    // Thiết lập ngôn ngữ cũng phát settings:changed ở màn hình đăng nhập.
+    // Chỉ tải hồ sơ sau khi máy chủ xác nhận phiên và cây hiện tại.
+    if (!this._metadataConfirmed) {
+      return
+    }
     const grampsId = this.appState.settings.homePerson
     if (!grampsId || grampsId === this._homePersonFetchingId) {
       return
