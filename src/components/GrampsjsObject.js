@@ -235,7 +235,8 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
         .section {
           flex: 1 1 200px;
           scroll-margin-top: 100px;
-          margin-right: 20px;
+          margin-right: 0;
+          padding: 20px;
           max-width: 100%;
           min-width: 0;
           flex-shrink: 1;
@@ -564,7 +565,7 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
     return html`
       ${tabKeys.map(
         (key, idx, tabKeysArray) => html`<div class="row">
-          <div class="section" id="section-${key}">
+          <div class="section heritage-frame" id="section-${key}">
             <h3>
               ${this._(_allTabs[key].title)}
               ${this.tocSidebar || tabKeysArray.length <= 1 || this.preview

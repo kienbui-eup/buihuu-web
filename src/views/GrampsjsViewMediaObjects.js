@@ -53,7 +53,7 @@ export class GrampsjsViewMediaObjects extends GrampsjsViewObjectsBase {
         .sort-control {
           display: flex;
           align-items: center;
-          gap: 4px;
+          gap: 12px;
         }
 
         .sort-control md-filled-select {
@@ -80,7 +80,10 @@ export class GrampsjsViewMediaObjects extends GrampsjsViewObjectsBase {
 
         .tile {
           cursor: pointer;
-          border-radius: 6px;
+          border-radius: var(--grampsjs-frame-radius);
+          background: var(--grampsjs-frame-paper);
+          padding: 8px;
+          box-sizing: border-box;
           overflow: hidden;
           aspect-ratio: 1;
         }
@@ -101,8 +104,10 @@ export class GrampsjsViewMediaObjects extends GrampsjsViewObjectsBase {
           display: flex;
           align-items: center;
           gap: 16px;
-          padding: 8px 4px;
-          border-bottom: 1px solid var(--grampsjs-body-font-color-10);
+          padding: 16px;
+          margin-bottom: 12px;
+          background: var(--grampsjs-frame-paper);
+          border-radius: var(--grampsjs-frame-radius);
           cursor: pointer;
         }
 

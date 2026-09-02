@@ -200,7 +200,8 @@ class GrampsjsEditor extends GrampsjsAppStateMixin(LitElement) {
 
         .framed {
           border: 1px solid var(--mdc-theme-secondary);
-          border-radius: 8px;
+          border-radius: var(--grampsjs-frame-radius);
+          background: var(--grampsjs-frame-paper);
           padding: 20px 25px;
         }
 
@@ -215,7 +216,7 @@ class GrampsjsEditor extends GrampsjsAppStateMixin(LitElement) {
 
         .draft-banner {
           background-color: var(--grampsjs-color-shade-230);
-          border-radius: 8px;
+          border-radius: var(--grampsjs-frame-radius);
           padding: 10px 14px;
           margin-bottom: 1em;
           display: flex;

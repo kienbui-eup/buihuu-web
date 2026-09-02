@@ -25,7 +25,7 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
 
         table {
           border-collapse: collapse;
-          font-weight: 300;
+          font-weight: 400;
         }
 
         thead {
@@ -106,10 +106,34 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
           background-color: var(--grampsjs-color-shade-240);
         }
 
+        table:not(.wide) {
+          width: 100%;
+        }
+
+        table:not(.wide) tbody tr {
+          margin-bottom: 12px;
+          padding: 16px 8px;
+          border: 1px solid transparent;
+          border-radius: var(--grampsjs-frame-radius);
+          background: var(--grampsjs-frame-paper);
+        }
+
+        table.linked tbody tr:focus-visible,
+        table.linked tbody tr:hover,
+        table:not(.wide) tbody tr.selected {
+          outline: 2px solid var(--md-sys-color-primary);
+          outline-offset: -2px;
+        }
+
         /* Wide table */
 
         table.wide thead {
           display: table-header-group;
+        }
+
+        table.wide {
+          border: 1px solid var(--md-sys-color-outline-variant);
+          background: var(--md-sys-color-surface);
         }
 
         table.wide thead th {

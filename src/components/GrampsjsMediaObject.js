@@ -78,8 +78,8 @@ export class GrampsjsMediaObject extends GrampsjsObject {
 
         .ocr {
           padding: 1em 1em;
-          border-radius: 16px;
-          background-color: var(--grampsjs-color-shade-230);
+          border-radius: var(--grampsjs-frame-radius);
+          background: var(--grampsjs-frame-paper);
         }
 
         .close-icon {

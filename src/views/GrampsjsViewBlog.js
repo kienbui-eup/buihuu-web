@@ -33,7 +33,7 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
         }
 
         .post {
-          padding: 0.8em 1em;
+          padding: 20px;
           cursor: pointer;
           outline: 2px solid var(--grampsjs-body-font-color-0);
           transition: outline-color 0.3s ease-in;
@@ -42,13 +42,20 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
         .post:focus,
         .post:focus-within {
           outline: 2px solid var(--grampsjs-body-font-color-10);
-          border-radius: 5px;
+          border-radius: var(--grampsjs-frame-radius);
         }
 
         md-fab {
           position: fixed;
           bottom: 32px;
           right: 32px;
+        }
+
+        @media (max-width: 991px) {
+          md-fab {
+            bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+            right: 16px;
+          }
         }
       `,
     ]
@@ -142,7 +149,7 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
   renderPost(source) {
     return html`
       <div
-        class="post"
+        class="post heritage-frame"
         tabindex="0"
         @click="${() => this._handlePreviewClick(source.gramps_id)}"
         @keydown="${clickKeyHandler}"

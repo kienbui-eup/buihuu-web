@@ -73,7 +73,7 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
         @pedigree:show-children="${this._handleShowChildren}"
         style="position:relative;"
       >
-        <div id="container">${this.renderChart()}</div>
+        <div id="container" class="heritage-frame">${this.renderChart()}</div>
         ${this.renderChildrenMenu()}
       </div>
     `

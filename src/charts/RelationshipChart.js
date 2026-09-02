@@ -6,6 +6,7 @@ import {chartNameDisplayFormat} from '../util.js'
 import {joinName} from '../branding.js'
 import {appendAddPersonButton} from './addPersonButton.js'
 import {personCardLines} from './util.js'
+import {appendHeritageFrame} from './heritageFrame.js'
 
 const sexColor = {
   F: 'var(--color-girl)',
@@ -415,10 +416,18 @@ function remasterChart(
     .attr('width', boxWidth)
     .attr('height', boxHeight)
     .attr('class', 'personBox')
+    .attr('fill', 'var(--md-sys-color-surface)')
+    .attr('stroke', 'var(--md-sys-color-outline-variant)')
     .attr('x', 0)
     .attr('y', 0)
     .attr('rx', 2)
     .attr('ry', 2)
+
+  appendHeritageFrame(
+    nodes.filter(d => d.nodetype === 'person'),
+    boxWidth,
+    boxHeight
+  )
 
   // Ô người viết theo lối gia phả Việt, giống biểu đồ cây: họ tên liền một
   // dòng, rồi tên tự, đời và ngày giỗ. Xem personCardLines trong ./util.js.
@@ -524,6 +533,7 @@ function remasterChart(
             objectType: 'person',
             grampsId,
             anchorRect: this.getBoundingClientRect(),
+            anchorElement: this,
           },
         })
       )
@@ -589,10 +599,9 @@ function remasterChart(
   // highlight root person
   nodes
     .filter(d => d.handle === graph.rootPerson?.handle)
-    .style(
-      'filter',
-      'drop-shadow(0 3px 8px var(--grampsjs-body-font-color-30))'
-    )
+    .select('.personBox')
+    .style('stroke', 'var(--md-sys-color-primary)')
+    .style('stroke-width', 2)
 
   // kill hidden graphviz generated svg
   gvchartx.remove()

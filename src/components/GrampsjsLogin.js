@@ -88,7 +88,7 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
           height: 56px;
           padding: 20px 16px 8px;
           border: 1px solid var(--md-sys-color-outline);
-          border-radius: 8px;
+          border-radius: var(--grampsjs-frame-radius);
           background: transparent;
           color: var(--md-sys-color-on-surface);
           font-family: var(--grampsjs-body-font-family);

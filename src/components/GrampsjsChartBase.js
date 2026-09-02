@@ -14,6 +14,8 @@ export class GrampsjsChartBase extends GrampsjsAppStateMixin(LitElement) {
         div#container {
           display: flex;
           height: var(--grampsjs-chart-height, calc(100vh - 165px));
+          padding: 8px;
+          overflow: hidden;
         }
       `,
     ]
@@ -35,7 +37,9 @@ export class GrampsjsChartBase extends GrampsjsAppStateMixin(LitElement) {
   }
 
   render() {
-    return html`<div id="container">${this.renderChart()}</div>`
+    return html`<div id="container" class="heritage-frame">
+      ${this.renderChart()}
+    </div>`
   }
 
   firstUpdated() {
@@ -47,8 +51,8 @@ export class GrampsjsChartBase extends GrampsjsAppStateMixin(LitElement) {
   handleResize() {
     const container = this.renderRoot.getElementById('container')
     if (container) {
-      this.containerWidth = container.offsetWidth
-      this.containerHeight = container.offsetHeight
+      this.containerWidth = Math.max(0, container.clientWidth - 16)
+      this.containerHeight = Math.max(0, container.clientHeight - 16)
     }
   }
 }

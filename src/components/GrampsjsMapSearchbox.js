@@ -52,14 +52,14 @@ class GrampsjsMapSearchbox extends GrampsjsAppStateMixin(LitElement) {
         }
 
         #searchbar {
-          background-color: var(--md-sys-color-surface-container-high);
-          border-radius: 9999px;
+          background: var(--grampsjs-frame-paper);
+          border-radius: var(--grampsjs-frame-radius);
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12),
             0 1px 2px rgba(0, 0, 0, 0.08);
           display: flex;
           align-items: center;
-          padding: 0 4px 0 16px;
-          height: 48px;
+          padding: 4px 8px 4px 16px;
+          min-height: 48px;
           gap: 4px;
         }
 
@@ -137,8 +137,9 @@ class GrampsjsMapSearchbox extends GrampsjsAppStateMixin(LitElement) {
         }
 
         #panel {
-          background-color: var(--md-sys-color-surface-container-high);
-          border-radius: 18px;
+          background: var(--grampsjs-frame-paper);
+          border-radius: var(--grampsjs-frame-radius);
+          padding: 8px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12),
             0 1px 2px rgba(0, 0, 0, 0.08);
           overflow-x: hidden;

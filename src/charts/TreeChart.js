@@ -7,6 +7,7 @@ import {chartNameDisplayFormat, fireEvent} from '../util.js'
 import {joinName} from '../branding.js'
 import {appendAddPersonButton} from './addPersonButton.js'
 import {personCardLines} from './util.js'
+import {appendHeritageFrame} from './heritageFrame.js'
 
 const genderColor = {
   0: 'var(--color-girl)',
@@ -169,18 +170,13 @@ function TreeChartCore(
     .attr('transform', `translate(${-boxWidth / 2},${-boxHeight / 2})`)
     .attr('id', d => d.data.id) // Unique id for each slice
 
-  node
-    .filter(d => d.data.person)
-    .append('rect')
-    .attr('class', 'person-card-inset')
-    .attr('width', boxWidth - 8)
-    .attr('height', boxHeight - 8)
-    .attr('x', -boxWidth / 2 + 4)
-    .attr('y', -boxHeight / 2 + 4)
-    .attr('fill', 'none')
-    .attr('stroke', 'var(--md-sys-color-outline-variant)')
-    .attr('stroke-width', 0.5)
-    .attr('pointer-events', 'none')
+  appendHeritageFrame(
+    node.filter(d => d.data.person),
+    boxWidth,
+    boxHeight,
+    -boxWidth / 2,
+    -boxHeight / 2
+  )
 
   function triangleClicked(e) {
     fireEvent(this, 'pedigree:show-children', {pageX: e.pageX, pageY: e.pageY})
@@ -367,6 +363,7 @@ function TreeChartCore(
             objectType: 'person',
             grampsId,
             anchorRect: this.getBoundingClientRect(),
+            anchorElement: this,
           },
         })
       )

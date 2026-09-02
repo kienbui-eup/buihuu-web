@@ -33,20 +33,35 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
       sharedStyles,
       css`
         .maplibregl-ctrl-group {
-          border-radius: 12px !important;
+          border-radius: var(--grampsjs-frame-radius) !important;
+        }
+        .mapcontainer {
+          position: relative;
+          padding: 8px;
+          box-sizing: border-box;
+          background: var(--grampsjs-frame-paper);
+          border-radius: var(--grampsjs-frame-radius);
+        }
+        .map-layerswitcher {
+          position: absolute;
+          left: 16px;
+          bottom: 46px;
+          z-index: 1;
         }
         .maplibregl-ctrl-bottom-right {
           right: 8px;
         }
         .grampsjs-place-tooltip .maplibregl-popup-content {
-          padding: 4px 12px;
-          border-radius: 9999px;
+          padding: 12px 16px;
+          border-radius: var(--grampsjs-frame-radius);
           font-size: 13px;
           font-weight: 500;
-          background: var(--md-sys-color-surface-container-high);
+          background: var(--grampsjs-frame-paper);
           color: var(--md-sys-color-on-surface);
           box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-          white-space: nowrap;
+          max-width: min(260px, calc(100vw - 48px));
+          white-space: normal;
+          overflow-wrap: anywhere;
         }
         .grampsjs-place-tooltip .maplibregl-popup-tip {
           border-top-color: var(

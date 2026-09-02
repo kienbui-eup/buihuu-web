@@ -28,13 +28,14 @@ export class GrampsjsGallery extends GrampsjsAppStateMixin(LitElement) {
             auto-fill,
             minmax(max(100px, 15%), 1fr)
           );
-          gap: 4px;
+          gap: 12px;
           margin-top: 8px;
         }
 
         .tile {
           cursor: pointer;
-          border-radius: 6px;
+          border-radius: var(--grampsjs-frame-radius);
+          background: var(--grampsjs-frame-paper);
           overflow: hidden;
           aspect-ratio: 1;
           position: relative;
@@ -42,7 +43,7 @@ export class GrampsjsGallery extends GrampsjsAppStateMixin(LitElement) {
 
         .tile grampsjs-img {
           position: absolute;
-          inset: 0;
+          inset: 8px;
         }
 
         .tile-overlay {

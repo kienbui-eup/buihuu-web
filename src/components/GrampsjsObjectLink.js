@@ -78,6 +78,7 @@ export class GrampsjsObjectLink extends LitElement {
           objectType: this.objectType,
           grampsId: this.grampsId,
           anchorRect,
+          anchorElement: this,
         },
       })
     )

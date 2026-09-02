@@ -17,12 +17,15 @@ export class GrampsjsConnectionChart extends GrampsjsResizeContainerMixin(
         }
 
         svg .personBox {
-          fill: var(--grampsjs-connection-chart-person-box);
+          fill: var(--md-sys-color-surface);
         }
 
         div#container {
-          border: 2px solid var(--grampsjs-connection-chart-border-color);
-          border-radius: 16px;
+          border: 1px solid transparent;
+          border-radius: var(--grampsjs-frame-radius);
+          background: var(--grampsjs-frame-paper);
+          padding: 8px;
+          box-sizing: border-box;
           overflow: hidden;
           width: 100%;
           resize: vertical;

@@ -389,6 +389,7 @@ export function FanChart(
             objectType: 'person',
             grampsId,
             anchorRect: this.getBoundingClientRect(),
+            anchorElement: this,
           },
         })
       )

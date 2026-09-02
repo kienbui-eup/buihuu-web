@@ -29,7 +29,8 @@ export class GrampsjsDiffJson extends GrampsjsAppStateMixin(LitElement) {
         #container {
           overflow: hidden;
           border: 1px solid var(--grampsjs-body-font-color-20);
-          border-radius: 8px;
+          border-radius: var(--grampsjs-frame-radius);
+          background: var(--grampsjs-frame-paper);
           padding: 20px 8px;
         }
 

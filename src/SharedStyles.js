@@ -1,6 +1,9 @@
 import {css} from 'lit'
+import {heritageFrameStyles} from './HeritageStyles.js'
 
 export const sharedStyles = css`
+  ${heritageFrameStyles}
+
   :host {
     line-height: 1.6;
     --grampsjs-body-font-family: 'Be Vietnam Pro', Arial, sans-serif;
@@ -23,13 +26,33 @@ export const sharedStyles = css`
     --md-sys-typescale-body-small-font: var(--grampsjs-body-font-family);
     --md-sys-typescale-body-medium-font: var(--grampsjs-body-font-family);
     --md-sys-typescale-body-large-font: var(--grampsjs-body-font-family);
-    --md-primary-tab-label-text-weight: 425;
+    --md-primary-tab-label-text-weight: 500;
     --md-primary-tab-label-text-size: 16px;
     --md-primary-tab-active-indicator-height: 3px;
     --md-divider-thickness: 0px;
     --md-list-item-leading-space: 16px;
     --md-list-item-trailing-space: 16px;
     --mdc-list-side-padding: 16px;
+    --md-dialog-container-shape: var(--grampsjs-frame-radius);
+    --md-dialog-container-color: var(--grampsjs-frame-paper);
+    --md-dialog-headline-font: var(--grampsjs-heading-font-family);
+    --md-dialog-headline-weight: 600;
+    --md-dialog-supporting-text-line-height: 1.65;
+    --md-menu-container-shape: var(--grampsjs-frame-radius);
+    --md-menu-container-color: var(--md-sys-color-surface);
+    --md-menu-container-elevation: 1;
+    --md-outlined-text-field-container-shape: var(--grampsjs-frame-radius);
+    --md-outlined-select-text-field-container-shape: var(
+      --grampsjs-frame-radius
+    );
+    --md-outlined-button-container-shape: 4px;
+    --md-filled-button-container-shape: 4px;
+    --md-filled-tonal-button-container-shape: 4px;
+    --mdc-shape-medium: 4px;
+  }
+
+  md-menu::part(elevation) {
+    box-shadow: inset 0 0 0 1px var(--md-sys-color-outline-variant);
   }
 
   md-list-item {
@@ -40,7 +63,7 @@ export const sharedStyles = css`
       --grampsjs-body-font-color-60
     );
     --md-list-item-trailing-supporting-text-size: 0.875rem;
-    --md-list-item-trailing-supporting-text-weight: 380;
+    --md-list-item-trailing-supporting-text-weight: 400;
   }
 
   label {
@@ -48,7 +71,7 @@ export const sharedStyles = css`
     place-items: center;
     gap: 12px;
     font-size: 15px;
-    font-weight: 350;
+    font-weight: 400;
     color: var(--md-sys-color-on-background);
   }
 

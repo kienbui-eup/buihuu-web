@@ -15,7 +15,8 @@ export class GrampsjsSysinfo extends GrampsjsAppStateMixin(LitElement) {
       css`
         div.copy {
           border: 1px solid var(--grampsjs-body-font-color-20);
-          border-radius: 5px;
+          border-radius: var(--grampsjs-frame-radius);
+          background: var(--grampsjs-frame-paper);
           padding: 20px;
           max-width: 20em;
           line-height: 26px;

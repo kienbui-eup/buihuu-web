@@ -48,6 +48,8 @@ export class GrampsjsTimeline extends GrampsjsAppStateMixin(LitElement) {
           flex: 1;
           min-height: 0;
           position: relative;
+          background: var(--grampsjs-frame-paper);
+          border-radius: var(--grampsjs-frame-radius);
         }
 
         .chart-controls {
@@ -65,8 +67,8 @@ export class GrampsjsTimeline extends GrampsjsAppStateMixin(LitElement) {
           left: 50%;
           transform: translateX(-50%);
           padding: 6px 14px;
-          border-radius: 16px;
-          background-color: var(--grampsjs-color-shade-230);
+          border-radius: var(--grampsjs-frame-radius);
+          background: var(--grampsjs-frame-paper);
           font-size: 13px;
           color: var(--grampsjs-body-font-color-70);
           pointer-events: none;

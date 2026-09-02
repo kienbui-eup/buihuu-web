@@ -73,8 +73,8 @@ export class GrampsjsViewAdminSettings extends GrampsjsView {
       css`
         .card {
           padding: 1em 1em;
-          border-radius: 16px;
-          background-color: var(--grampsjs-color-shade-230);
+          border-radius: var(--grampsjs-frame-radius);
+          background: var(--grampsjs-frame-paper);
         }
 
         .pre {
@@ -85,7 +85,7 @@ export class GrampsjsViewAdminSettings extends GrampsjsView {
           font-size: 16px;
           padding: 0 1.4em;
           border: 1px solid var(--grampsjs-alert-error-font-color);
-          border-radius: 8px;
+          border-radius: var(--grampsjs-frame-radius);
         }
 
         .danger-zone-row {

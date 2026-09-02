@@ -62,13 +62,13 @@ class GrampsjsMapLayerSwitcher extends GrampsjsAppStateMixin(LitElement) {
         class="map-layer-switcher"
         style="position: relative;
       width: fit-content;
-      bottom: 46px;
-      left: 10px;
+      bottom: 0;
+      left: 0;
       z-index: 1;
-      background: var(--md-sys-color-surface-container-high);
-      border-radius: 12px;
+      background: var(--grampsjs-frame-paper);
+      border-radius: var(--grampsjs-frame-radius);
       box-shadow: 0 1px 4px var(--grampsjs-body-font-color-20);
-      padding: 2px;
+      padding: 6px;
       font-size: 14px;
       display: flex;
       align-items: center;

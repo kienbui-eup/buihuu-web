@@ -21,6 +21,12 @@ export class GrampsjsSearchResultList extends GrampsjsAppStateMixin(
       sharedStyles,
       listAvatarStyles,
       css`
+        md-list {
+          padding: 8px;
+          background: var(--grampsjs-frame-paper);
+          border-radius: var(--grampsjs-frame-radius);
+        }
+
         md-icon-button {
           --md-icon-button-icon-size: 20px;
         }

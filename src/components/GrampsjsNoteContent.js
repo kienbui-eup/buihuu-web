@@ -139,6 +139,7 @@ export class GrampsjsNoteContent extends LitElement {
               objectType: parsed.objectType,
               grampsId: parsed.grampsId,
               anchorRect: a.getBoundingClientRect(),
+              anchorElement: a,
             },
           })
         )
