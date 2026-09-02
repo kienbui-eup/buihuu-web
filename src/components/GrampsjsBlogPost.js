@@ -15,6 +15,36 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
     return [
       sharedStyles,
       css`
+        :host {
+          display: block;
+          min-width: 0;
+        }
+
+        .reading-layout {
+          max-width: 44rem;
+          margin-inline: auto;
+        }
+
+        .reading-layout.with-sidebar {
+          display: grid;
+          grid-template-columns: minmax(0, 44rem) 16rem;
+          column-gap: 2rem;
+          max-width: 62rem;
+          align-items: start;
+        }
+
+        .article-header,
+        #note {
+          min-width: 0;
+          grid-column: 1;
+        }
+
+        .with-sidebar grampsjs-article-contents {
+          grid-column: 2;
+          grid-row: 1 / span 2;
+          align-self: start;
+        }
+
         h2 {
           color: var(--grampsjs-note-color);
           font-weight: 530;
@@ -28,7 +58,7 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
 
         h3.author {
           font-family: var(--grampsjs-body-font-family);
-          font-weight: 300;
+          font-weight: 400;
           font-size: 16px;
           text-transform: uppercase;
           letter-spacing: 0.15em;
@@ -51,8 +81,7 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
         }
 
         #note-wrapper {
-          margin: 0 auto;
-          max-width: 40em;
+          min-width: 0;
         }
 
         grampsjs-note-content {
@@ -75,6 +104,13 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
             --grampsjs-note-font-size: 19px;
           }
         }
+
+        @media print {
+          .reading-layout.with-sidebar {
+            display: block;
+            max-width: 44rem;
+          }
+        }
       `,
     ]
   }
@@ -84,6 +120,7 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
       source: {type: Object},
       note: {type: Object},
       _sections: {state: true},
+      _wideContents: {state: true},
     }
   }
 
@@ -92,6 +129,20 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
     this.source = {}
     this.note = {}
     this._sections = []
+    this._wideContents = false
+  }
+
+  connectedCallback() {
+    super.connectedCallback()
+    this._layoutObserver = new ResizeObserver(([entry]) => {
+      this._wideContents = entry.contentRect.width >= 880
+    })
+    this._layoutObserver.observe(this)
+  }
+
+  disconnectedCallback() {
+    this._layoutObserver?.disconnect()
+    super.disconnectedCallback()
   }
 
   render() {
@@ -99,27 +150,36 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
       return html``
     }
     return html`
-      <div class="blog-preview">
-        <h2>${this.source.title}</h2>
-        <h3 class="author">
-          ${this.source.author} ~
-          ${this.appState.i18n.lang
-            ? html`<grampsjs-timedelta
-                timestamp="${this.source.change}"
-                locale="${this.appState.i18n.lang}"
-              ></grampsjs-timedelta>`
+      <div
+        class="reading-layout ${this._wideContents && this._sections.length
+          ? 'with-sidebar'
+          : ''}"
+      >
+        <header class="article-header">
+          <h2>${this.source.title}</h2>
+          <h3 class="author">
+            ${this.source.author} ~
+            ${this.appState.i18n.lang
+              ? html`<grampsjs-timedelta
+                  timestamp="${this.source.change}"
+                  locale="${this.appState.i18n.lang}"
+                ></grampsjs-timedelta>`
+              : ''}
+          </h3>
+          ${this.source?.media_list?.length
+            ? html`<div id="image">${this._renderImage()}</div>`
             : ''}
-        </h3>
-        ${this.source?.media_list?.length
-          ? html`<div id="image">${this._renderImage()}</div>`
+        </header>
+        ${this._sections.length
+          ? html`<grampsjs-article-contents
+              .sections=${this._sections}
+              .articleId=${this.source.gramps_id}
+              .sidebar=${this._wideContents}
+              @article-section:select=${this._scrollToSection}
+            ></grampsjs-article-contents>`
           : ''}
         <div id="note">
           <div id="note-wrapper">
-            <grampsjs-article-contents
-              .sections=${this._sections}
-              .articleId=${this.source.gramps_id}
-              @article-section:select=${this._scrollToSection}
-            ></grampsjs-article-contents>
             <grampsjs-note-content
               grampsId="${this.note?.gramps_id || ''}"
               content="${this.note?.formatted?.html ||
