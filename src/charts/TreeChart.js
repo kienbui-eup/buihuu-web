@@ -1,7 +1,7 @@
 import {min, max} from 'd3-array'
 import {create, select} from 'd3-selection'
 import {hierarchy, tree} from 'd3-hierarchy'
-import {curveBumpX, link, symbolTriangle, symbol} from 'd3-shape'
+import {curveBumpY, link, symbolTriangle, symbol} from 'd3-shape'
 import {zoom} from 'd3-zoom'
 import {chartNameDisplayFormat, fireEvent} from '../util.js'
 import {joinName} from '../branding.js'
@@ -15,49 +15,30 @@ const genderColor = {
   3: 'var(--color-other)',
 }
 
-// Returns the total depth of the tree
-function countDepthOfTree(treeData) {
-  if (treeData == null) {
-    return 0
-  }
-  return (
-    1 +
-    Math.max(
-      countDepthOfTree(treeData?.children?.[0]),
-      countDepthOfTree(treeData?.children?.[1])
-    )
-  )
-}
-
-function getMinMaxX(descendants) {
-  const xValues = descendants.map(d => d.x)
-  const maxX = max(xValues)
-  const minX = min(xValues)
-  return [minX, maxX]
-}
-
 function TreeChartCore(
   svgParent,
   data,
   {
-    depth = 3,
-    padding = 20, // horizontal padding for first and last column
+    padding = 20,
     gapX = 30, // horizontal gap between boxes
-    gapY = 5, // vertical gap between boxes
+    gapY = 60, // vertical gap between generations
     stroke = 'var(--grampsjs-body-font-color-70)', // stroke for links
     strokeWidth = 1, // stroke width for links
     strokeOpacity = 0.4, // stroke opacity for links
     strokeLinejoin, // stroke line join for links
     strokeLinecap, // stroke line cap for links
-    curve = curveBumpX, // curve for the link
+    curve = curveBumpY, // curve for the link
     boxWidth = 190,
     boxHeight = 90,
     imgPadding = 10,
     childrenTriangle = true,
     getImageUrl = null,
-    orientation = 'LTR',
+    ancestors = false,
+    showRoot = true,
     nameDisplayFormat = chartNameDisplayFormat.surnameThenGiven,
     canEdit = false,
+    selectedGrampsId = '',
+    onPersonClick = null,
   } = {}
 ) {
   // Create a hierarchical data structure based on the input data
@@ -65,23 +46,13 @@ function TreeChartCore(
 
   const descendants = root.descendants()
 
-  // The true depth of the tree may be less than the passed in "depth" if the tree just doesn't
-  // go that far back
-  const trueDepth = Math.min(countDepthOfTree(data), depth)
-
+  // Người đang xem ở (0, 0); tổ tiên phía trên, con cháu phía dưới.
   tree()
-    .nodeSize([boxHeight + gapY, boxWidth + gapX])
-    .separation((a, b) => (a.parent === b.parent ? 1 : 1))(root)
+    .nodeSize([boxWidth + gapX, boxHeight + gapY])
+    .separation(() => 1)(root)
 
-  // Center the tree.
-  let x0 = Infinity
-  let x1 = -x0
-  root.each(d => {
-    if (d.x > x1) x1 = d.x
-    if (d.x < x0) x0 = d.x
-  })
-
-  if (orientation === 'RTL') {
+  const direction = ancestors ? -1 : 1
+  if (ancestors) {
     descendants.forEach(d => {
       // eslint-disable-next-line no-param-reassign
       d.y = -d.y
@@ -89,18 +60,14 @@ function TreeChartCore(
   }
   // Use the required curve
   if (typeof curve !== 'function') throw new Error('Unsupported curve')
-  const width = trueDepth * boxWidth + (trueDepth - 1) * gapX + 2 * padding
-  const [minX, maxX] = getMinMaxX(descendants)
-  const height = maxX - minX + boxHeight
-  const yOffset = minX - boxHeight / 2
-  const xOffset =
-    orientation === 'RTL'
-      ? boxWidth / 2 + padding - width
-      : -boxWidth / 2 - padding
+  const bounds = {
+    left: min(descendants, d => d.x) - boxWidth / 2 - padding,
+    right: max(descendants, d => d.x) + boxWidth / 2 + padding,
+    top: min(descendants, d => d.y) - boxHeight / 2 - padding,
+    bottom: max(descendants, d => d.y) + boxHeight / 2 + padding,
+  }
 
-  const chart = svgParent
-    .append('g')
-    .attr('transform', `translate(${-xOffset},${0})`)
+  const chart = svgParent.append('g')
 
   // Giữ lại selection đường nối để tô đậm dòng dõi khi rê chuột lên một ô.
   const linkPaths = chart
@@ -117,19 +84,13 @@ function TreeChartCore(
     .attr('class', 'tree-link')
     .attr('d', d => {
       const sourceX = d.source.x
-      const sourceY =
-        orientation === 'LTR'
-          ? d.source.y + boxWidth / 2 - 10
-          : d.source.y - boxWidth / 2 + 10
+      const sourceY = d.source.y + (direction * boxHeight) / 2
       const targetX = d.target.x
-      const targetY =
-        orientation === 'LTR'
-          ? d.target.y - boxWidth / 2 + 10
-          : d.target.y + boxWidth / 2 - 10
+      const targetY = d.target.y - (direction * boxHeight) / 2
 
       return link(curve)
-        .x(dd => dd.y)
-        .y(dd => dd.x)({
+        .x(dd => dd.x)
+        .y(dd => dd.y)({
         source: {x: sourceX, y: sourceY},
         target: {x: targetX, y: targetY},
       })
@@ -138,14 +99,31 @@ function TreeChartCore(
   const node = chart
     .append('g')
     .selectAll('a')
-    .data(descendants)
+    .data(descendants.filter(d => showRoot || d.depth > 0))
     .join('a')
-    .attr('transform', d => `translate(${d.y},${d.x})`)
-    .style('filter', d =>
-      d.depth === 0
-        ? 'drop-shadow(0 3px 8px var(--grampsjs-body-font-color-30))'
+    .attr('class', d => (d.depth === 0 ? 'tree-root' : null))
+    .classed(
+      'tree-selected',
+      d => d.data.person?.gramps_id === selectedGrampsId
+    )
+    .attr('data-gramps-id', d => d.data.person?.gramps_id)
+    .attr('role', onPersonClick ? 'button' : null)
+    .attr('tabindex', onPersonClick ? 0 : null)
+    .attr('aria-expanded', d =>
+      onPersonClick && d.data.expandable ? String(d.data.expanded) : null
+    )
+    .attr('aria-label', d =>
+      onPersonClick
+        ? `${joinName(d.data.name_surname, d.data.name_given)}${
+            d.data.expandable
+              ? d.data.expanded
+                ? ': Thu gọn hậu duệ'
+                : `: Mở ${d.data.hiddenCount} nhánh con`
+              : ''
+          }`
         : null
     )
+    .attr('transform', d => `translate(${d.x},${d.y})`)
 
   node
     .append('rect')
@@ -156,8 +134,8 @@ function TreeChartCore(
     )
     .attr('width', 24)
     .attr('height', boxHeight - 1)
-    .attr('rx', 12)
-    .attr('ry', 12)
+    .attr('rx', 2)
+    .attr('ry', 2)
     .attr(
       'transform',
       `translate(${-boxWidth / 2 - 4},${-boxHeight / 2 + 0.5})`
@@ -165,6 +143,10 @@ function TreeChartCore(
     .attr('id', d => d.data.id) // Unique id for each rect
 
   function clicked(event, d) {
+    if (onPersonClick) {
+      onPersonClick(d.data.person?.gramps_id)
+      return
+    }
     dispatchEvent(
       new CustomEvent('pedigree:person-selected', {
         bubbles: true,
@@ -177,13 +159,28 @@ function TreeChartCore(
   node
     .append('rect')
     .filter(d => d.data.person)
-    .attr('fill', 'var(--grampsjs-color-shade-230)')
+    .attr('fill', 'var(--md-sys-color-surface)')
+    .attr('stroke', 'var(--md-sys-color-outline-variant)')
+    .attr('class', 'person-card')
     .attr('width', boxWidth)
     .attr('height', boxHeight)
-    .attr('rx', 8)
-    .attr('ry', 8)
+    .attr('rx', 2)
+    .attr('ry', 2)
     .attr('transform', `translate(${-boxWidth / 2},${-boxHeight / 2})`)
     .attr('id', d => d.data.id) // Unique id for each slice
+
+  node
+    .filter(d => d.data.person)
+    .append('rect')
+    .attr('class', 'person-card-inset')
+    .attr('width', boxWidth - 8)
+    .attr('height', boxHeight - 8)
+    .attr('x', -boxWidth / 2 + 4)
+    .attr('y', -boxHeight / 2 + 4)
+    .attr('fill', 'none')
+    .attr('stroke', 'var(--md-sys-color-outline-variant)')
+    .attr('stroke-width', 0.5)
+    .attr('pointer-events', 'none')
 
   function triangleClicked(e) {
     fireEvent(this, 'pedigree:show-children', {pageX: e.pageX, pageY: e.pageY})
@@ -191,28 +188,51 @@ function TreeChartCore(
     e.preventDefault()
   }
 
-  function yPos(d) {
-    return orientation === 'LTR'
-      ? d.y - boxWidth / 2 - 12
-      : d.y + boxWidth / 2 + 12
-  }
-
   if (childrenTriangle) {
     const triangle = symbol().type(symbolTriangle).size(200)
 
-    const angle = orientation === 'LTR' ? -90 : 90
+    const angle = ancestors ? 180 : 0
+    const triangleY = -direction * (boxHeight / 2 + 14)
 
     node
       .append('path')
       .filter(d => d.depth === 0)
       .attr('d', triangle)
-      .attr(
-        'transform',
-        d => `translate(${yPos(d)},${d.x}) rotate(${angle}) scale(-1, 0.5)`
-      )
+      .attr('transform', `translate(0,${triangleY}) rotate(${angle})`)
       .attr('fill', 'var(--grampsjs-body-font-color-30)')
       .attr('id', 'triangle-children')
       .on('click', triangleClicked)
+  }
+
+  // Dấu mở nhánh nằm ngoài phần tên, cả ô là vùng bấm trên điện thoại.
+  if (onPersonClick) {
+    const toggles = node
+      .filter(d => d.data.expandable)
+      .append('g')
+      .attr('transform', `translate(0,${boxHeight / 2 + 14})`)
+      .attr('pointer-events', 'none')
+    toggles
+      .append('rect')
+      .attr('x', -27)
+      .attr('y', -12)
+      .attr('width', 54)
+      .attr('height', 24)
+      .attr('rx', 12)
+      .attr('fill', 'var(--md-sys-color-surface)')
+      .attr('stroke', 'var(--md-sys-color-primary)')
+    toggles
+      .append('text')
+      .attr('text-anchor', 'middle')
+      .attr('dy', '0.35em')
+      .attr('font-size', 12)
+      .attr('fill', 'var(--md-sys-color-primary)')
+      .text(d => (d.data.expanded ? '−' : `+${d.data.hiddenCount}`))
+    node.on('keydown', (event, d) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        clicked(event, d)
+      }
+    })
   }
 
   const imgRadius = (boxHeight - imgPadding * 2) / 2
@@ -240,7 +260,7 @@ function TreeChartCore(
 
   // Ô người viết theo lối gia phả Việt: họ tên liền một dòng, rồi tên tự, đời
   // và ngày giỗ. Xem personCardLines trong ./util.js.
-  const lineHeight = 17
+  const lineHeight = 19
 
   const fullName = d =>
     nameDisplayFormat === chartNameDisplayFormat.surnameThenGiven
@@ -356,7 +376,7 @@ function TreeChartCore(
       window.dispatchEvent(new CustomEvent('object:preview-hide'))
     })
 
-  return [xOffset, yOffset, width, height, boxWidth + 2 * padding]
+  return bounds
 }
 
 export function TreeChart(dataDescendants, dataAncestors, chartsettings) {
@@ -366,7 +386,7 @@ export function TreeChart(dataDescendants, dataAncestors, chartsettings) {
         svg.select('#chart-content').attr('transform', e.transform)
       )
     )
-    .attr('font-family', 'Inter var')
+    .attr('font-family', 'Be Vietnam Pro, Arial, sans-serif')
     .attr('font-size', 13)
 
   const chartContent = svg.append('g').attr('id', 'chart-content')
@@ -377,70 +397,40 @@ export function TreeChart(dataDescendants, dataAncestors, chartsettings) {
     chartContent.attr('transform', chartsettings.initialZoom.toString())
   }
 
-  let width = 0
-  let height = 0
-  let xMin = 0
-  let yMin = 0
-  let yMax = 0
-  let xOffset = 0
-  let yOffset = 0
-
-  // Trục thời gian chạy từ trái sang phải: đời trước bên trái, đời sau bên phải.
-  //
-  // Bản gốc xếp ngược lại - hậu duệ toả sang trái, tổ tiên sang phải. Gia phả
-  // Việt đọc theo chiều thuỷ tổ trước rồi lần xuống các đời sau, cùng chiều với
-  // chiều đọc chữ, nên hai nửa đổi vai cho nhau: hậu duệ vẽ LTR và đứng yên tại
-  // gốc, tổ tiên vẽ RTL và lùi sang trái đúng bằng bề rộng của mình, trừ đi ô
-  // gốc mà hai nửa dùng chung.
+  const bounds = []
+  // Hai nửa chung một gốc, nối theo chiều dọc. Chỉ vẽ ô gốc một lần để viền
+  // focus và nút thao tác không bị chồng trong biểu đồ đồng hồ cát.
   if (dataDescendants) {
-    const chartD = chartContent.append('g')
-    const [xD, yD, widthD, heightD] = TreeChartCore(chartD, dataDescendants, {
-      ...chartsettings,
-      orientation: 'LTR',
-      depth: chartsettings.nDesc,
-    })
-    chartD.attr('transform', 'translate(0,0)')
-    yMin = Math.min(yMin, yD)
-    yMax = Math.max(yMax, yD + heightD)
-    xMin = Math.min(xMin, xD)
-    width += widthD
+    bounds.push(
+      TreeChartCore(chartContent.append('g'), dataDescendants, {
+        ...chartsettings,
+        ancestors: false,
+      })
+    )
   }
   if (dataAncestors) {
-    const chartA = chartContent.append('g')
-    const [xA, yA, widthA, heightA, overlap] = TreeChartCore(
-      chartA,
-      dataAncestors,
-      {...chartsettings, orientation: 'RTL', depth: chartsettings.nAnc}
+    bounds.push(
+      TreeChartCore(chartContent.append('g'), dataAncestors, {
+        ...chartsettings,
+        ancestors: true,
+        showRoot: !dataDescendants,
+      })
     )
-    chartA.attr('transform', `translate(${-widthA + overlap},0)`)
-    yMin = Math.min(yMin, yA)
-    yMax = Math.max(yMax, yA + heightA)
-    // Nửa tổ tiên bị dịch sang trái bằng transform ở trên, nên biên trái thật của
-    // nó không phải xA mà là xA cộng nửa ô gốc — chính là overlap/2. Lấy thẳng xA
-    // thì viewBox mở quá xa về bên trái và ô ngoài cùng bên phải bị cắt mất.
-    xMin = Math.min(xMin, xA + overlap / 2)
-    width += widthA - overlap
   }
-
-  xOffset = xMin
-  height = yMax - yMin
-  if (chartsettings.bboxWidth > width) {
-    xOffset -= (chartsettings.bboxWidth - width) / 2
-  }
-  yOffset = yMin
-  if (chartsettings.bboxHeight > height) {
-    yOffset -= (chartsettings.bboxHeight - height) / 2
-  } else {
-    // Taller than the viewport: anchoring on the top edge scrolls the person
-    // the chart is about out of sight and shows their remotest ancestors
-    // instead. Keep them centred — they sit at y = 0 by construction.
-    yOffset = -chartsettings.bboxHeight / 2
-  }
+  const left = min(bounds, b => b.left) ?? 0
+  const right = max(bounds, b => b.right) ?? 0
+  const top = min(bounds, b => b.top) ?? 0
+  const bottom = max(bounds, b => b.bottom) ?? 0
+  const width = chartsettings.bboxWidth
+  const height = chartsettings.bboxHeight
   svg.attr('viewBox', [
-    xOffset,
-    yOffset,
-    chartsettings.bboxWidth,
-    chartsettings.bboxHeight,
+    right - left <= width ? (left + right - width) / 2 : -width / 2,
+    bottom - top <= height ? (top + bottom - height) / 2 : -height / 2,
+    width,
+    height,
   ])
+  if (chartsettings.initialViewBox) {
+    svg.attr('viewBox', chartsettings.initialViewBox)
+  }
   return svg.node()
 }

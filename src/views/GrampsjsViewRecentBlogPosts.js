@@ -16,7 +16,8 @@ export class GrampsjsViewRecentBlogPosts extends GrampsjsConnectedComponent {
         }
 
         h3 {
-          margin-bottom: 15px;
+          margin: 0 0 15px;
+          font-size: 24px;
         }
       `,
     ]
@@ -26,7 +27,13 @@ export class GrampsjsViewRecentBlogPosts extends GrampsjsConnectedComponent {
     if (!this._data?.data?.length) {
       return html`
         <h3>${this._('Latest Blog Post')}</h3>
-        <p>${this._('None')}.</p>
+        <p>
+          Chưa có bài viết. Những câu chuyện và kỷ niệm của dòng họ sẽ được lưu
+          lại tại đây.
+        </p>
+        ${this.appState.permissions.canEdit
+          ? html`<a href="/blog">${this._('Blog')}</a>`
+          : ''}
       `
     }
     return html`

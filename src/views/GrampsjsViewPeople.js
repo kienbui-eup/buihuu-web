@@ -11,7 +11,7 @@ import {
   personProfileDisplayName,
   getAttributeValue,
 } from '../util.js'
-import {ATTR_GENERATION} from '../branding.js'
+import {ATTR_GENERATION, ATTR_DEATH_ANNIVERSARY} from '../branding.js'
 import '../components/GrampsjsFilterYears.js'
 import '../components/GrampsjsFilterProperties.js'
 import '../components/GrampsjsFilterTags.js'
@@ -37,11 +37,18 @@ export class GrampsjsViewPeople extends GrampsjsViewObjectsBase {
     this._columns = [
       {name: 'Full name', key: 'name', sortKey: 'surname'},
       {name: 'Generation', key: 'generation'},
-      {name: 'Birth Date', key: 'birth', sortKey: 'birth'},
+      {name: 'Death anniversary', key: 'memorial'},
+      {
+        name: 'Birth Date',
+        key: 'birth',
+        sortKey: 'birth',
+        defaultVisible: false,
+      },
       {
         name: 'Death Date',
         key: 'death',
         sortKey: 'death',
+        defaultVisible: false,
       },
       {name: 'Birth Place', key: 'birthPlace', defaultVisible: false},
       {name: 'Death Place', key: 'deathPlace', defaultVisible: false},
@@ -91,6 +98,9 @@ export class GrampsjsViewPeople extends GrampsjsViewObjectsBase {
       grampsId: row.gramps_id,
       name: personProfileDisplayName(row?.profile),
       generation: getAttributeValue(row, ATTR_GENERATION),
+      memorial: getAttributeValue(row, ATTR_DEATH_ANNIVERSARY)
+        ? `${getAttributeValue(row, ATTR_DEATH_ANNIVERSARY)} ÂL`
+        : '',
       birth: birthDate,
       birthPlace: row?.profile?.birth?.place_name,
       death: deathDate,

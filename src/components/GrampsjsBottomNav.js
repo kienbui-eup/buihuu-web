@@ -43,8 +43,9 @@ class GrampsjsBottomNav extends GrampsjsAppStateMixin(LitElement) {
           display: flex;
           justify-content: space-around;
           align-items: stretch;
-          background: var(--grampsjs-color-drawer-background, #fff);
-          border-top: 1px solid var(--grampsjs-body-font-color-20);
+          background: var(--md-sys-color-surface);
+          border-top: 1px solid var(--md-sys-color-outline-variant);
+          box-shadow: 0 -4px 20px var(--grampsjs-body-font-color-5);
           padding-bottom: env(safe-area-inset-bottom, 0px);
           font-family: var(--grampsjs-body-font-family);
         }
@@ -60,14 +61,14 @@ class GrampsjsBottomNav extends GrampsjsAppStateMixin(LitElement) {
           gap: 2px;
           text-decoration: none;
           color: var(--grampsjs-color-drawer-text, #333);
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 400;
           line-height: 1.2;
         }
 
         a[aria-current='page'] {
           color: var(--grampsjs-color-icon-selected);
-          font-weight: 500;
+          font-weight: 600;
         }
 
         a[aria-current='page'] .pill {
@@ -80,9 +81,9 @@ class GrampsjsBottomNav extends GrampsjsAppStateMixin(LitElement) {
         }
 
         .pill {
-          height: 26px;
-          width: 48px;
-          border-radius: 13px;
+          height: 28px;
+          width: 52px;
+          border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;

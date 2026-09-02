@@ -13,7 +13,7 @@ export class GrampsjsView extends GrampsjsAppStateMixin(LitElement) {
       css`
         :host {
           margin: 25px 40px;
-          background-color: var(--md-sys-color-surface);
+          background-color: transparent;
         }
 
         @media (max-width: 768px) {

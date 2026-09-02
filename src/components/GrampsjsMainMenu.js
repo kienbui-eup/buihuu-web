@@ -38,6 +38,7 @@ import {
 import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import './GrampsjsIcon.js'
+import './GrampsjsHeritageMark.js'
 
 const BASE_DIR = ''
 
@@ -78,14 +79,34 @@ class GrampsjsMainMenu extends GrampsjsAppStateMixin(LitElement) {
     return [
       sharedStyles,
       css`
+        .identity {
+          padding: 28px 20px 20px;
+          border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        }
+        .identity strong {
+          display: block;
+          font: 600 20px/1.5 var(--grampsjs-heading-font-family);
+          color: var(--md-sys-color-primary);
+          margin-top: 12px;
+        }
+        .identity small {
+          font-size: 12px;
+          color: var(--md-sys-color-on-surface-variant);
+        }
+        md-list {
+          background: transparent;
+          padding: 12px 8px;
+        }
         md-list-item {
           --md-list-item-label-text-color: var(--grampsjs-color-drawer-text);
           --md-list-item-label-text-size: 1rem;
           --md-list-item-label-text-weight: 400;
-          --md-list-item-one-line-container-height: 40px;
+          --md-list-item-one-line-container-height: 48px;
+          border-radius: 8px;
         }
 
         md-list-item[selected] {
+          background: var(--md-sys-color-secondary-container);
           --md-list-item-label-text-color: var(--grampsjs-color-icon-selected);
           --md-list-item-label-text-weight: 500;
         }
@@ -191,125 +212,135 @@ class GrampsjsMainMenu extends GrampsjsAppStateMixin(LitElement) {
   render() {
     const p = this.appState.path.page
     const dnaPages = ['dna-matches', 'dna-chromosome', 'ydna']
-    return html` <md-list>
-      ${this._item('/', this._('Home'), mdiHome, p === 'home')}
-      ${this._item('/tree', this._('Family Tree'), mdiFamilyTree, p === 'tree')}
-      ${this._item(
-        '/people',
-        this._('People'),
-        mdiAccountGroup,
-        LIST_PAGES.includes(p)
-      )}
-      ${this._item(
-        '/lich-gio',
-        this._('Death anniversaries'),
-        mdiCandle,
-        p === 'lich-gio'
-      )}
-      ${this._item('/blog', this._('Blog'), mdiRss, p === 'blog')}
-      ${this._item('/map', this._('Map'), mdiMap, p === 'map')}
-      ${this._item('/search', this._('Search'), mdiMagnify, p === 'search')}
-      <md-divider inset></md-divider>
-      <md-list-item
-        type="button"
-        class="group-toggle"
-        @click="${this._toggleTools}"
-        aria-expanded="${this._toolsOpen ? 'true' : 'false'}"
-      >
-        ${this._('Tools')}
-        <grampsjs-icon
-          slot="end"
-          path="${this._toolsOpen ? mdiChevronUp : mdiChevronDown}"
-          color="${defaultColor}"
-        ></grampsjs-icon>
-      </md-list-item>
-      ${this._toolsOpen
-        ? html`
-            ${this._item(
-              '/timeline',
-              this._('Timeline'),
-              mdiTimelineOutline,
-              p === 'timeline'
-            )}
-            ${this._item(
-              '/medialist',
-              this._('Media'),
-              mdiImage,
-              p === 'medialist'
-            )}
-            ${this.appState.frontendConfig.hideDNALink
-              ? ''
-              : this._item(
-                  '/dna-matches',
-                  this._('DNA'),
-                  mdiDna,
-                  dnaPages.includes(p)
-                )}
-            ${this.canUseChat
-              ? this._item(
-                  '/chat',
-                  this._('Assistant'),
-                  mdiCreation,
-                  p === 'chat'
-                )
-              : ''}
-            ${this._item(
-              '/recent',
-              this._('History'),
-              mdiHistory,
-              p === 'recent'
-            )}
-            ${this._item(
-              '/bookmarks',
-              this._('_Bookmarks'),
-              mdiBookmark,
-              p === 'bookmarks'
-            )}
-            ${this._item(
-              '/tasks',
-              this._('Tasks'),
-              mdiFormatListChecks,
-              p === 'tasks'
-            )}
-            ${this._item(
-              '/reports',
-              this._('_Reports').replace('_', ''),
-              mdiFileExportOutline,
-              p === 'reports'
-            )}
-            ${this._item(
-              '/export',
-              this._('Export'),
-              mdiDownload,
-              p === 'export'
-            )}
-            ${this.appState.permissions.canViewPrivate
-              ? this._item(
-                  '/revisions',
-                  this._('Revisions'),
-                  mdiSourceCommit,
-                  p === 'revisions'
-                )
-              : ''}
-            <md-list-item
-              type="link"
-              href="${BASE_DIR}/notifications"
-              ?selected="${p === 'notifications'}"
-            >
-              ${this._icon(
-                this.unreadCount > 0 ? mdiBellBadge : mdiBell,
-                p === 'notifications'
+    return html`<div class="identity">
+        <grampsjs-heritage-mark></grampsjs-heritage-mark>
+        <strong>Gia phả Bùi Hữu</strong>
+        <small>Chỉ Bồ · Thụy Trường</small>
+      </div>
+      <md-list>
+        ${this._item('/', this._('Home'), mdiHome, p === 'home')}
+        ${this._item(
+          '/tree',
+          this._('Family Tree'),
+          mdiFamilyTree,
+          p === 'tree'
+        )}
+        ${this._item(
+          '/people',
+          this._('People'),
+          mdiAccountGroup,
+          LIST_PAGES.includes(p)
+        )}
+        ${this._item(
+          '/lich-gio',
+          this._('Death anniversaries'),
+          mdiCandle,
+          p === 'lich-gio'
+        )}
+        ${this._item('/blog', this._('Blog'), mdiRss, p === 'blog')}
+        ${this._item('/map', this._('Map'), mdiMap, p === 'map')}
+        ${this._item('/search', this._('Search'), mdiMagnify, p === 'search')}
+        <md-divider inset></md-divider>
+        <md-list-item
+          type="button"
+          class="group-toggle"
+          @click="${this._toggleTools}"
+          aria-expanded="${this._toolsOpen ? 'true' : 'false'}"
+        >
+          ${this._('Tools')}
+          <grampsjs-icon
+            slot="end"
+            path="${this._toolsOpen ? mdiChevronUp : mdiChevronDown}"
+            color="${defaultColor}"
+          ></grampsjs-icon>
+        </md-list-item>
+        ${this._toolsOpen
+          ? html`
+              ${this._item(
+                '/timeline',
+                this._('Timeline'),
+                mdiTimelineOutline,
+                p === 'timeline'
               )}
-              ${this._('Notifications')}
-              ${this.unreadCount > 0
-                ? html`<span class="unread-badge" slot="end"
-                    >${this.unreadCount}</span
-                  >`
+              ${this._item(
+                '/medialist',
+                this._('Media'),
+                mdiImage,
+                p === 'medialist'
+              )}
+              ${this.appState.frontendConfig.hideDNALink
+                ? ''
+                : this._item(
+                    '/dna-matches',
+                    this._('DNA'),
+                    mdiDna,
+                    dnaPages.includes(p)
+                  )}
+              ${this.canUseChat
+                ? this._item(
+                    '/chat',
+                    this._('Assistant'),
+                    mdiCreation,
+                    p === 'chat'
+                  )
                 : ''}
-            </md-list-item>
-          `
-        : ''}
-    </md-list>`
+              ${this._item(
+                '/recent',
+                this._('History'),
+                mdiHistory,
+                p === 'recent'
+              )}
+              ${this._item(
+                '/bookmarks',
+                this._('_Bookmarks'),
+                mdiBookmark,
+                p === 'bookmarks'
+              )}
+              ${this._item(
+                '/tasks',
+                this._('Tasks'),
+                mdiFormatListChecks,
+                p === 'tasks'
+              )}
+              ${this._item(
+                '/reports',
+                this._('_Reports').replace('_', ''),
+                mdiFileExportOutline,
+                p === 'reports'
+              )}
+              ${this._item(
+                '/export',
+                this._('Export'),
+                mdiDownload,
+                p === 'export'
+              )}
+              ${this.appState.permissions.canViewPrivate
+                ? this._item(
+                    '/revisions',
+                    this._('Revisions'),
+                    mdiSourceCommit,
+                    p === 'revisions'
+                  )
+                : ''}
+              <md-list-item
+                type="link"
+                href="${BASE_DIR}/notifications"
+                ?selected="${p === 'notifications'}"
+              >
+                ${this._icon(
+                  this.unreadCount > 0 ? mdiBellBadge : mdiBell,
+                  p === 'notifications'
+                )}
+                ${this._('Notifications')}
+                ${this.unreadCount > 0
+                  ? html`<span class="unread-badge" slot="end"
+                      >${this.unreadCount}</span
+                    >`
+                  : ''}
+              </md-list-item>
+            `
+          : ''}
+      </md-list>`
   }
 }
 

@@ -41,20 +41,30 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
         #controls {
           position: absolute;
           background-color: var(--md-sys-color-surface-container-low);
-          border-radius: 16px;
+          border: 1px solid var(--md-sys-color-outline-variant);
+          border-radius: 4px;
           z-index: 1;
           padding: 0 10px;
         }
 
         #chart {
-          height: calc(100vh - 165px);
+          --grampsjs-chart-height: calc(100vh - 165px);
+          height: var(--grampsjs-chart-height);
           margin-left: -40px;
           margin-right: -40px;
           margin-bottom: -25px;
         }
 
+        @media (max-width: 768px) {
+          #chart {
+            --grampsjs-chart-height: max(260px, calc(100dvh - 235px));
+            margin-left: -20px;
+            margin-right: -20px;
+          }
+        }
+
         #controls {
-          --grampsjs-icon-button-color: var(--grampsjs-body-font-color-35);
+          --grampsjs-icon-button-color: var(--md-sys-color-on-surface-variant);
           --grampsjs-icon-button-disabled-color: var(
             --grampsjs-body-font-color-10
           );
@@ -73,6 +83,13 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
           position: fixed;
           bottom: 32px;
           right: 32px;
+        }
+
+        @media (max-width: 991px) {
+          md-fab {
+            bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+            right: 16px;
+          }
         }
       `,
     ]
@@ -113,6 +130,7 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
     this._setSep = false
     this._setMaxImages = false
     this._editMode = false
+    this._fetchId = 0
     this._boundToggleEditMode = this._toggleEditMode.bind(this)
     this._boundDisableEditMode = this._disableEditMode.bind(this)
   }
@@ -167,12 +185,16 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
     this.renderRoot.querySelector('grampsjs-object-picker-dialog')?.open('')
   }
 
-  // eslint-disable-next-line class-methods-use-this
   _handlePersonPicked(event) {
     const grampsId =
       event.detail?.object?.gramps_id ?? event.detail?.gramps_id ?? ''
     if (!grampsId) {
       return
+    }
+    if (grampsId === this.grampsId) {
+      this.renderRoot
+        .querySelector('grampsjs-tree-chart, grampsjs-lineage-chart')
+        ?.focusPerson()
     }
     window.dispatchEvent(
       new CustomEvent('pedigree:person-selected', {detail: {grampsId}})
@@ -181,7 +203,11 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
 
   renderFab() {
     return html`
-      <md-fab variant="secondary" @click="${this._enableEditMode}">
+      <md-fab
+        variant="secondary"
+        aria-label="${this._('Edit')}"
+        @click="${this._enableEditMode}"
+      >
         <grampsjs-icon
           slot="icon"
           .path="${mdiPencil}"
@@ -431,6 +457,8 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
   }
 
   async _fetchData(grampsId) {
+    this._fetchId += 1
+    const fetchId = this._fetchId
     this.loading = true
     const rules = this._getPersonRules(grampsId)
     const data = await this.appState.apiGet(
@@ -438,6 +466,9 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
         this.appState.i18n.lang || 'en'
       }&profile=self&extend=event_ref_list,primary_parent_family,family_list`
     )
+    if (fetchId !== this._fetchId) {
+      return
+    }
     this.loading = false
     if ('data' in data) {
       this.error = false

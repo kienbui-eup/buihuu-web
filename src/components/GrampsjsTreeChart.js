@@ -14,13 +14,24 @@ import {
 } from '../charts/util.js'
 import {fireEvent, clickKeyHandler} from '../util.js'
 
-class GrampsjsTreeChart extends GrampsjsChartBase {
+export class GrampsjsTreeChart extends GrampsjsChartBase {
   static get styles() {
     return [
       super.styles,
       css`
         svg a {
           text-decoration: none !important;
+        }
+
+        .tree-root .person-card {
+          fill: color-mix(
+            in srgb,
+            var(--md-sys-color-primary) 6%,
+            var(--md-sys-color-surface)
+          );
+          stroke: var(--md-sys-color-primary);
+          stroke-width: 2px;
+          vector-effect: non-scaling-stroke;
         }
 
         mwc-menu {
@@ -49,8 +60,11 @@ class GrampsjsTreeChart extends GrampsjsChartBase {
     this.grampsId = ''
     this.nAnc = 5
     this.nDesc = 5
-    this.gapX = 30
+    this.gapX = 24
     this._savedZoom = null
+    this._savedViewBox = null
+    this._focusPending = false
+    this._focused = false
   }
 
   render() {
@@ -65,12 +79,19 @@ class GrampsjsTreeChart extends GrampsjsChartBase {
     `
   }
 
-  willUpdate() {
-    // Save zoom transform before Lit replaces the SVG node
+  willUpdate(changed) {
+    if (changed.has('grampsId') && changed.get('grampsId')) {
+      this._focusPending = true
+    }
+    // A different person needs a fresh viewport. Preserve both parts of the
+    // viewport on other updates: a zoom transform alone uses the wrong origin.
     const svg = this.renderRoot
       ?.getElementById('container')
       ?.querySelector('svg')
-    this._savedZoom = svg ? zoomTransform(svg) : null
+    this._savedZoom = !this._focusPending && svg ? zoomTransform(svg) : null
+    this._savedViewBox = !this._focusPending
+      ? svg?.getAttribute('viewBox')
+      : null
   }
 
   updated() {
@@ -78,27 +99,56 @@ class GrampsjsTreeChart extends GrampsjsChartBase {
     this._fitChartToViewport()
   }
 
-  // Khung nhìn được tính lúc dựng cây từ bề rộng ước lượng theo số đời, mà con
-  // số đó không kể tới ô rộng hơn dự tính hay nhánh vợ nở ra hai bên: cây mười
-  // bảy đời vì thế bị cắt mất mấy ô ngoài cùng. Đo lại bằng kích thước thật của
-  // phần đã vẽ, sau khi nó đã nằm trong DOM, rồi nới khung cho vừa.
-  //
-  // Chỉ làm khi người xem chưa tự phóng to hay kéo cây - nếu không, mỗi lần vẽ
-  // lại sẽ giật họ về toàn cảnh.
+  focusPerson() {
+    this._focusPending = true
+    this.requestUpdate()
+  }
+
+  // Đo phần đã vẽ để căn khung. Điện thoại giữ cỡ chữ đọc được và neo vào
+  // người gốc; các nhánh rộng có thể xem bằng cách vuốt hoặc thu/phóng.
+  // Khi người xem đã kéo cây hay tìm một người, giữ nguyên khung nhìn đó.
   _fitChartToViewport() {
     const zoomed =
       this._savedZoom &&
       (this._savedZoom.k !== 1 ||
         this._savedZoom.x !== 0 ||
         this._savedZoom.y !== 0)
-    if (zoomed) {
-      return
-    }
     const svg = this.renderRoot
       ?.getElementById('container')
       ?.querySelector('svg')
     const content = svg?.querySelector('#chart-content')
     if (!content) {
+      return
+    }
+    const width = this.containerWidth
+    const height = this.containerHeight
+    if (width <= 0 || height <= 0) {
+      return
+    }
+    if (this._focusPending) {
+      const card =
+        svg.querySelector('.tree-selected .person-card') ||
+        svg.querySelector('.tree-root .person-card')
+      const matrix = svg.getScreenCTM()
+      if (!card || !matrix) {
+        return
+      }
+      const box = card.getBoundingClientRect()
+      const center = svg.createSVGPoint()
+      center.x = box.x + box.width / 2
+      center.y = box.y + box.height / 2
+      const point = center.matrixTransform(matrix.inverse())
+      // One SVG unit per screen pixel keeps the selected person's name legible,
+      // including when the full tree spans many generations.
+      svg.setAttribute(
+        'viewBox',
+        `${point.x - width / 2} ${point.y - height / 2} ${width} ${height}`
+      )
+      this._focusPending = false
+      this._focused = true
+      return
+    }
+    if (zoomed || (this._focused && this._savedViewBox)) {
       return
     }
     let box
@@ -107,8 +157,6 @@ class GrampsjsTreeChart extends GrampsjsChartBase {
     } catch (error) {
       return
     }
-    const width = this.containerWidth
-    const height = this.containerHeight
     if (!box?.width || !box?.height || !width || !height) {
       return
     }
@@ -118,6 +166,23 @@ class GrampsjsTreeChart extends GrampsjsChartBase {
       width / (box.width + 2 * margin),
       height / (box.height + 2 * margin)
     )
+    if (width <= 600 && fit < 0.85) {
+      const mobileScale = 0.85
+      const viewWidth = width / mobileScale
+      const viewHeight = height / mobileScale
+      const rootMargin = 100 / mobileScale
+      let y = -viewHeight / 2
+      if (!this.ancestors) {
+        y = -rootMargin
+      } else if (!this.descendants) {
+        y = rootMargin - viewHeight
+      }
+      svg.setAttribute(
+        'viewBox',
+        `${-viewWidth / 2} ${y} ${viewWidth} ${viewHeight}`
+      )
+      return
+    }
     const viewWidth = width / fit
     const viewHeight = height / fit
     const x = box.x + box.width / 2 - viewWidth / 2
@@ -153,13 +218,13 @@ class GrampsjsTreeChart extends GrampsjsChartBase {
         nDesc: this.nDesc,
         childrenTriangle,
         getImageUrl: d => getImageUrl(d?.data?.person || {}, 100),
-        orientation: this.descendants ? 'RTL' : 'LTR',
         gapX: this.gapX,
         bboxWidth: this.containerWidth,
         bboxHeight: this.containerHeight,
         nameDisplayFormat: this.nameDisplayFormat,
         canEdit: this.canEdit,
         initialZoom: this._savedZoom,
+        initialViewBox: this._savedViewBox,
       })}
     `
   }

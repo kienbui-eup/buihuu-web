@@ -11,15 +11,15 @@ ngày giỗ, không phải cả nghìn người trong cây.
 */
 
 import {html, css} from 'lit'
+import {anniversaryStyles} from '../AnniversaryStyles.js'
 import '@material/web/list/list'
 import '@material/web/list/list-item'
 
 import {GrampsjsConnectedComponent} from '../components/GrampsjsConnectedComponent.js'
-import {fireEvent} from '../util.js'
 import {ATTR_DEATH_ANNIVERSARY} from '../branding.js'
 import {collectAnniversaries} from '../gioCalendar.js'
 
-const MAX_SHOWN = 8
+const MAX_SHOWN = 5
 
 export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
   static get styles() {
@@ -27,28 +27,8 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
       super.styles,
       css`
         h3 {
-          margin-bottom: 15px;
-        }
-
-        .date {
-          height: 38px;
-          width: 38px;
-          border-radius: 19px;
-          background-color: var(--mdc-theme-primary);
-          opacity: 0.6;
-          color: var(--mdc-theme-on-primary);
-          font-size: 13px;
-          line-height: 38px;
-          display: inline-block;
-          text-align: center;
-          font-family: var(--grampsjs-heading-font-family);
-          font-weight: 300;
-          margin-right: 10px;
-          white-space: nowrap;
-        }
-
-        .soon {
-          opacity: 1;
+          margin: 0 0 12px;
+          font-size: 24px;
         }
 
         p.more {
@@ -56,6 +36,7 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
           font-size: 0.95em;
         }
       `,
+      anniversaryStyles,
     ]
   }
 
@@ -81,22 +62,19 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
   renderContent() {
     const upcoming = this._upcoming()
     return html`<h3>${this._('Upcoming death anniversaries')}</h3>
+      <p class="calendar-note">
+        Kính nhớ tiền nhân · Ô ngày ghi theo dương lịch
+      </p>
       ${upcoming.length === 0
         ? html`<p>${this._('No upcoming death anniversaries.')}</p>`
         : html`
-            <md-list class="large">
-              ${upcoming.map(entry => this._renderEntry(entry))}
-            </md-list>
+            <div>${upcoming.map(entry => this._renderEntry(entry))}</div>
             <p class="more">
               <a href="/lich-gio" class="link"
                 >${this._('See the whole year')}</a
               >
             </p>
           `}`
-  }
-
-  _openCalendar() {
-    fireEvent(this, 'nav', {path: 'lich-gio'})
   }
 
   _upcoming() {
@@ -106,23 +84,24 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
   _renderEntry({person, lunar, next, name, generation}) {
     const [day, month] = next.solar
     return html`
-      <md-list-item
-        type="button"
-        @click="${() => this._handleClick(person)}"
-        @keydown="${this._handleKeyDown}"
-      >
-        <span slot="headline">${name}</span>
-        <span slot="start" class="date ${next.daysAway <= 7 ? 'soon' : ''}"
-          >${day}/${month}</span
+      <a class="remembrance" href="/person/${person.gramps_id}">
+        <span
+          class="date ${next.daysAway <= 7 ? 'soon' : ''}"
+          aria-label="${day}/${month} dương lịch"
         >
-        <span slot="supporting-text">
-          ${this._('Death anniversary')} ${lunar.day}/${lunar.month}
-          ${this._('lunar')} ·
-          ${this._daysAwayLabel(next.daysAway)}${generation
-            ? html` · ${this._('Generation')} ${generation}`
-            : ''}
+          <strong>${day}</strong><small>tháng ${month}</small>
         </span>
-      </md-list-item>
+        <span class="details">
+          <span class="name">${name}</span>
+          <span class="meta"
+            >${this._('Death anniversary')} ${lunar.day}/${lunar.month}
+            ${this._('lunar')}${generation
+              ? html` · ${this._('Generation')} ${generation}`
+              : ''}</span
+          >
+          <span class="meta">${this._daysAwayLabel(next.daysAway)}</span>
+        </span>
+      </a>
     `
   }
 
@@ -130,19 +109,6 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
     if (days === 0) return this._('Today')
     if (days === 1) return this._('Tomorrow')
     return this._('in %s days', days)
-  }
-
-  _handleClick(person) {
-    fireEvent(this, 'nav', {path: `person/${person.gramps_id}`})
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  _handleKeyDown(event) {
-    if (event.code === 'Enter') {
-      event.target.click()
-      event.preventDefault()
-      event.stopPropagation()
-    }
   }
 
   getUrl() {

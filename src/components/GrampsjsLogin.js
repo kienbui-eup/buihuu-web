@@ -8,8 +8,11 @@ import '@material/web/button/outlined-button'
 import {mdiCheckCircle} from '@mdi/js'
 
 import './GrampsjsIcon.js'
+import './GrampsjsHeritageMark.js'
+import {APP_NAME} from '../branding.js'
 import './GrampsjsOidcButton.js'
 import {sharedStyles} from '../SharedStyles.js'
+import {heritageFrameStyles} from '../HeritageStyles.js'
 import {
   apiGetTokens,
   apiResetPassword,
@@ -23,22 +26,52 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
     return [
       sharedStyles,
+      heritageFrameStyles,
       css`
         #login-container {
           margin: auto;
           height: 100%;
           width: 100%;
-          max-width: 25em;
+          max-width: 30em;
+          padding: 48px 20px;
+          box-sizing: border-box;
         }
 
         #login-form {
           margin: auto;
-          max-width: 90vw;
-          position: relative;
-          top: 20vh;
+          padding: 32px;
+        }
+
+        .brand {
+          text-align: center;
+          margin-bottom: 28px;
+        }
+        .brand h1 {
+          color: var(--md-sys-color-primary);
+          font-size: 32px;
+          margin: 16px 0 8px;
+          line-height: 1.3;
+        }
+        .brand p {
+          font-size: 14px;
+          color: var(--md-sys-color-on-surface-variant);
+          margin: 0;
+        }
+        #login-form > h2 {
+          font-size: 23px;
+          margin: 0 0 24px;
+        }
+        @media (max-width: 600px) {
+          #login-container {
+            padding: 28px 16px;
+          }
+          #login-form {
+            padding: 24px 20px;
+          }
         }
 
         #login-form md-filled-button {
+          --md-filled-button-container-shape: 3px;
           width: 100%;
           margin-bottom: 0.5em;
         }
@@ -55,7 +88,7 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
           height: 56px;
           padding: 20px 16px 8px;
           border: 1px solid var(--md-sys-color-outline);
-          border-radius: 4px;
+          border-radius: 8px;
           background: transparent;
           color: var(--md-sys-color-on-surface);
           font-family: var(--grampsjs-body-font-family);
@@ -101,7 +134,7 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
         .text-field-wrapper input:not(:placeholder-shown) ~ label {
           top: 0;
           font-size: 12px;
-          background: var(--md-sys-color-background);
+          background: var(--md-sys-color-surface);
         }
 
         .text-field-wrapper input:focus ~ label {
@@ -252,12 +285,19 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
 
     return html`
       <div id="login-container">
+        <header class="brand">
+          <grampsjs-heritage-mark></grampsjs-heritage-mark>
+          <h1>${APP_NAME}</h1>
+          <p>Gìn giữ cội nguồn · Kết nối cháu con</p>
+          <p>Chỉ Bồ · Thụy Trường · Thái Bình</p>
+        </header>
         <form
           id="login-form"
+          class="heritage-frame"
           @submit="${this._submitLogin}"
           @keydown="${this._handleFormKeydown}"
         >
-          <h2>${this._('Log in to Gramps Web')}</h2>
+          <h2>${this._('login')}</h2>
           ${localAuthDisabled
             ? ''
             : html`

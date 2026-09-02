@@ -15,7 +15,8 @@ export class GrampsjsHomePerson extends GrampsjsAppStateMixin(LitElement) {
       sharedStyles,
       css`
         h3 {
-          margin-bottom: 15px;
+          margin: 0 0 15px;
+          font-size: 24px;
         }
       `,
     ]

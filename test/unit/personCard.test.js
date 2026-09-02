@@ -141,7 +141,9 @@ describe('personCardLines', () => {
 
   it('dòng họ tên đậm hơn các dòng còn lại', () => {
     const [name, ...rest] = personCardLines(buiAnh, buiAnh.profile, 'Bùi Ánh')
-    expect(name.weight).toBe('500')
+    expect(rest.every(line => Number(line.weight) < Number(name.weight))).toBe(
+      true
+    )
     expect(name.muted).toBe(false)
     expect(rest.every(line => line.muted)).toBe(true)
   })

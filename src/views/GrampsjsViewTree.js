@@ -5,18 +5,12 @@ import '@material/web/tabs/primary-tab'
 
 import {mdiFamilyTree} from '@mdi/js'
 import {GrampsjsView} from './GrampsjsView.js'
-import './GrampsjsViewDescendantChart.js'
+
 import './GrampsjsViewTreeChart.js'
-import './GrampsjsViewHourglassChart.js'
-import './GrampsjsViewFanChart.js'
+
 import './GrampsjsViewRelationshipChart.js'
 import {fireEvent} from '../util.js'
-import {
-  chartFanIconPath,
-  hourglassIconPath,
-  renderIconSvg,
-  relationshipGraphIconPath,
-} from '../icons.js'
+import {renderIconSvg, relationshipGraphIconPath} from '../icons.js'
 import {DEFAULT_TREE_VIEW, getTreeViewTabIndex} from '../treeDefaults.js'
 
 export class GrampsjsViewTree extends GrampsjsView {
@@ -59,6 +53,7 @@ export class GrampsjsViewTree extends GrampsjsView {
     this._history = this.grampsId ? [this.grampsId] : []
     this._currentTabId = getTreeViewTabIndex(DEFAULT_TREE_VIEW)
     this._appliedTreeDefaultView = null
+    this._boundSelectPerson = this._selectPerson.bind(this)
   }
 
   shouldUpdate(changed) {
@@ -91,10 +86,7 @@ export class GrampsjsViewTree extends GrampsjsView {
     return html`
       <div id="tabs">${this.renderTabs()}</div>
       ${this._currentTabId === 0 ? this._renderPedigree() : ''}
-      ${this._currentTabId === 1 ? this._renderDescendantTree() : ''}
-      ${this._currentTabId === 2 ? this._renderHourglassTree() : ''}
-      ${this._currentTabId === 3 ? this._renderRelationshipChart() : ''}
-      ${this._currentTabId === 4 ? this._renderFan() : ''}
+      ${this._currentTabId === 1 ? this._renderRelationshipChart() : ''}
     `
   }
 
@@ -114,22 +106,11 @@ export class GrampsjsViewTree extends GrampsjsView {
             >${renderIconSvg(
               mdiFamilyTree,
               '--md-sys-color-primary',
-              -90
+              180
             )}</span
           >
         </md-primary-tab>
-        <md-primary-tab has-icon>
-          ${this._('Descendant Tree')}
-          <span slot="icon"
-            >${renderIconSvg(mdiFamilyTree, '--md-sys-color-primary', 90)}</span
-          >
-        </md-primary-tab>
-        <md-primary-tab has-icon>
-          ${this._('Hourglass Graph')}
-          <span slot="icon"
-            >${renderIconSvg(hourglassIconPath, '--md-sys-color-primary')}</span
-          >
-        </md-primary-tab>
+
         <md-primary-tab has-icon>
           ${this._('Relationship Graph')}
           <span slot="icon"
@@ -139,30 +120,7 @@ export class GrampsjsViewTree extends GrampsjsView {
             )}</span
           >
         </md-primary-tab>
-        <md-primary-tab has-icon>
-          ${this._('Fan Chart')}
-          <span slot="icon"
-            >${renderIconSvg(chartFanIconPath, '--md-sys-color-primary')}</span
-          >
-        </md-primary-tab>
       </md-tabs>
-    `
-  }
-
-  _renderFan() {
-    return html`
-      <grampsjs-view-fan-chart
-        @tree:back="${this._prevPerson}"
-        @tree:person="${this._goToPerson}"
-        @tree:home="${this._backToHomePerson}"
-        grampsId=${this.grampsId}
-        ?active=${this.active}
-        .appState="${this.appState}"
-        .settings=${this.settings}
-        ?disableBack=${this._history.length < 2}
-        ?disableHome=${this.grampsId === this.settings.homePerson}
-      >
-      </grampsjs-view-fan-chart>
     `
   }
 
@@ -200,40 +158,6 @@ export class GrampsjsViewTree extends GrampsjsView {
     `
   }
 
-  _renderDescendantTree() {
-    return html`
-      <grampsjs-view-descendant-chart
-        @tree:back="${this._prevPerson}"
-        @tree:person="${this._goToPerson}"
-        @tree:home="${this._backToHomePerson}"
-        grampsId=${this.grampsId}
-        ?active=${this.active}
-        .appState="${this.appState}"
-        .settings=${this.settings}
-        ?disableBack=${this._history.length < 2}
-        ?disableHome=${this.grampsId === this.settings.homePerson}
-      >
-      </grampsjs-view-descendant-chart>
-    `
-  }
-
-  _renderHourglassTree() {
-    return html`
-      <grampsjs-view-hourglass-chart
-        @tree:back="${this._prevPerson}"
-        @tree:person="${this._goToPerson}"
-        @tree:home="${this._backToHomePerson}"
-        grampsId=${this.grampsId}
-        ?active=${this.active}
-        .appState="${this.appState}"
-        .settings=${this.settings}
-        ?disableBack=${this._history.length < 2}
-        ?disableHome=${this.grampsId === this.settings.homePerson}
-      >
-      </grampsjs-view-hourglass-chart>
-    `
-  }
-
   _prevPerson() {
     this._history.pop()
     this.grampsId = this._history.pop()
@@ -249,9 +173,14 @@ export class GrampsjsViewTree extends GrampsjsView {
 
   connectedCallback() {
     super.connectedCallback()
-    window.addEventListener(
+    window.addEventListener('pedigree:person-selected', this._boundSelectPerson)
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback()
+    window.removeEventListener(
       'pedigree:person-selected',
-      this._selectPerson.bind(this)
+      this._boundSelectPerson
     )
   }
 
@@ -281,6 +210,7 @@ export class GrampsjsViewTree extends GrampsjsView {
 
   async _selectPerson(event) {
     const {grampsId} = event.detail
+    if (!this.active || !grampsId) return
     this.grampsId = grampsId
   }
 }

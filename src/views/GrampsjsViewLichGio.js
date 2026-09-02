@@ -8,6 +8,8 @@ bản đầy đủ để người lo việc họ nhìn cả năm. Dữ liệu t�
 */
 
 import {html, css} from 'lit'
+import {anniversaryStyles} from '../AnniversaryStyles.js'
+import {heritageFrameStyles} from '../HeritageStyles.js'
 import '@material/web/list/list'
 import '@material/web/list/list-item'
 import '@material/web/button/filled-tonal-button'
@@ -27,7 +29,14 @@ export class GrampsjsViewLichGio extends GrampsjsView {
   static get styles() {
     return [
       super.styles,
+      heritageFrameStyles,
       css`
+        .month-entries {
+          padding: 6px 20px;
+        }
+        .month-entries .remembrance:last-child {
+          border-bottom: 0;
+        }
         .intro {
           max-width: 40em;
         }
@@ -48,27 +57,8 @@ export class GrampsjsViewLichGio extends GrampsjsView {
           margin: 1.6em 0 0.4em;
           font-weight: 500;
         }
-
-        .date {
-          height: 38px;
-          width: 38px;
-          border-radius: 19px;
-          background-color: var(--mdc-theme-primary);
-          opacity: 0.6;
-          color: var(--mdc-theme-on-primary);
-          font-size: 13px;
-          line-height: 38px;
-          display: inline-block;
-          text-align: center;
-          font-family: var(--grampsjs-heading-font-family);
-          font-weight: 300;
-          white-space: nowrap;
-        }
-
-        .soon {
-          opacity: 1;
-        }
       `,
+      anniversaryStyles,
     ]
   }
 
@@ -152,32 +142,33 @@ export class GrampsjsViewLichGio extends GrampsjsView {
   _renderGroup(group) {
     return html`
       <h3>${this._('Lunar month %s', group.month)}</h3>
-      <md-list class="large">
+      <div class="month-entries heritage-frame">
         ${group.entries.map(entry => this._renderEntry(entry))}
-      </md-list>
+      </div>
     `
   }
 
   _renderEntry({person, lunar, next, name, generation}) {
     const [day, month] = next.solar
     return html`
-      <md-list-item
-        type="button"
-        @click="${() => this._openPerson(person)}"
-        @keydown="${this._handleKeyDown}"
-      >
-        <span slot="headline">${name}</span>
-        <span slot="start" class="date ${next.daysAway <= 7 ? 'soon' : ''}"
-          >${day}/${month}</span
+      <a class="remembrance" href="/person/${person.gramps_id}">
+        <span
+          class="date ${next.daysAway <= 7 ? 'soon' : ''}"
+          aria-label="${day}/${month} dương lịch"
         >
-        <span slot="supporting-text">
-          ${this._('Death anniversary')} ${lunar.day}/${lunar.month}
-          ${this._('lunar')} ·
-          ${this._daysAwayLabel(next.daysAway)}${generation
-            ? html` · ${this._('Generation')} ${generation}`
-            : ''}
+          <strong>${day}</strong><small>tháng ${month}</small>
         </span>
-      </md-list-item>
+        <span class="details">
+          <span class="name">${name}</span>
+          <span class="meta"
+            >${this._('Death anniversary')} ${lunar.day}/${lunar.month}
+            ${this._('lunar')}${generation
+              ? html` · ${this._('Generation')} ${generation}`
+              : ''}</span
+          >
+          <span class="meta">${this._daysAwayLabel(next.daysAway)}</span>
+        </span>
+      </a>
     `
   }
 
@@ -202,19 +193,6 @@ export class GrampsjsViewLichGio extends GrampsjsView {
     link.click()
     link.remove()
     setTimeout(() => URL.revokeObjectURL(href), 10000)
-  }
-
-  _openPerson(person) {
-    fireEvent(this, 'nav', {path: `person/${person.gramps_id}`})
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  _handleKeyDown(event) {
-    if (event.code === 'Enter') {
-      event.target.click()
-      event.preventDefault()
-      event.stopPropagation()
-    }
   }
 }
 

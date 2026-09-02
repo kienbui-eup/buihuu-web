@@ -299,8 +299,10 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
   }
 
   renderTreePreferences() {
-    const defaultView =
-      this.appState.settings.treeDefaultView ?? DEFAULT_TREE_VIEW
+    const savedView = this.appState.settings.treeDefaultView
+    const defaultView = TREE_VIEWS.includes(savedView)
+      ? savedView
+      : DEFAULT_TREE_VIEW
     return html`
       <div class="tree-preferences">
         <md-filled-select
@@ -325,14 +327,8 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
 
   _treeViewLabel(view) {
     switch (view) {
-      case 'descendant':
-        return 'Descendant Tree'
-      case 'hourglass':
-        return 'Hourglass Graph'
       case 'relationship':
         return 'Relationship Graph'
-      case 'fan':
-        return 'Fan Chart'
       default:
         return 'Ancestor Tree'
     }

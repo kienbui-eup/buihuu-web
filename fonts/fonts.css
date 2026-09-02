@@ -1,3 +1,47 @@
+/* Phông Latin và tiếng Việt lưu tại chỗ; giấy phép kèm trong thư mục fonts. */
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./BeVietnamPro-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./BeVietnamPro-Medium.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./BeVietnamPro-SemiBold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./BeVietnamPro-Bold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./BeVietnamPro-Italic.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Noto Serif';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('./NotoSerif-Vietnamese.woff2') format('woff2');
+}
+
 @font-face {
   font-family: 'Inter var';
   font-style: normal;

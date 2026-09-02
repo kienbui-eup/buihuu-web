@@ -41,6 +41,12 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
           bottom: 32px;
           right: 32px;
         }
+        @media (max-width: 991px) {
+          md-fab {
+            bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+            right: 16px;
+          }
+        }
 
         .hidden {
           display: none;

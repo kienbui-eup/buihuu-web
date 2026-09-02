@@ -49,8 +49,8 @@ export class GrampsjsViewSearch extends GrampsjsView {
         }
 
         md-outlined-text-field#search-field {
-          --md-outlined-text-field-container-shape: 28px;
-          --md-outlined-text-field-input-text-size: 22px;
+          --md-outlined-text-field-container-shape: 10px;
+          --md-outlined-text-field-input-text-size: 18px;
           --md-outlined-text-field-input-text-weight: var(
             --grampsjs-body-font-weight
           );
@@ -64,7 +64,7 @@ export class GrampsjsViewSearch extends GrampsjsView {
           --md-outlined-text-field-bottom-space: 12px;
           --md-outlined-text-field-leading-space: 24px;
           width: calc(100% - 70px);
-          margin: 30px auto;
+          margin: 16px auto;
         }
 
         #search-field-container md-icon-button {
@@ -83,6 +83,17 @@ export class GrampsjsViewSearch extends GrampsjsView {
           margin-right: 0.35em;
           margin-bottom: 0.35em;
           display: inline-block;
+        }
+
+        .search-hint,
+        summary {
+          color: var(--md-sys-color-on-surface-variant);
+          font-size: 14px;
+        }
+        summary {
+          min-height: 44px;
+          align-content: center;
+          cursor: pointer;
         }
       `,
     ]
@@ -109,7 +120,7 @@ export class GrampsjsViewSearch extends GrampsjsView {
     this._page = 1
     this._pages = -1
     this._objectTypes = Object.fromEntries(
-      filtrableObjectTypes.map(key => [key, false])
+      filtrableObjectTypes.map(key => [key, key === 'person'])
     )
   }
 
@@ -118,6 +129,10 @@ export class GrampsjsViewSearch extends GrampsjsView {
       ${this._semanticEnabled() ? this._renderModeToggle() : ''}
 
       <h2>${this._('Search')}</h2>
+      <p class="search-hint">
+        Tìm người trong họ theo họ tên, tên tự hoặc thông tin đã ghi trong gia
+        phả.
+      </p>
 
       <div id="search-field-container">
         <md-outlined-text-field
@@ -145,7 +160,7 @@ export class GrampsjsViewSearch extends GrampsjsView {
 
       ${this.renderFilters()}
       ${this._totalCount === 0 ? html`<p>${this._('None')}</p>` : ''}
-      ${this._totalCount > 0 ? html`<p>Total: ${this._totalCount}</p>` : ''}
+      ${this._totalCount > 0 ? html`<p>${this._totalCount} kết quả</p>` : ''}
       <grampsjs-search-result-list
         .data="${this._data}"
         .appState="${this.appState}"
@@ -191,16 +206,24 @@ export class GrampsjsViewSearch extends GrampsjsView {
 
   renderFilters() {
     return html`
-      <div @grampsjs-button-toggle:toggle="${this._handleFilterToggle}">
-        ${Object.keys(this._objectTypes).map(
-          key => html`<grampsjs-button-toggle
-            ?checked="${this._objectTypes[key]}"
-            .iconPath="${objectIconPath[key]}"
-            label="${this._(capitalize(objectTypeToEndpoint[key]))}"
-            id="toggle-${key}"
-          ></grampsjs-button-toggle>`
-        )}
-      </div>
+      <details>
+        <summary>
+          Phạm vi tìm kiếm ·
+          ${this._getSelectedObjectTypes()
+            .map(key => this._(capitalize(objectTypeToEndpoint[key])))
+            .join(', ')}
+        </summary>
+        <div @grampsjs-button-toggle:toggle="${this._handleFilterToggle}">
+          ${Object.keys(this._objectTypes).map(
+            key => html`<grampsjs-button-toggle
+              ?checked="${this._objectTypes[key]}"
+              .iconPath="${objectIconPath[key]}"
+              label="${this._(capitalize(objectTypeToEndpoint[key]))}"
+              id="toggle-${key}"
+            ></grampsjs-button-toggle>`
+          )}
+        </div>
+      </details>
     `
   }
 
@@ -273,6 +296,27 @@ export class GrampsjsViewSearch extends GrampsjsView {
     }
   }
 
+  updated(changed) {
+    super.updated(changed)
+    if (!this.active) return
+    const encodedQuery = this.appState.path.pageId || ''
+    if (encodedQuery === this._routeQuery) return
+    this._routeQuery = encodedQuery
+    if (!encodedQuery) return
+    let query
+    try {
+      query = decodeURIComponent(encodedQuery)
+    } catch {
+      query = encodedQuery
+    }
+    this.renderRoot.querySelector('#search-field').value = query
+    this._objectTypes = Object.fromEntries(
+      filtrableObjectTypes.map(key => [key, key === 'person'])
+    )
+    this._page = 1
+    this._executeSearch()
+  }
+
   _handleSearchKey(event) {
     if (event.code === 'Enter') {
       this._executeSearch()
@@ -334,7 +378,7 @@ export class GrampsjsViewSearch extends GrampsjsView {
   }
 
   async _fetchData(query, page) {
-    let url = `/api/search/?query=${query}&locale=${
+    let url = `/api/search/?query=${encodeURIComponent(query)}&locale=${
       this.appState.i18n.lang || 'en'
     }&profile=all&page=${page}&pagesize=20`
     if (this._semanticEnabled()) {

@@ -8,8 +8,8 @@ import {
   hexFromArgb,
 } from '@material/material-color-utilities'
 
-export const DEFAULT_PRIMARY = '#6d4c41'
-export const DEFAULT_SECONDARY = '#0277bd'
+export const DEFAULT_PRIMARY = '#79372e'
+export const DEFAULT_SECONDARY = '#72553c'
 
 export function getSystemTheme() {
   return window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -50,9 +50,9 @@ export function applyColors(
     // Preserve the seed's own hue+chroma rather than TONAL_SPOT's fixed values.
     primaryPalette,
     secondaryPalette,
-    // Chroma 0 → pure neutral grays; no hue tint bleeds into surfaces.
-    neutralPalette: TonalPalette.fromHueAndChroma(primaryHct.hue, 0),
-    neutralVariantPalette: TonalPalette.fromHueAndChroma(primaryHct.hue, 0),
+    // Sắc giấy ấm, giữ độ tương phản của hệ màu ở cả chế độ sáng và tối.
+    neutralPalette: TonalPalette.fromHueAndChroma(75, 6),
+    neutralVariantPalette: TonalPalette.fromHueAndChroma(75, 10),
   })
 
   const root = document.documentElement
@@ -74,21 +74,20 @@ export function applyColors(
     hexFromArgb(primaryPalette.tone(primaryTone))
   )
 
-  // M3 achromatic tones 90-98 are darker than expected for a web app.
-  // Override light-mode surfaces to lighter neutrals.
+  // Nền giấy và bề mặt sáng giúp phân biệt các khối mà không cần bóng đậm.
   if (!isDark) {
-    root.style.setProperty('--md-sys-color-background', '#ffffff')
-    root.style.setProperty('--md-sys-color-surface', '#ffffff')
-    // lowest/low/container → menus, cards, sheets: white
-    root.style.setProperty('--md-sys-color-surface-container-lowest', '#ffffff')
-    root.style.setProperty('--md-sys-color-surface-container-low', '#ffffff')
-    root.style.setProperty('--md-sys-color-surface-container', '#ffffff')
-    // high → dialogs, raised surfaces: white (md-dialog uses this token)
-    root.style.setProperty('--md-sys-color-surface-container-high', '#ffffff')
-    // highest → filled text-field/select backgrounds: light gray
+    root.style.setProperty('--md-sys-color-background', '#f7f3ea')
+    root.style.setProperty('--md-sys-color-surface', '#fffcf6')
+    // Các mức nền cho thẻ, menu và bảng điều khiển.
+    root.style.setProperty('--md-sys-color-surface-container-lowest', '#fffcf6')
+    root.style.setProperty('--md-sys-color-surface-container-low', '#faf6ee')
+    root.style.setProperty('--md-sys-color-surface-container', '#f3ede2')
+    // Hộp thoại dùng nền sáng hơn để tách khỏi trang.
+    root.style.setProperty('--md-sys-color-surface-container-high', '#fffcf6')
+    // Ô nhập liệu có nền đậm hơn một chút.
     root.style.setProperty(
       '--md-sys-color-surface-container-highest',
-      'rgb(235, 235, 235)'
+      '#eee6d8'
     )
   }
 

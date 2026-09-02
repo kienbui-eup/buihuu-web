@@ -406,8 +406,8 @@ function remasterChart(
     .attr('height', boxHeight - 1)
     .attr('x', -4)
     .attr('y', 0)
-    .attr('rx', 12)
-    .attr('ry', 12)
+    .attr('rx', 2)
+    .attr('ry', 2)
 
   nodes
     .filter(d => d.nodetype === 'person')
@@ -417,12 +417,12 @@ function remasterChart(
     .attr('class', 'personBox')
     .attr('x', 0)
     .attr('y', 0)
-    .attr('rx', 8)
-    .attr('ry', 8)
+    .attr('rx', 2)
+    .attr('ry', 2)
 
   // Ô người viết theo lối gia phả Việt, giống biểu đồ cây: họ tên liền một
   // dòng, rồi tên tự, đời và ngày giỗ. Xem personCardLines trong ./util.js.
-  const lineHeight = 17
+  const lineHeight = 19
 
   const fullName = d =>
     nameDisplayFormat === chartNameDisplayFormat.surnameThenGiven
@@ -625,7 +625,7 @@ export function RelationshipChart(
         svg.select('#chart-content').attr('transform', e.transform)
       )
     )
-    .attr('font-family', 'Inter var')
+    .attr('font-family', 'Be Vietnam Pro, Arial, sans-serif')
     .attr('font-size', 13)
 
   const chartContent = svg.append('g').attr('id', 'chart-content')

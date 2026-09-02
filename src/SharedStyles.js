@@ -3,14 +3,16 @@ import {css} from 'lit'
 export const sharedStyles = css`
   :host {
     line-height: 1.6;
-    --grampsjs-body-font-family: 'Inter var', sans-serif;
-    --grampsjs-heading-font-family: 'Inter var', sans-serif;
+    --grampsjs-body-font-family: 'Be Vietnam Pro', Arial, sans-serif;
+    --grampsjs-heading-font-family: 'Noto Serif', 'Times New Roman', serif;
     --grampsjs-mono-font-family: 'Commit Mono', monospace;
-    --md-ref-typeface-plain: 'Inter var', sans-serif;
+    --md-ref-typeface-plain: var(--grampsjs-body-font-family);
+    --md-ref-typeface-brand: var(--grampsjs-body-font-family);
+    font-synthesis: none;
     --grampsjs-body-font-size: 17px;
     font-size: var(--grampsjs-body-font-size);
     font-family: var(--grampsjs-body-font-family);
-    --grampsjs-body-font-weight: 340;
+    --grampsjs-body-font-weight: 400;
     font-weight: var(--grampsjs-body-font-weight);
     --mdc-typography-font-family: var(--grampsjs-body-font-family);
     --md-sys-typescale-headline-small-font: var(--grampsjs-heading-font-family);
@@ -59,20 +61,20 @@ export const sharedStyles = css`
   }
 
   h1 {
-    font-weight: 400;
+    font-weight: 600;
     font-family: var(--grampsjs-heading-font-family);
     font-size: 34px;
   }
 
   h2 {
-    font-weight: 550;
+    font-weight: 600;
     font-size: 30px;
     margin-top: 10px;
     margin-bottom: 30px;
   }
 
   h3 {
-    font-weight: 550;
+    font-weight: 600;
     font-size: 18px;
     margin-top: 40px;
     margin-bottom: 30px;
@@ -80,6 +82,7 @@ export const sharedStyles = css`
 
   h4 {
     font-size: 16px;
+    font-family: var(--grampsjs-body-font-family);
   }
 
   h4.label {
@@ -105,6 +108,13 @@ export const sharedStyles = css`
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 0.2em;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 4px;
   }
 
   .link {

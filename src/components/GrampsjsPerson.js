@@ -15,18 +15,68 @@ import {
 import {generate} from 'lean-qr'
 import {toSvgDataURL} from 'lean-qr/extras/svg'
 import {GrampsjsObject} from './GrampsjsObject.js'
-import {asteriskIcon, crossIcon} from '../icons.js'
+import {heritageFrameStyles} from '../HeritageStyles.js'
+import {getCourtesyName, getLineage} from '../charts/util.js'
+import {ATTR_DEATH_ANNIVERSARY} from '../branding.js'
 import './GrampsjsImg.js'
 import './GrampsjsEditGender.js'
 import './GrampsjsPersonRelationship.js'
 import './GrampsjsFormExternalSearch.js'
-import {fireEvent, objectIconPath, personProfileDisplayName} from '../util.js'
+import {
+  fireEvent,
+  objectIconPath,
+  personProfileDisplayName,
+  getAttributeValue,
+} from '../util.js'
 
 export class GrampsjsPerson extends GrampsjsObject {
   static get styles() {
     return [
       super.styles,
+      heritageFrameStyles,
       css`
+        #picture:empty {
+          display: none;
+        }
+        .person-heading {
+          padding: 28px;
+        }
+        .person-heading h2 {
+          margin: 0 0 8px;
+          color: var(--md-sys-color-primary);
+          line-height: 1.4;
+        }
+        .courtesy {
+          font: 400 16px/1.7 var(--grampsjs-body-font-family);
+          color: var(--md-sys-color-on-surface-variant);
+          margin: 4px 0 12px;
+        }
+        .lineage {
+          font-size: 14px;
+          color: var(--md-sys-color-on-surface-variant);
+          margin: 8px 0;
+        }
+        .memorial {
+          margin: 16px 0 4px;
+          border-top: 1px solid var(--md-sys-color-outline-variant);
+          padding-top: 12px;
+          color: var(--md-sys-color-primary);
+        }
+        .person-tools {
+          margin-top: 16px;
+        }
+        .person-tools summary {
+          min-height: 44px;
+          align-content: center;
+          font-size: 14px;
+          cursor: pointer;
+          color: var(--md-sys-color-on-surface-variant);
+        }
+        @media (max-width: 600px) {
+          .person-heading {
+            padding: 24px 20px;
+          }
+        }
         .events-chips {
           margin-bottom: 16px;
         }
@@ -90,22 +140,39 @@ export class GrampsjsPerson extends GrampsjsObject {
   }
 
   renderProfile() {
+    const courtesy = getCourtesyName(this.data)
+    const lineage = getLineage(this.data)
+    const memorial = getAttributeValue(this.data, ATTR_DEATH_ANNIVERSARY)
     return html`
-      <h2>
-        <grampsjs-edit-gender
-          ?edit="${this.edit}"
-          gender="${this.data.gender}"
-        ></grampsjs-edit-gender>
-        ${this._displayName()}
-      </h2>
-      ${this._renderBirth()} ${this._renderDeath()} ${this._renderRelation()}
+      <div class="person-heading heritage-frame">
+        <p class="section-label">Hồ sơ gia phả</p>
+        <h2>
+          <grampsjs-edit-gender
+            ?edit="${this.edit}"
+            gender="${this.data.gender}"
+          ></grampsjs-edit-gender>
+          ${this._displayName()}
+        </h2>
+        ${courtesy ? html`<p class="courtesy">${courtesy}</p>` : ''}
+        ${lineage ? html`<p class="lineage">${lineage}</p>` : ''}
+        ${this._renderBirth()} ${this._renderDeath()}
+        ${memorial
+          ? html`<p class="memorial">
+              <strong>Ngày giỗ</strong> · ${memorial} âm lịch
+            </p>`
+          : ''}
+      </div>
       ${this.preview
         ? ''
-        : html`<p class="button-list">
-            ${this._renderTreeBtn()} ${this._renderTimelineBtn()}
-            ${this._renderMapBtn()} ${this._renderDnaBtn()}
-            ${this._renderExternalSearchBtn()} ${this._renderQrBtn()}
-          </p>`}
+        : html`<details class="person-tools">
+            <summary>Xem trên cây, mã QR và các liên kết</summary>
+            <p class="button-list">
+              ${this._renderTreeBtn()} ${this._renderQrBtn()}
+              ${this._renderTimelineBtn()} ${this._renderMapBtn()}
+              ${this._renderDnaBtn()} ${this._renderExternalSearchBtn()}
+            </p>
+            ${this._renderRelation()}
+          </details>`}
       ${this.preview ? '' : this._renderQrDialog()}
     `
   }
@@ -200,8 +267,7 @@ export class GrampsjsPerson extends GrampsjsObject {
     }
     return html`
       <span class="event">
-        <i>${asteriskIcon}</i>
-        ${obj.date || ''} ${obj.place ? this._('in') : ''}
+        ${this._('Birth')}: ${obj.date || ''} ${obj.place ? this._('in') : ''}
         ${obj.place_name || obj.place || ''}
       </span>
     `
@@ -212,17 +278,27 @@ export class GrampsjsPerson extends GrampsjsObject {
     if (obj === undefined || Object.keys(obj).length === 0) {
       return ''
     }
+    if (
+      getAttributeValue(this.data, ATTR_DEATH_ANNIVERSARY) &&
+      /^giỗ(?:\s|$)/iu.test(obj.date || '') &&
+      !obj.place &&
+      !obj.place_name
+    ) {
+      return ''
+    }
     return html`
       <span class="event">
-        <i>${crossIcon}</i>
-        ${obj.date || ''} ${obj.place ? this._('in') : ''}
+        ${this._('Death')}: ${obj.date || ''} ${obj.place ? this._('in') : ''}
         ${obj.place_name || obj.place || ''}
       </span>
     `
   }
 
   _renderRelation() {
-    if (!this.homePersonDetails.handle) {
+    if (
+      !this.homePersonDetails.handle ||
+      this.homePersonDetails.handle === this.data.handle
+    ) {
       // no home person set
       return ''
     }

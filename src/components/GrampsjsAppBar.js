@@ -39,8 +39,8 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
           --mdc-typography-headline6-font-family: var(
             --grampsjs-heading-font-family
           );
-          --mdc-typography-headline6-font-weight: 550;
-          --mdc-typography-headline6-font-size: 17px;
+          --mdc-typography-headline6-font-weight: 600;
+          --mdc-typography-headline6-font-size: 18px;
           --mdc-theme-primary: var(--grampsjs-top-app-bar-background-color);
           --mdc-theme-on-primary: var(--grampsjs-top-app-bar-font-color);
         }
@@ -48,6 +48,17 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
         mwc-top-app-bar.edit {
           --mdc-theme-primary: var(--mdc-theme-secondary);
           --mdc-theme-on-primary: var(--mdc-theme-on-secondary);
+        }
+
+        @media (max-width: 360px) {
+          mwc-top-app-bar {
+            --mdc-typography-headline6-font-size: 16px;
+          }
+
+          /* Tìm kiếm vẫn luôn có trên thanh điều hướng dưới. */
+          #button-search {
+            display: none;
+          }
         }
 
         .action-icon-wrapper {
@@ -171,9 +182,7 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
         <div id="app-title" slot="title">
           ${this.editMode && this.editTitle
             ? this.editTitle
-            : this.appState.treeConfig?.[TREE_CONFIG_APP_TITLE] ||
-              this.appState?.dbInfo?.database?.name ||
-              APP_NAME}
+            : this.appState.treeConfig?.[TREE_CONFIG_APP_TITLE] || APP_NAME}
         </div>
         ${savingIndicator}
         ${this.editMode

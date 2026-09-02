@@ -344,19 +344,19 @@ export const getLifeSpan = (person, profile) => {
 export const personCardLines = (person, profile, fullName) => {
   const lines = []
   if (fullName) {
-    lines.push({text: fullName, weight: '500', size: 13.5, muted: false})
+    lines.push({text: fullName, weight: '600', size: 14, muted: false})
   }
   const courtesy = getCourtesyName(person)
   if (courtesy) {
-    lines.push({text: courtesy, weight: '350', size: 12, muted: true})
+    lines.push({text: courtesy, weight: '400', size: 12, muted: true})
   }
   const lineage = getLineage(person)
   if (lineage) {
-    lines.push({text: lineage, weight: '350', size: 12, muted: true})
+    lines.push({text: lineage, weight: '400', size: 12, muted: true})
   }
   const lifespan = getLifeSpan(person, profile)
   if (lifespan) {
-    lines.push({text: lifespan, weight: '350', size: 12, muted: true})
+    lines.push({text: lifespan, weight: '400', size: 12, muted: true})
   }
   return lines.slice(0, 4)
 }

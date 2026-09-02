@@ -792,7 +792,11 @@ export class GrampsJs extends LitElement {
 
   firstUpdated() {
     installRouter(location =>
-      this._loadPage(decodeURIComponent(location.pathname))
+      this._loadPage(
+        location.pathname.startsWith('/search/')
+          ? location.pathname
+          : decodeURIComponent(location.pathname)
+      )
     )
     installMediaQueryWatcher('(max-width: 991px)', matches => {
       if (matches && this.appState.screenSize !== 'small') {
@@ -1061,10 +1065,7 @@ export class GrampsJs extends LitElement {
 
   _updateTitle() {
     const {page, pageId} = this.appState.path
-    const suffix =
-      this.appState.treeConfig?.[TREE_CONFIG_APP_TITLE] ||
-      this.appState.dbInfo?.database?.name ||
-      APP_NAME
+    const suffix = this.appState.treeConfig?.[TREE_CONFIG_APP_TITLE] || APP_NAME
     if (OBJECT_PAGES.has(page) && pageId) {
       document.title = `${pageId} · ${suffix}`
       return

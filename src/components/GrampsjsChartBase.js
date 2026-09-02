@@ -13,7 +13,7 @@ export class GrampsjsChartBase extends GrampsjsAppStateMixin(LitElement) {
       css`
         div#container {
           display: flex;
-          height: calc(100vh - 165px);
+          height: var(--grampsjs-chart-height, calc(100vh - 165px));
         }
       `,
     ]

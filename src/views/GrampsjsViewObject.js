@@ -110,6 +110,12 @@ export class GrampsjsViewObject extends GrampsjsView {
           bottom: 32px;
           right: 32px;
         }
+        @media (max-width: 991px) {
+          md-fab {
+            bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+            right: 16px;
+          }
+        }
       `,
     ]
   }
@@ -178,7 +184,11 @@ export class GrampsjsViewObject extends GrampsjsView {
 
   renderFab() {
     return html`
-      <md-fab variant="secondary" @click="${this._activateEditMode}">
+      <md-fab
+        variant="secondary"
+        aria-label="${this._('Edit')}"
+        @click="${this._activateEditMode}"
+      >
         <grampsjs-icon
           slot="icon"
           .path="${mdiPencil}"

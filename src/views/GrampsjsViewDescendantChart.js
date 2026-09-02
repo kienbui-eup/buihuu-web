@@ -52,7 +52,7 @@ export class GrampsjsViewDescendantChart extends GrampsjsViewTreeChartBase {
           nameDisplayFormat=${this.nameDisplayFormat}
           ?canEdit="${this._editMode}"
           .data=${this._data}
-          gapX="60"
+          gapX="24"
           .appState="${this.appState}"
         >
         </grampsjs-tree-chart>
