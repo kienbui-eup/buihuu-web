@@ -1,5 +1,16 @@
 // Đọc đề mục từ HTML đã được GrampsjsNoteContent làm sạch và hiển thị.
 // StyledText cũ dùng một đoạn in đậm riêng thay cho thẻ h2/h3.
+function fieldLabel(element) {
+  if (element?.tagName !== 'P') return ''
+  const first = [...element.childNodes].find(node => node.textContent.trim())
+  if (first?.nodeType !== 3) return ''
+  return (
+    first.textContent
+      .trimStart()
+      .match(/^([\p{L}\p{N}][^:：\n]{0,59})[:：](?:\s|$)/u)?.[1] || ''
+  )
+}
+
 export function getArticleSections(container) {
   if (!container) return []
   return [...container.querySelectorAll('h1, h2, h3, h4, h5, h6, p')]
@@ -21,16 +32,13 @@ export function getArticleSections(container) {
       // Các bảng được chuyển thành tên dòng in đậm + các trường "Nhãn: giá trị".
       // Chúng là dữ liệu của bảng, không phải đề mục của bài.
       const next = element.nextElementSibling
-      const first = [...(next?.childNodes || [])].find(node =>
-        node.textContent.trim()
-      )
-      const field =
-        next?.tagName === 'P' &&
-        first?.nodeType === 3 &&
-        /^[\p{L}\p{N}][^:：\n]{0,59}[:：](?:\s|$)/u.test(
-          first.textContent.trimStart()
-        )
-      return !field && !/^[\d\s.,%–—-]+$/.test(text)
+      const label = fieldLabel(next)
+      const tableRow =
+        label &&
+        (fieldLabel(next.nextElementSibling) ||
+          fieldLabel(next.nextElementSibling?.nextElementSibling) === label ||
+          fieldLabel(element.previousElementSibling) === label)
+      return !tableRow && !/^[\d\s.,%–—-]+$/.test(text)
     })
     .map((element, index) => ({
       label: element.textContent.trim(),

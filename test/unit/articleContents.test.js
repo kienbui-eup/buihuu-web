@@ -19,7 +19,7 @@ describe('mục lục bài viết', () => {
   it('bỏ tên dòng và con số trong bảng chuyển thành đoạn văn', () => {
     expect(
       sections(
-        '<p><b>Thống kê</b></p><p><b>Nhóm A</b></p><p>Tổng hồ sơ: 12</p><p><b>13</b></p><p>Số mẫu: 2</p><p><b>Việc cần làm</b></p><p>Kiểm tra nguồn.</p>'
+        '<p><b>Thống kê</b></p><p><b>Nhóm A</b></p><p>Tổng hồ sơ: 12</p><p>Số mẫu: 2</p><p><b>13</b></p><p>Số mẫu: 2</p><p><b>Việc cần làm</b></p><p>Kiểm tra nguồn.</p>'
       ).map(item => item.label)
     ).toEqual(['Thống kê', 'Việc cần làm'])
   })
@@ -49,8 +49,16 @@ describe('mục lục bài viết', () => {
   it('bỏ dòng bảng cả khi giá trị được in đậm hoặc chứa nguồn dẫn', () => {
     expect(
       sections(
-        '<p><b>Tổng</b></p><p>Số mẫu: <b>12</b></p><p><b>Nguồn báo</b></p><p>Tư liệu: <a href="https://example.org">[1]</a></p>'
+        '<p><b>Tổng</b></p><p>Dữ liệu: <b>12</b></p><p><b>Nguồn báo</b></p><p>Dữ liệu: <a href="https://example.org">[1]</a></p>'
       )
     ).toEqual([])
+  })
+
+  it('giữ đề mục có một đoạn giới thiệu nguồn ngay dưới', () => {
+    expect(
+      sections(
+        '<p><b>Nhân vật lịch sử</b></p><p>Nguồn: bài báo và bản chép.</p><p>Phần tiểu sử.</p>'
+      ).map(item => item.label)
+    ).toEqual(['Nhân vật lịch sử'])
   })
 })
