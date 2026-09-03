@@ -167,7 +167,10 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
         color: var(--md-sys-color-primary);
         background: color-mix(in srgb, var(--heritage-gold) 16%, transparent);
       }
-      @media (max-width: 1279px) {
+      /* Dưới 1100 px, năm mục chính không còn chỗ cạnh tên trang và ba nút bên
+         phải; mọi thứ nằm trong Danh mục. Máy tính bảng nằm ngang (1024 px) vì
+         thế cũng chỉ thấy nút Danh mục, giống điện thoại. */
+      @media (max-width: 1099px) {
         .primary {
           display: none;
         }

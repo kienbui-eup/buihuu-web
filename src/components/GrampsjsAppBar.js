@@ -57,21 +57,6 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
         grampsjs-header-nav {
           margin-right: 8px;
         }
-        .tree-header grampsjs-header-nav {
-          order: 2;
-          flex: 1 1 100%;
-          margin: 0;
-          padding: 4px 0;
-          border-top: 1px solid #65503c;
-        }
-        @media (max-width: 1279px) {
-          .tree-header grampsjs-header-nav {
-            order: 0;
-            flex: 0 0 auto;
-            border: 0;
-            padding: 0;
-          }
-        }
         .brand-name {
           overflow: hidden;
           text-overflow: ellipsis;
@@ -97,44 +82,25 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
           top: 0;
           z-index: 21;
         }
-        .tree-header {
+        /* Trang Cây dùng đúng thanh đầu trang chung như mọi trang khác; công cụ
+           của cây nằm ở một hàng riêng ngay dưới, cùng màu, để đọc như một header
+           cao hơn chứ không phải một header thứ hai với thứ tự nút khác đi. */
+        .tools-row {
           display: flex;
           align-items: center;
-          flex-wrap: wrap;
-          gap: 0 4px;
-          padding: 0 8px;
-          min-height: 64px;
+          padding: 4px 8px;
           background: var(--grampsjs-top-app-bar-background-color);
           color: var(--grampsjs-top-app-bar-font-color);
+          border-top: 1px solid #65503c;
         }
-        .tree-header #app-title {
-          font: 600 18px var(--grampsjs-heading-font-family);
-          margin-right: 8px;
-        }
-        .tree-header md-icon-button {
-          width: 44px;
-          height: 44px;
-          flex: 0 0 44px;
-        }
-        .tree-header grampsjs-tree-toolbar {
+        .tools-row grampsjs-tree-toolbar {
           flex: 1;
-          min-width: 440px;
+          min-width: 0;
+          max-width: 760px;
         }
-        @media (max-width: 991px) {
-          .tree-header {
-            min-height: 56px;
-            gap: 0;
-            padding: 4px 8px;
-          }
-          .tree-header #app-title {
-            flex: 1;
-            font-size: 18px;
-          }
-          .tree-header grampsjs-tree-toolbar {
-            order: 2;
-            flex: 1 1 100%;
-            min-width: 0;
-            padding-top: 4px;
+        @media (min-width: 992px) {
+          .tools-row {
+            padding: 4px 16px;
           }
         }
         mwc-top-app-bar {
@@ -166,10 +132,6 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
             flex-basis: 28px;
           }
           grampsjs-header-nav {
-            margin-right: 4px;
-          }
-          .tree-header #app-title {
-            font-size: 16px;
             margin-right: 4px;
           }
           mwc-top-app-bar {
@@ -266,30 +228,19 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
     fireEvent(window, 'page-header:resize')
   }
 
-  _renderTreeHeader(savingIndicator) {
-    const searchLabel = pageSearchLabel('tree')
-    return html`<header class="tree-header" aria-label="Cây gia phả">
-      <div id="app-title" class="brand-title">
-        <grampsjs-heritage-mark></grampsjs-heritage-mark>
-        <span class="brand-name">Cây gia phả</span>
-      </div>
+  // Hàng công cụ của trang Cây, dưới thanh đầu trang chung. Trạng thái do
+  // GrampsjsViewTreeChartBase đẩy lên qua sự kiện tree:tools.
+  _renderToolsRow() {
+    if (!this.treePage || this.editMode) return ''
+    return html`<div
+      class="tools-row"
+      role="region"
+      aria-label="Công cụ gia phả"
+    >
       <grampsjs-tree-toolbar
         .state=${this._treeTools || {view: 'main'}}
       ></grampsjs-tree-toolbar>
-      ${savingIndicator}
-      <md-icon-button
-        id="button-search"
-        title=${searchLabel}
-        aria-label=${searchLabel}
-        @click=${() => requestPageSearch(this)}
-        ><grampsjs-icon path=${mdiMagnify} color="currentColor"></grampsjs-icon
-      ></md-icon-button>
-      <grampsjs-settings-menu
-        id="button-settings"
-        .appState=${this.appState}
-      ></grampsjs-settings-menu>
-      ${this._renderPrimaryNav()}
-    </header>`
+    </div>`
   }
 
   render() {
@@ -321,9 +272,6 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
             >${this._('Saved')}</grampsjs-tooltip
           >`
       : ''
-
-    if (this.treePage && !this.editMode)
-      return this._renderTreeHeader(savingIndicator)
 
     return html`
       <mwc-top-app-bar class="${classMap({edit: this.editMode})}">
@@ -402,16 +350,6 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
                       >${this._('Add')}</grampsjs-tooltip
                     >`
                 : ''}
-              <grampsjs-settings-menu
-                slot="actionItems"
-                .appState="${this.appState}"
-                id="button-settings"
-              ></grampsjs-settings-menu>
-              <grampsjs-tooltip
-                for="button-settings"
-                .appState="${this.appState}"
-                >${this._('Preferences')}</grampsjs-tooltip
-              >
               <md-icon-button
                 slot="actionItems"
                 id="button-search"
@@ -429,9 +367,19 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
                 .content=${pageSearchLabel(this.appState.path.page)}
                 >${pageSearchLabel(this.appState.path.page)}</grampsjs-tooltip
               >
+              <grampsjs-settings-menu
+                slot="actionItems"
+                .appState="${this.appState}"
+                id="button-settings"
+              ></grampsjs-settings-menu>
+              <grampsjs-tooltip
+                for="button-settings"
+                .appState="${this.appState}"
+                >${this._('Preferences')}</grampsjs-tooltip
+              >
             `}
       </mwc-top-app-bar>
-      ${this.editDialogContent}
+      ${this._renderToolsRow()} ${this.editDialogContent}
     `
   }
 
