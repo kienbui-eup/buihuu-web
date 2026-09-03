@@ -279,10 +279,10 @@ class GrampsjsTempleHero extends LitElement {
       <figure>
         <picture
           ><img
-            src="images/nha-tho-to-1600.jpg?v=3afc632e"
+            src="images/nha-tho-to-1600-3afc632e.jpg"
             srcset="
-              images/nha-tho-to-800.jpg?v=3afc632e   800w,
-              images/nha-tho-to-1600.jpg?v=3afc632e 1600w
+              images/nha-tho-to-800-3afc632e.jpg   800w,
+              images/nha-tho-to-1600-3afc632e.jpg 1600w
             "
             sizes="(max-width: 760px) 100vw, 65vw"
             width="1672"

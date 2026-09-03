@@ -39,9 +39,10 @@ trên mái là bản đọc tạm từ ảnh bị che, chưa phải bản chép 
 Giữ nguyên bản được chọn, chỉ thu nhỏ và nén bằng
 `pwsh -File branding/export-temple.ps1` thành JPEG 800/1600 px trong `images/`
 (khoảng 79/284 KiB). Trình duyệt chọn kích thước bằng `srcset`. Đường dẫn ảnh
-trong `GrampsjsTempleHero.js` và metadata chia sẻ kèm `v=3afc632e` (tám ký tự
-đầu SHA-256 ảnh nguồn) để trình duyệt tải lại ảnh mới. Khi thay ảnh, cập nhật
-cùng phiên bản tại các vị trí này. Ảnh nguồn không đưa vào bản build.
+trong `GrampsjsTempleHero.js` và metadata chia sẻ dùng tên tệp có hậu tố
+`3afc632e` (tám ký tự đầu SHA-256 ảnh nguồn) để trình duyệt và máy chủ tải lại
+ảnh mới. Khi thay ảnh, cập nhật cùng phiên bản tại các vị trí này. Ảnh nguồn
+không đưa vào bản build.
 Prompt hiệu chỉnh khu phụ lưu tại [nha-tho-to-prompt.md](nha-tho-to-prompt.md).
 
 Trang chủ và đăng nhập dùng ảnh làm phần mở đầu. Bảng màu lấy từ gỗ sẫm,
