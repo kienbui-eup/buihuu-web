@@ -24,6 +24,7 @@ import './GrampsjsAddMenu.js'
 import './GrampsjsSettingsMenu.js'
 import './GrampsjsTooltip.js'
 import './GrampsjsTreeToolbar.js'
+import './GrampsjsHeritageMark.js'
 import {requestPageSearch, pageSearchLabel} from '../pageSearch.js'
 
 import {fireEvent} from '../util.js'
@@ -39,6 +40,39 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
       css`
         :host {
           display: block;
+        }
+        #app-title {
+          min-width: 0;
+        }
+        .brand-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          min-width: 0;
+        }
+        .brand-title grampsjs-heritage-mark {
+          --grampsjs-mark-size: 36px;
+          flex: 0 0 36px;
+        }
+        .brand-name {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .brand-short {
+          display: none;
+        }
+        @media (max-width: 600px) {
+          .brand-title grampsjs-heritage-mark {
+            --grampsjs-mark-size: 32px;
+            flex-basis: 32px;
+          }
+          .brand-full {
+            display: none;
+          }
+          .brand-short {
+            display: inline;
+          }
         }
         :host([tree-page]) {
           position: sticky;
@@ -201,7 +235,10 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
       <md-icon-button aria-label=${this._('Menu')} @click=${this._toggleDrawer}
         ><grampsjs-icon path=${mdiMenu} color="currentColor"></grampsjs-icon
       ></md-icon-button>
-      <div id="app-title">Gia phả</div>
+      <div id="app-title" class="brand-title">
+        <grampsjs-heritage-mark></grampsjs-heritage-mark>
+        <span class="brand-name">Gia phả</span>
+      </div>
       <grampsjs-tree-toolbar
         .state=${this._treeTools || {view: 'main'}}
       ></grampsjs-tree-toolbar>
@@ -280,10 +317,11 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
                 color="currentColor"
               ></grampsjs-icon>
             </md-icon-button>`}
-        <div id="app-title" slot="title">
+        <div id="app-title" class="brand-title" slot="title">
           ${this.editMode && this.editTitle
             ? this.editTitle
-            : this.appState.treeConfig?.[TREE_CONFIG_APP_TITLE] || APP_NAME}
+            : html`<grampsjs-heritage-mark></grampsjs-heritage-mark>
+                <span class="brand-name">${this._renderBrandName()}</span>`}
         </div>
         ${savingIndicator}
         ${this.editMode
@@ -369,6 +407,13 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
       </mwc-top-app-bar>
       ${this.editDialogContent}
     `
+  }
+
+  _renderBrandName() {
+    const title = this.appState.treeConfig?.[TREE_CONFIG_APP_TITLE] || APP_NAME
+    if (title !== APP_NAME) return title
+    return html`<span class="brand-full">${APP_NAME}</span
+      ><span class="brand-short">Bùi Hữu</span>`
   }
 
   _toggleDrawer() {

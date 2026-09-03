@@ -67,6 +67,7 @@ export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
           color: var(--md-sys-color-primary);
         }
         grampsjs-heritage-mark {
+          --grampsjs-mark-size: 58px;
           transform: rotate(-4deg) scale(0.8);
           flex: 0 0 58px;
         }

@@ -1,28 +1,28 @@
 import {LitElement, html, css} from 'lit'
 
-// Dấu chữ thuần Việt, dựng tại chỗ, không tải hình hay phông từ dịch vụ khác.
+// Ấn son Bùi Hữu dùng tài nguyên nội bộ, có bản 2x cho màn hình điện thoại.
 class GrampsjsHeritageMark extends LitElement {
   static styles = css`
     :host {
       display: inline-block;
-      color: var(--md-sys-color-primary);
+      line-height: 0;
     }
-    span {
-      display: grid;
-      place-content: center;
-      width: 58px;
-      height: 64px;
-      box-sizing: border-box;
-      border: 3px double currentColor;
-      border-radius: 1px;
-      font: 600 17px/1.4 'Noto Serif', 'Times New Roman', serif;
-      letter-spacing: 0.04em;
-      text-align: center;
+    img {
+      display: block;
+      width: var(--grampsjs-mark-size, 64px);
+      height: var(--grampsjs-mark-size, 64px);
+      object-fit: contain;
     }
   `
 
   render() {
-    return html`<span aria-hidden="true">BÙI<br />HỮU</span>`
+    return html`<img
+      src="images/logo-bui-huu.png"
+      width="64"
+      height="64"
+      alt=""
+      aria-hidden="true"
+    />`
   }
 }
 
