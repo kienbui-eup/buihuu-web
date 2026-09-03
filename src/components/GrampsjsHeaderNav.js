@@ -1,7 +1,42 @@
+/*
+Điều hướng chính trên header và bảng Danh mục.
+
+Năm mục chính nằm cạnh tên trang trên màn hình rộng; nút Danh mục mở một bảng
+giấy gom mọi trang tra cứu, tư liệu nghiên cứu và ba bài viết về dòng họ. Các
+mục theo dõi và biên soạn (công việc, xuất, bản sửa đổi, thông báo...) nằm ở
+menu tài khoản (GrampsjsSettingsMenu), vì đó là việc của người có tài khoản
+biên soạn, không phải của con cháu vào tra cứu.
+*/
+
 import {LitElement, html, css} from 'lit'
+import {
+  mdiHome,
+  mdiFamilyTree,
+  mdiAccountGroup,
+  mdiCandle,
+  mdiRss,
+  mdiMap,
+  mdiMagnify,
+  mdiTimelineOutline,
+  mdiImage,
+  mdiDna,
+  mdiCreation,
+  mdiFileDocumentOutline,
+  mdiBookOpenPageVariant,
+  mdiHelpCircleOutline,
+  mdiMessageTextOutline,
+  mdiChevronDown,
+  mdiClose,
+} from '@mdi/js'
 import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import {handleSearchLink} from '../pageSearch.js'
+import {
+  ARTICLE_GIOI_THIEU,
+  ARTICLE_HUONG_DAN,
+  ARTICLE_GOP_Y,
+} from './GrampsjsSiteFooter.js'
+import './GrampsjsIcon.js'
 
 const PEOPLE_PAGES = [
   'people',
@@ -24,7 +59,7 @@ const PEOPLE_PAGES = [
 
 class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
   static get properties() {
-    return {open: {state: true}, unreadCount: {state: true}}
+    return {open: {state: true}}
   }
 
   static styles = [
@@ -51,6 +86,7 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
         padding: 0 12px;
         color: #fff8e9;
         font-size: 14px;
+        font-weight: 500;
         white-space: nowrap;
         text-decoration: none;
         border-bottom: 2px solid transparent;
@@ -65,49 +101,40 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
         cursor: pointer;
       }
       #catalog-trigger {
-        position: relative;
-        min-height: 44px;
-        padding: 0 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        min-height: 40px;
+        padding: 0 8px 0 12px;
         color: #fff8e9;
         background: transparent;
-        border: 1px solid #93784e;
-        border-radius: 3px;
-        font-size: 13px;
+        border: 1px solid
+          color-mix(in srgb, var(--heritage-gold) 55%, transparent);
+        border-radius: var(--grampsjs-frame-radius);
+        font: 500 13px/1 var(--grampsjs-body-font-family);
         white-space: nowrap;
+      }
+      #catalog-trigger grampsjs-icon {
+        transition: transform 150ms;
       }
       #catalog-trigger[aria-expanded='true'],
       #catalog-trigger:hover {
-        background: #65503c;
+        color: #f3dfae;
+        border-color: var(--heritage-gold);
+        background: color-mix(in srgb, var(--heritage-gold) 22%, transparent);
       }
-      .caret {
-        margin-left: 6px;
-      }
-      .badge {
-        display: inline-block;
-        border-radius: 10px;
-        background: var(--md-sys-color-error);
-        color: var(--md-sys-color-on-error);
-        min-width: 18px;
-        text-align: center;
-        font: 600 11px/18px var(--grampsjs-body-font-family);
-        padding: 0 3px;
-        margin-left: 6px;
-      }
-      #catalog-trigger .badge {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        margin: 0;
+      #catalog-trigger[aria-expanded='true'] grampsjs-icon {
+        transform: rotate(180deg);
       }
       #catalog {
         position: fixed;
         inset: auto 16px auto auto;
         top: var(--catalog-top, 64px);
-        width: min(740px, calc(100vw - 32px));
+        width: min(880px, calc(100vw - 32px));
         max-height: calc(100dvh - var(--catalog-top, 64px) - 16px);
         box-sizing: border-box;
         margin: 0;
-        padding: 20px 24px 24px;
+        padding: 0;
         overflow-y: auto;
         overscroll-behavior: contain;
         border: 1px solid var(--heritage-rule);
@@ -121,51 +148,85 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 12px;
+        padding: 14px 12px 12px 24px;
         border-bottom: 1px solid var(--heritage-rule);
-        margin-bottom: 16px;
-        padding-bottom: 8px;
       }
       .heading h2 {
-        font-size: 22px;
+        font-size: 20px;
         margin: 0;
       }
+      .heading p {
+        margin: 2px 0 0;
+        font-size: 13px;
+        color: var(--md-sys-color-on-surface-variant);
+      }
       .close {
-        color: var(--md-sys-color-primary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 44px;
+        width: 44px;
+        height: 44px;
         border: 0;
         background: transparent;
-        min-height: 44px;
-        padding: 0 12px;
-        font-size: 14px;
+        color: var(--md-sys-color-on-surface-variant);
+        border-radius: var(--grampsjs-frame-radius);
+      }
+      .close:hover {
+        color: var(--md-sys-color-primary);
+        background: color-mix(in srgb, var(--heritage-gold) 16%, transparent);
       }
       .groups {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 24px;
+        grid-template-columns: 1.6fr 1fr 1fr;
+        gap: 20px 28px;
+        padding: 18px 24px 22px;
       }
       h3 {
-        font: 600 11px/1.7 var(--grampsjs-body-font-family);
+        margin: 0 0 6px 10px;
+        font: 500 11px/1.6 var(--grampsjs-body-font-family);
+        letter-spacing: 0.16em;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
-        margin: 0 0 8px;
-        color: var(--md-sys-color-on-surface-variant);
+        color: var(--md-sys-color-primary);
+      }
+      .links {
+        display: flex;
+        flex-direction: column;
+      }
+      .group.lookup .links {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 4px;
       }
       .group a {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 8px;
+        gap: 10px;
         min-height: 44px;
         padding: 4px 10px;
         box-sizing: border-box;
         color: var(--heritage-ink);
         text-decoration: none;
         font-size: 14px;
-        border-radius: 3px;
+        border-radius: var(--grampsjs-frame-radius);
+      }
+      .group a grampsjs-icon {
+        flex: 0 0 auto;
+        color: var(--md-sys-color-on-surface-variant);
       }
       .group a:hover,
       .group a[aria-current='page'] {
         color: var(--md-sys-color-primary);
         background: color-mix(in srgb, var(--heritage-gold) 16%, transparent);
+      }
+      .group a:hover grampsjs-icon,
+      .group a[aria-current='page'] grampsjs-icon {
+        color: var(--md-sys-color-primary);
+      }
+      .group a[aria-current='page'] {
+        font-weight: 600;
+        box-shadow: inset 3px 0 var(--heritage-gold);
       }
       /* Dưới 1100 px, năm mục chính không còn chỗ cạnh tên trang và ba nút bên
          phải; mọi thứ nằm trong Danh mục. Máy tính bảng nằm ngang (1024 px) vì
@@ -175,34 +236,38 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
           display: none;
         }
       }
-      @media (max-width: 599px) {
-        .heading h2 {
-          font-size: 20px;
-        }
+      @media (max-width: 760px) {
+        /* Chỉ đổi lề trái/phải; không dùng inset để không đặt lại top. */
         #catalog {
-          padding: 12px 16px 20px;
+          left: 8px;
+          right: 8px;
+          width: auto;
+        }
+        .heading {
+          padding: 12px 8px 10px 16px;
+        }
+        .heading h2 {
+          font-size: 18px;
+        }
+        .heading p {
+          display: none;
         }
         .groups {
-          grid-template-columns: 1fr 1fr;
-          gap: 20px 12px;
+          grid-template-columns: 1fr;
+          gap: 14px;
+          padding: 12px 10px 16px;
         }
-        .group:last-child {
-          grid-column: 1 / -1;
-        }
-        .group:last-child .links {
+        .group .links {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 0 12px;
+          column-gap: 4px;
         }
         .group a {
-          padding-inline: 4px;
+          padding-inline: 6px;
         }
         #catalog-trigger {
-          padding-inline: 6px;
+          padding: 0 4px 0 10px;
           font-size: 12px;
-        }
-        .caret {
-          margin-left: 3px;
         }
       }
       @media print {
@@ -216,30 +281,21 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
   constructor() {
     super()
     this.open = false
-    this.unreadCount = 0
-    this._onNotifications = event => {
-      this.unreadCount = event.detail.unreadCount
-    }
     this._onResize = () => this._positionPanel()
   }
 
   connectedCallback() {
     super.connectedCallback()
-    window.addEventListener('notifications:changed', this._onNotifications)
     window.addEventListener('resize', this._onResize)
   }
 
   disconnectedCallback() {
     super.disconnectedCallback()
-    window.removeEventListener('notifications:changed', this._onNotifications)
     window.removeEventListener('resize', this._onResize)
   }
 
   updated(changed) {
     if (changed.has('appState')) {
-      this.unreadCount = (this.appState.getNotifications?.() ?? []).filter(
-        n => n?.read === false
-      ).length
       const route = JSON.stringify(this.appState.path)
       if (this._route !== route) this._close()
       this._route = route
@@ -248,7 +304,7 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
 
   _positionPanel() {
     const header = this.getRootNode().host
-    const fixedBar = header.shadowRoot
+    const fixedBar = header?.shadowRoot
       ?.querySelector('mwc-top-app-bar')
       ?.shadowRoot?.querySelector('header')
     const top = Math.max(0, (fixedBar || header).getBoundingClientRect().bottom)
@@ -263,20 +319,20 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
     if (panel?.matches(':popover-open')) panel.hidePopover()
   }
 
-  _selected(key) {
-    const page = this.appState.path?.page
+  _selected(key, href) {
+    const {page, pageId} = this.appState.path ?? {}
+    if (href.startsWith('/blog/')) return `/${page}/${pageId}` === href
     if (key === 'people') return PEOPLE_PAGES.includes(page)
     if (key === 'dna-matches')
       return ['dna-matches', 'dna-chromosome', 'ydna'].includes(page)
     if (key === 'reports') return ['reports', 'report'].includes(page)
-    if (key === 'revisions') return ['revisions', 'revision'].includes(page)
     return key === page
   }
 
-  _link([key, href, label]) {
+  _link([key, href, label, icon]) {
     return html`<a
       href=${href}
-      aria-current=${this._selected(key) ? 'page' : 'false'}
+      aria-current=${this._selected(key, href) ? 'page' : 'false'}
       @click=${event => {
         if (href === '/search') handleSearchLink(event, this)
         if (
@@ -288,48 +344,58 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
         )
           this._close()
       }}
-      >${label}${key === 'notifications' && this.unreadCount > 0
-        ? html`<span
-            class="badge"
-            aria-label=${`${this.unreadCount} thông báo chưa đọc`}
-            >${this.unreadCount}</span
-          >`
-        : ''}</a
+      >${icon
+        ? html`<grampsjs-icon
+            path=${icon}
+            color="currentColor"
+            width="20"
+            height="20"
+          ></grampsjs-icon>`
+        : ''}<span>${label}</span></a
     >`
   }
 
   render() {
     const main = [
-      ['home', '/', 'Trang chủ'],
-      ['tree', '/tree', 'Cây gia phả'],
-      ['people', '/people', 'Người trong họ'],
-      ['lich-gio', '/lich-gio', 'Lịch giỗ'],
-      ['blog', '/blog', 'Bài viết'],
-      ['map', '/map', this._('Map')],
-      ['search', '/search', this._('Search')],
+      ['home', '/', 'Trang chủ', mdiHome],
+      ['tree', '/tree', 'Cây gia phả', mdiFamilyTree],
+      ['people', '/people', 'Người trong họ', mdiAccountGroup],
+      ['lich-gio', '/lich-gio', 'Lịch giỗ', mdiCandle],
+      ['blog', '/blog', 'Bài viết', mdiRss],
+      ['map', '/map', this._('Map'), mdiMap],
+      ['search', '/search', this._('Search'), mdiMagnify],
     ]
     const research = [
-      ['timeline', '/timeline', this._('Timeline')],
-      ['medialist', '/medialist', this._('Media')],
+      ['timeline', '/timeline', this._('Timeline'), mdiTimelineOutline],
+      ['medialist', '/medialist', this._('Media'), mdiImage],
       ...(!this.appState.frontendConfig?.hideDNALink
-        ? [['dna-matches', '/dna-matches', this._('DNA')]]
+        ? [['dna-matches', '/dna-matches', this._('DNA'), mdiDna]]
         : []),
-      ...(this.canUseChat ? [['chat', '/chat', this._('Assistant')]] : []),
-      ['reports', '/reports', this._('_Reports')],
+      ...(this.canUseChat
+        ? [['chat', '/chat', this._('Assistant'), mdiCreation]]
+        : []),
+      ['reports', '/reports', this._('_Reports'), mdiFileDocumentOutline],
     ]
-    const tools = [
-      ['recent', '/recent', this._('History')],
-      ['bookmarks', '/bookmarks', this._('_Bookmarks')],
-      ['tasks', '/tasks', this._('Tasks')],
-      ['export', '/export', this._('Export')],
-      ...(this.appState.permissions.canViewPrivate
-        ? [['revisions', '/revisions', this._('Revisions')]]
-        : []),
-      ['notifications', '/notifications', this._('Notifications')],
+    const about = [
+      [
+        'gioi-thieu',
+        ARTICLE_GIOI_THIEU,
+        'Giới thiệu dòng họ',
+        mdiBookOpenPageVariant,
+      ],
+      [
+        'huong-dan',
+        ARTICLE_HUONG_DAN,
+        'Hướng dẫn tra cứu',
+        mdiHelpCircleOutline,
+      ],
+      ['gop-y', ARTICLE_GOP_Y, 'Góp ý, sửa sai', mdiMessageTextOutline],
     ]
     return html`<div class="bar">
         <nav class="primary" aria-label="Điều hướng chính">
-          ${main.slice(0, 5).map(item => this._link(item))}
+          ${main
+            .slice(0, 5)
+            .map(([key, href, label]) => this._link([key, href, label]))}
         </nav>
         <button
           id="catalog-trigger"
@@ -338,14 +404,12 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
           aria-controls="catalog"
           @click=${this._positionPanel}
         >
-          Danh mục<span class="caret" aria-hidden="true">⌄</span>${this
-            .unreadCount > 0
-            ? html`<span
-                class="badge"
-                aria-label=${`${this.unreadCount} thông báo chưa đọc`}
-                >${this.unreadCount}</span
-              >`
-            : ''}
+          Danh mục<grampsjs-icon
+            path=${mdiChevronDown}
+            color="currentColor"
+            width="18"
+            height="18"
+          ></grampsjs-icon>
         </button>
       </div>
       <div
@@ -356,23 +420,30 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
         }}
       >
         <div class="heading">
-          <h2>Danh mục gia phả</h2>
+          <div>
+            <h2>Danh mục gia phả</h2>
+            <p>Trang tra cứu, tư liệu nghiên cứu và bài viết về dòng họ</p>
+          </div>
           <button
             class="close"
             popovertarget="catalog"
             popovertargetaction="hide"
+            aria-label="Đóng danh mục"
           >
-            Đóng
+            <grampsjs-icon
+              path=${mdiClose}
+              color="currentColor"
+            ></grampsjs-icon>
           </button>
         </div>
         <nav class="groups" aria-label="Toàn bộ danh mục">
           ${[
-            ['Tra cứu', main],
-            ['Tư liệu & nghiên cứu', research],
-            ['Theo dõi & biên soạn', tools],
+            ['Tra cứu', main, 'lookup'],
+            ['Tư liệu & nghiên cứu', research, 'research'],
+            ['Về dòng họ', about, 'about'],
           ].map(
-            ([label, items]) =>
-              html`<section class="group">
+            ([label, items, cls]) =>
+              html`<section class="group ${cls}">
                 <h3>${label}</h3>
                 <div class="links">${items.map(item => this._link(item))}</div>
               </section>`

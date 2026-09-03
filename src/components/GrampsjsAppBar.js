@@ -375,7 +375,7 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
               <grampsjs-tooltip
                 for="button-settings"
                 .appState="${this.appState}"
-                >${this._('Preferences')}</grampsjs-tooltip
+                >${this._('Account')}</grampsjs-tooltip
               >
             `}
       </mwc-top-app-bar>

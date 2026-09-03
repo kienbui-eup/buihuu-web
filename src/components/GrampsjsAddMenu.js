@@ -48,15 +48,20 @@ class GrampsjsAddMenu extends GrampsjsAppStateMixin(LitElement) {
       sharedStyles,
       appBarIconButtonStyles,
       css`
+        /* Đủ rộng để nhãn hai chữ như "Kho tư liệu" không bị bẻ dòng. */
         md-menu {
+          min-width: 240px;
           --md-divider-thickness: 1px;
-          --md-divider-color: var(--grampsjs-body-font-color-30);
+          --md-divider-color: var(--heritage-rule);
+          --md-menu-container-shape: var(--grampsjs-frame-radius);
         }
 
         md-menu-item {
           --md-menu-item-top-space: 0px;
           --md-menu-item-bottom-space: 0px;
-          --md-menu-item-one-line-container-height: 48px;
+          --md-menu-item-one-line-container-height: 44px;
+          --md-menu-item-label-text-size: 14px;
+          --md-menu-item-hover-state-layer-color: var(--heritage-gold);
         }
 
         md-menu-item.header {
