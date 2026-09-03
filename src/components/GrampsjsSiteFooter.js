@@ -101,8 +101,18 @@ class GrampsjsSiteFooter extends LitElement {
           flex-wrap: wrap;
           gap: 4px;
         }
-        :host([compact]) .base span:last-child {
+        /* Footer gọn trên điện thoại chỉ đủ một dòng ngắn: bỏ tên trang vì
+           header đã có, bỏ phần lời tựa để dòng bản quyền số hóa không bị nút
+           sửa nổi ở góc phải che mất; footer đầy đủ vẫn ghi cả hai tên. */
+        :host([compact]) .base span:first-child,
+        :host([compact]) .base .preface-credit {
           display: none;
+        }
+        :host([compact]) .base .credits {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
       }
       @media print {
@@ -155,7 +165,10 @@ class GrampsjsSiteFooter extends LitElement {
       </div>
       <div class="base">
         <span>${APP_NAME} · Thôn Chỉ Bồ</span
-        ><span>Lời tựa: Bùi Hữu Đặng, 2020 · Số hóa 2026</span>
+        ><span class="credits"
+          ><span class="preface-credit">Lời tựa: Bùi Hữu Đặng, 2020 · </span>Số
+          hóa: © 2026 Bùi Hữu Kiên</span
+        >
       </div>
     </footer>`
   }
