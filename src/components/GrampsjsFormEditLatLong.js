@@ -9,6 +9,7 @@ import './GrampsjsFormSelectDate.js'
 import './GrampsjsFormSelectObjectList.js'
 
 import {GrampsjsObjectForm} from './GrampsjsObjectForm.js'
+import {loadMaplibre, maplibreReady} from '../maplibreLoader.js'
 import {
   GrampsjsNominatimSearchMixin,
   nominatimSearchStyles,
@@ -30,6 +31,12 @@ class GrampsjsFormEditLatLong extends GrampsjsNominatimSearchMixin(
   }
 
   renderForm() {
+    // maplibre nạp động: chờ có rồi mới dựng form, vì marker con cần đối tượng
+    // bản đồ của cha ngay khi được dựng.
+    if (!maplibreReady()) {
+      loadMaplibre().then(() => this.requestUpdate())
+      return html``
+    }
     return html`
       <div>
         <div style="width:calc(50% - 20px);margin-right:20px;float:left;">

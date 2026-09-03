@@ -7,30 +7,23 @@ import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import {fireEvent, objectTypeToEndpoint} from '../util.js'
 
+// Các trang người trong họ mở thường xuyên: nạp sẵn.
 import '../views/GrampsjsViewPeople.js'
 import '../views/GrampsjsViewFamilies.js'
 import '../views/GrampsjsViewPlaces.js'
 import '../views/GrampsjsViewEvents.js'
-import '../views/GrampsjsViewReport.js'
-import '../views/GrampsjsViewReports.js'
 import '../views/GrampsjsViewSources.js'
 import '../views/GrampsjsViewCitations.js'
 import '../views/GrampsjsViewRepositories.js'
 import '../views/GrampsjsViewNotes.js'
-import '../views/GrampsjsViewMediaObjects.js'
-import '../views/GrampsjsViewChat.js'
-import '../views/GrampsjsViewExport.js'
 import '../views/GrampsjsViewPerson.js'
 import '../views/GrampsjsViewFamily.js'
 import '../views/GrampsjsViewPlace.js'
 import '../views/GrampsjsViewEvent.js'
 import '../views/GrampsjsViewSource.js'
-import '../views/GrampsjsViewTask.js'
-import '../views/GrampsjsViewTasks.js'
 import '../views/GrampsjsViewBlog.js'
 import '../views/GrampsjsViewBlogPost.js'
 import '../views/GrampsjsViewLichGio.js'
-import '../views/GrampsjsViewNotificationLog.js'
 import '../views/GrampsjsViewCitation.js'
 import '../views/GrampsjsViewDashboard.js'
 import '../views/GrampsjsViewRepository.js'
@@ -38,30 +31,67 @@ import '../views/GrampsjsViewNote.js'
 import '../views/GrampsjsViewMedia.js'
 import '../views/GrampsjsViewSearch.js'
 import '../views/GrampsjsViewSettingsUser.js'
-import '../views/GrampsjsViewSysinfo.js'
-import '../views/GrampsjsViewAdminSettings.js'
-import '../views/GrampsjsViewUserManagement.js'
 import '../views/GrampsjsViewRecent.js'
-import '../views/GrampsjsViewRevisions.js'
-import '../views/GrampsjsViewRevision.js'
 import '../views/GrampsjsViewBookmarks.js'
-import '../views/GrampsjsViewDnaMatches.js'
-import '../views/GrampsjsViewYDna.js'
 import '../views/GrampsjsViewMap.js'
 import '../views/GrampsjsViewTree.js'
-import '../views/GrampsjsViewNewPerson.js'
-import '../views/GrampsjsViewNewFamily.js'
-import '../views/GrampsjsViewNewEvent.js'
-import '../views/GrampsjsViewNewPlace.js'
-import '../views/GrampsjsViewNewSource.js'
-import '../views/GrampsjsViewNewCitation.js'
-import '../views/GrampsjsViewNewRepository.js'
-import '../views/GrampsjsViewNewNote.js'
-import '../views/GrampsjsViewNewMedia.js'
-import '../views/GrampsjsViewNewTask.js'
-import '../views/GrampsjsViewNewBlogPost.js'
-import '../views/GrampsjsViewHelp.js'
-import '../views/GrampsjsViewTimeline.js'
+
+/*
+Các trang còn lại nạp động khi lần đầu được mở.
+
+Bản gốc import tĩnh 55 view, nên gói khởi động mang cả trò chuyện AI, ADN, báo
+cáo, xuất dữ liệu, lịch sử sửa đổi (jsondiffpatch) và mọi form thêm mới, dù con
+cháu mở điện thoại ra chỉ để tra một cái tên. Phần tử của các trang này vẫn nằm
+sẵn trong template bên dưới; trình duyệt giữ chúng ở dạng chưa định nghĩa và tự
+nâng cấp khi module được nạp, Lit giữ lại các thuộc tính đã gán trước đó.
+*/
+const LAZY_VIEWS = {
+  chat: () => import('../views/GrampsjsViewChat.js'),
+  export: () => import('../views/GrampsjsViewExport.js'),
+  reports: () => import('../views/GrampsjsViewReports.js'),
+  report: () => import('../views/GrampsjsViewReport.js'),
+  revisions: () => import('../views/GrampsjsViewRevisions.js'),
+  revision: () => import('../views/GrampsjsViewRevision.js'),
+  'dna-matches': () => import('../views/GrampsjsViewDnaMatches.js'),
+  'dna-chromosome': () => import('../views/GrampsjsViewDnaMatches.js'),
+  ydna: () => import('../views/GrampsjsViewYDna.js'),
+  notifications: () => import('../views/GrampsjsViewNotificationLog.js'),
+  tasks: () => import('../views/GrampsjsViewTasks.js'),
+  task: () => import('../views/GrampsjsViewTask.js'),
+  timeline: () => import('../views/GrampsjsViewTimeline.js'),
+  help: () => import('../views/GrampsjsViewHelp.js'),
+  medialist: () => import('../views/GrampsjsViewMediaObjects.js'),
+  settings: () =>
+    Promise.all([
+      import('../views/GrampsjsViewSysinfo.js'),
+      import('../views/GrampsjsViewAdminSettings.js'),
+      import('../views/GrampsjsViewUserManagement.js'),
+    ]),
+  new_person: () => import('../views/GrampsjsViewNewPerson.js'),
+  new_family: () => import('../views/GrampsjsViewNewFamily.js'),
+  new_event: () => import('../views/GrampsjsViewNewEvent.js'),
+  new_place: () => import('../views/GrampsjsViewNewPlace.js'),
+  new_source: () => import('../views/GrampsjsViewNewSource.js'),
+  new_citation: () => import('../views/GrampsjsViewNewCitation.js'),
+  new_repository: () => import('../views/GrampsjsViewNewRepository.js'),
+  new_note: () => import('../views/GrampsjsViewNewNote.js'),
+  new_media: () => import('../views/GrampsjsViewNewMedia.js'),
+  new_task: () => import('../views/GrampsjsViewNewTask.js'),
+  new_blog_post: () => import('../views/GrampsjsViewNewBlogPost.js'),
+}
+
+const loadedViews = new Set()
+
+function ensureView(page) {
+  const loader = LAZY_VIEWS[page]
+  if (!loader || loadedViews.has(page)) return
+  loadedViews.add(page)
+  loader().catch(error => {
+    loadedViews.delete(page)
+    // eslint-disable-next-line no-console
+    console.error(`Không nạp được trang ${page}`, error)
+  })
+}
 
 class GrampsjsPages extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
@@ -93,6 +123,11 @@ class GrampsjsPages extends GrampsjsAppStateMixin(LitElement) {
     this.homePersonDetails = {}
     this.dbInfo = {}
     this._boundPageSearch = event => this._handlePageSearch(event)
+  }
+
+  willUpdate(changed) {
+    super.willUpdate(changed)
+    ensureView(this.appState?.path?.page)
   }
 
   connectedCallback() {

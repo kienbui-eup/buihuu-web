@@ -15,6 +15,7 @@ import './GrampsjsFormSelectDate.js'
 import './GrampsjsFormSelectObjectList.js'
 
 import {GrampsjsObjectForm} from './GrampsjsObjectForm.js'
+import {loadMaplibre, maplibreReady} from '../maplibreLoader.js'
 import {getMediaUrl} from '../api.js'
 import {
   GrampsjsNominatimSearchMixin,
@@ -107,6 +108,12 @@ class GrampsjsFormEditMapLayer extends GrampsjsNominatimSearchMixin(
   }
 
   renderForm() {
+    // maplibre nạp động: chờ có rồi mới dựng form, vì lớp phủ và marker con cần
+    // đối tượng bản đồ của cha ngay khi được dựng.
+    if (!maplibreReady()) {
+      loadMaplibre().then(() => this.requestUpdate())
+      return html``
+    }
     return html`
       Scale<br />
       <md-slider

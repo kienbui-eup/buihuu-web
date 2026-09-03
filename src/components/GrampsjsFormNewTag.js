@@ -4,7 +4,6 @@ Form for adding a new tag or selecting an existing one
 
 import {html, css} from 'lit'
 
-import '@awesome.me/webawesome/dist/components/color-picker/color-picker.js'
 import '@material/web/divider/divider.js'
 import {GrampsjsObjectForm} from './GrampsjsObjectForm.js'
 import './GrampsjsSearchResultList.js'
@@ -138,6 +137,16 @@ class GrampsjsFormNewTag extends GrampsjsObjectForm {
         `
       )}
     `
+  }
+
+  connectedCallback() {
+    super.connectedCallback()
+    // Bộ chọn màu Web Awesome kéo theo cả bộ thành phần nền của nó, nặng so với
+    // một form chỉ người biên tập mở. Nạp khi form được gắn vào trang; phần tử
+    // wa-color-picker trong template tự nâng cấp khi module về.
+    import(
+      '@awesome.me/webawesome/dist/components/color-picker/color-picker.js'
+    )
   }
 
   firstUpdated() {

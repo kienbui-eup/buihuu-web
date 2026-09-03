@@ -25,6 +25,7 @@ import './GrampsjsPlaceNames.js'
 import './GrampsjsGallery.js'
 import './GrampsjsMap.js'
 import './GrampsjsMapMarker.js'
+import {loadMaplibre, maplibreReady} from '../maplibreLoader.js'
 import './GrampsjsParticipants.js'
 import './GrampsjsReferences.js'
 import './GrampsjsRelationships.js'
@@ -671,6 +672,12 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
               ></grampsjs-place-children> `
           : ''}`
       case 'map':
+        // maplibre nạp động lần đầu có bản đồ; chờ xong mới dựng grampsjs-map
+        // vì marker con cần đối tượng bản đồ của cha ngay khi được dựng.
+        if (!maplibreReady()) {
+          loadMaplibre().then(() => this.requestUpdate())
+          return html`<div class="map-loading"></div>`
+        }
         return html` ${this.edit
           ? html`
               <p>

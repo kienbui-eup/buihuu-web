@@ -63,6 +63,8 @@ class GrampsjsMapOverlay extends LitElement {
 
   firstUpdated() {
     this._map = this.parentElement._map
+    // Bản đồ cha chưa dựng xong (maplibre nạp động) thì không có gì để gắn vào.
+    if (!this._map) return
     this._map.off('style.load', this._onStyleLoad)
     this._map.on('style.load', this._onStyleLoad)
     if (!this.hidden) this.addOverlay()

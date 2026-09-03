@@ -22,6 +22,7 @@ import {
 import {GrampsjsStaleDataMixin} from '../mixins/GrampsjsStaleDataMixin.js'
 import {queryNominatim, getMapViewport, saveMapViewport} from '../api.js'
 import {DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM} from '../branding.js'
+import {loadMaplibre, maplibreReady} from '../maplibreLoader.js'
 
 const EMPTY_ARRAY = []
 
@@ -61,11 +62,14 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
       _hiddenOverlaysHandles: {type: Array},
       _personPlaceHandles: {type: Array},
       _selectedPersonData: {type: Object},
+      _mapLibReady: {type: Boolean},
     }
   }
 
   constructor() {
     super()
+    this._mapLibReady = maplibreReady()
+    this._mapLibLoading = false
     this._dataPlaces = []
     this._dataEvents = []
     this._filteredPlaces = []
@@ -198,6 +202,21 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
   }
 
   renderContent() {
+    // maplibre nạp động: chưa có thì chờ, vì marker và lớp phủ con cần đối
+    // tượng bản đồ của cha ngay khi chúng được dựng.
+    if (!this._mapLibReady) {
+      if (!this._mapLibLoading) {
+        this._mapLibLoading = true
+        loadMaplibre()
+          .then(() => {
+            this._mapLibReady = true
+          })
+          .catch(() => {
+            this._mapLibLoading = false
+          })
+      }
+      return html`<div class="map-loading"></div>`
+    }
     const center = this._getMapCenter()
     const saved = getMapViewport()
     const zoom = saved ? saved.zoom : DEFAULT_ZOOM

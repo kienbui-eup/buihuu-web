@@ -67,6 +67,10 @@ export class GrampsjsViewPeople extends GrampsjsViewObjectsBase {
       },
     ]
     this._objectsName = 'people'
+    // Mặc định của bản gốc là "mới sửa nhất", vô nghĩa với cây vừa nhập một lượt:
+    // trang đầu toàn người không tên ở đời 15. Mã Gramps được pipeline đánh theo
+    // thứ tự sổ họ, nên xếp theo đó là thuỷ tổ đứng đầu rồi lần xuống các đời.
+    this._sort = '+gramps_id'
   }
 
   get _supportsMerge() {

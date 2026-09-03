@@ -1,7 +1,7 @@
 import {html, css, LitElement} from 'lit'
-import 'maplibre-gl'
-import '@openhistoricalmap/maplibre-gl-dates'
-import * as Diplomat from '@americana/diplomat'
+// maplibre-gl, plugin ngày tháng và Diplomat nạp động qua maplibreLoader.js,
+// không import tĩnh ở đây để chúng không nằm trong gói khởi động của mọi trang.
+import {loadMaplibre, maplibreReady} from '../maplibreLoader.js'
 
 import '@material/web/iconbutton/icon-button.js'
 import '@material/web/menu/menu'
@@ -25,7 +25,8 @@ const defaultConfig = {
   mapBaseStyleDark: 'https://tiles.openfreemap.org/styles/dark',
 }
 
-const {maplibregl} = window
+// Không chụp window.maplibregl vào hằng ở cấp module: thư viện nạp động sau
+// khi module này đã chạy, nên phải đọc window.maplibregl tại chỗ dùng.
 
 class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
@@ -152,9 +153,15 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
   }
 
   firstUpdated() {
+    // Nơi dựng phần tử này phải chờ loadMaplibre() trước; đây chỉ là lưới an
+    // toàn cho chỗ nào quên, khi đó marker và lớp phủ con có thể không gắn được.
+    if (!maplibreReady()) {
+      loadMaplibre().then(() => this.firstUpdated())
+      return
+    }
     const mapel = this.shadowRoot.getElementById(this.mapid)
     const styleUrl = this._getStyleUrl(this._currentStyle)
-    this._map = new maplibregl.Map({
+    this._map = new window.maplibregl.Map({
       container: mapel,
       style: styleUrl,
       center: [this.longitude, this.latitude],
@@ -186,10 +193,13 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
 
       mapContainer.dispatchEvent(customEvent)
     })
-    this._map.addControl(new maplibregl.NavigationControl(), 'bottom-right')
+    this._map.addControl(
+      new window.maplibregl.NavigationControl(),
+      'bottom-right'
+    )
     // Add geolocate control to the map controller
     this._map.addControl(
-      new maplibregl.GeolocateControl({
+      new window.maplibregl.GeolocateControl({
         positionOptions: {
           enableHighAccuracy: true,
         },
@@ -319,6 +329,8 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
 
   _localizeOhm() {
     if (this._currentStyle !== MAP_STYLE_OHM) return
+    const Diplomat = window.grampsjsDiplomat
+    if (!Diplomat) return
     const lang = this.appState?.i18n?.lang
     const locales = lang
       ? [lang, ...Diplomat.getLocales()]

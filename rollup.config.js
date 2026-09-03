@@ -31,7 +31,9 @@ export default {
     dir: outputDir,
     format: 'es',
     entryFileNames: developmentMode ? '[name].js' : '[hash].js',
-    chunkFileNames: developmentMode ? '[name].js' : '[hash].js',
+    // Chunk nạp động giữ tên module trong tên file để service worker loại được
+    // maplibre và graphviz-wasm khỏi danh sách precache (xem globIgnores).
+    chunkFileNames: developmentMode ? '[name].js' : '[name]-[hash].js',
     assetFileNames: developmentMode ? '[name][extname]' : '[hash][extname]',
     plugins: [
       injectManifest({
@@ -45,6 +47,17 @@ export default {
           'nomodule-*.js',
           'index.html',
           'config.js',
+          // Thư viện nặng chỉ nạp khi cần, không bắt mọi điện thoại tải sẵn
+          // trong nền: maplibre (bản đồ), các gói wasm của @hpcc-js (graphviz
+          // cho biểu đồ quan hệ; duckdb, zstd, expat, base91 không dùng nhưng
+          // rollup vẫn tách ra), và chunk của Web Awesome (bộ chọn màu thẻ).
+          'maplibre-gl-*.js',
+          'graphviz-*.js',
+          'duckdb-*.js',
+          'zstd-*.js',
+          'expat-*.js',
+          'base91-*.js',
+          'chunk.*.js',
         ],
       }),
     ],

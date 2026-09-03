@@ -1,7 +1,7 @@
 import {html, LitElement} from 'lit'
 import {mdiMapMarker} from '@mdi/js'
 
-const {maplibregl} = window
+// maplibre nạp động sau khi module này chạy: đọc window.maplibregl tại chỗ dùng.
 
 class GrampsjsMapMarker extends LitElement {
   render() {
@@ -57,7 +57,7 @@ class GrampsjsMapMarker extends LitElement {
     if (this.label) {
       el.title = this.label
     }
-    this._marker = new maplibregl.Marker({element: el})
+    this._marker = new window.maplibregl.Marker({element: el})
       .setLngLat([this.longitude, this.latitude])
       .addTo(this._map)
   }
