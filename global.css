@@ -15,6 +15,12 @@ body {
 }
 
 :root {
+    --heritage-wood: #35271f;
+    --heritage-gold: #b99759;
+    --heritage-roof: #a64c32;
+    --heritage-gutter: clamp(16px, 3.2vw, 52px);
+    --heritage-ink: #362c24;
+    --heritage-rule: #d6cbb9;
     color: var(--md-sys-color-on-surface);
     /* Web Awesome color token overrides.
      default.css (loaded in index.html) defines --wa-* tokens inside @layer wa-theme,
@@ -112,8 +118,8 @@ body {
 }
 
 :root[data-theme='light'] {
-    --grampsjs-top-app-bar-background-color: var(--mdc-theme-primary);
-    --grampsjs-top-app-bar-font-color: var(--mdc-theme-on-primary);
+    --grampsjs-top-app-bar-background-color: #35271f;
+    --grampsjs-top-app-bar-font-color: #fff8e9;
     --grampsjs-body-font-color: rgba(0, 0, 0, 0.8);
     --grampsjs-body-font-color-0: rgba(0, 0, 0, 0);
     --grampsjs-body-font-color-2: rgba(0, 0, 0, 0.02);
@@ -167,6 +173,9 @@ body {
 }
 
 :root[data-theme='dark'] {
+    --heritage-wood: #241c17;
+    --heritage-ink: #eee1cc;
+    --heritage-rule: #64513d;
     --grampsjs-top-app-bar-background-color: var(--md-sys-color-surface-container);
     --grampsjs-top-app-bar-font-color: var(--md-sys-color-on-surface);
     --grampsjs-body-font-color: rgba(255, 255, 255, 0.8);

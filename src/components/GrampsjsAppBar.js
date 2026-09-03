@@ -54,6 +54,45 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
           --grampsjs-mark-size: 36px;
           flex: 0 0 36px;
         }
+        .primary-nav {
+          display: flex;
+          gap: 6px;
+          margin-right: 24px;
+          align-items: center;
+        }
+        .primary-nav a {
+          display: flex;
+          align-items: center;
+          min-height: 48px;
+          padding: 0 14px;
+          color: var(--grampsjs-top-app-bar-font-color);
+          font: 500 14px/1.4 var(--grampsjs-body-font-family);
+          text-decoration: none;
+          border-bottom: 2px solid transparent;
+          box-sizing: border-box;
+        }
+        .primary-nav a:hover,
+        .primary-nav a[aria-current='page'] {
+          color: #e2c891;
+          border-bottom-color: #d1af70;
+        }
+        .primary-nav a:focus-visible {
+          outline-color: #e2c891;
+        }
+        .tree-header .primary-nav {
+          order: 2;
+          flex: 1 1 100%;
+          margin: 0 0 0 44px;
+          border-top: 1px solid #65503c;
+        }
+        .tree-header .primary-nav a {
+          min-height: 40px;
+        }
+        @media (max-width: 1199px) {
+          .primary-nav {
+            display: none;
+          }
+        }
         .brand-name {
           overflow: hidden;
           text-overflow: ellipsis;
@@ -254,6 +293,7 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
         id="button-settings"
         .appState=${this.appState}
       ></grampsjs-settings-menu>
+      ${this._renderPrimaryNav()}
     </header>`
   }
 
@@ -323,7 +363,7 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
             : html`<grampsjs-heritage-mark></grampsjs-heritage-mark>
                 <span class="brand-name">${this._renderBrandName()}</span>`}
         </div>
-        ${savingIndicator}
+        ${this.editMode ? '' : this._renderPrimaryNav()} ${savingIndicator}
         ${this.editMode
           ? html`
               ${this.saveButton
@@ -414,6 +454,34 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
     if (title !== APP_NAME) return title
     return html`<span class="brand-full">${APP_NAME}</span
       ><span class="brand-short">Bùi Hữu</span>`
+  }
+
+  _renderPrimaryNav() {
+    const page = this.appState.path.page
+    const items = [
+      ['home', '/', 'Trang chủ'],
+      ['tree', '/tree', 'Gia phả'],
+      ['people', '/people', 'Người trong họ'],
+      ['lich-gio', '/lich-gio', 'Lịch giỗ'],
+      ['blog', '/blog', 'Bài viết'],
+    ]
+    return html`<nav
+      class="primary-nav"
+      slot="actionItems"
+      aria-label="Điều hướng chính"
+    >
+      ${items.map(
+        ([key, href, label]) =>
+          html`<a
+            href=${href}
+            aria-current=${page === key ||
+            (key === 'people' && page === 'person')
+              ? 'page'
+              : 'false'}
+            >${label}</a
+          >`
+      )}
+    </nav>`
   }
 
   _toggleDrawer() {

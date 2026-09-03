@@ -12,13 +12,13 @@ export class GrampsjsView extends GrampsjsAppStateMixin(LitElement) {
       sharedStyles,
       css`
         :host {
-          margin: 25px 40px;
+          margin: 32px var(--heritage-gutter);
           background-color: transparent;
         }
 
         @media (max-width: 768px) {
           :host {
-            margin: 25px 20px;
+            margin: 24px 16px;
           }
         }
       `,

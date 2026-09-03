@@ -76,7 +76,7 @@ export function applyColors(
 
   // Nền giấy và bề mặt sáng giúp phân biệt các khối mà không cần bóng đậm.
   if (!isDark) {
-    root.style.setProperty('--md-sys-color-background', '#f7f3ea')
+    root.style.setProperty('--md-sys-color-background', '#f4f2ed')
     root.style.setProperty('--md-sys-color-surface', '#fffcf6')
     // Các mức nền cho thẻ, menu và bảng điều khiển.
     root.style.setProperty('--md-sys-color-surface-container-lowest', '#fffcf6')

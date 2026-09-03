@@ -55,6 +55,12 @@ export const sharedStyles = css`
     box-shadow: inset 0 0 0 1px var(--md-sys-color-outline-variant);
   }
 
+  md-dialog [slot='headline'] {
+    color: var(--heritage-ink);
+    border-bottom: 1px solid var(--heritage-rule);
+    padding-bottom: 16px;
+  }
+
   md-list-item {
     --md-list-item-label-text-weight: var(--grampsjs-body-font-weight);
     --md-list-item-label-text-size: 17px;
@@ -80,7 +86,7 @@ export const sharedStyles = css`
   h4 {
     font-weight: 500;
     font-family: var(--grampsjs-heading-font-family);
-    color: var(--grampsjs-color-shade-40);
+    color: var(--heritage-ink);
   }
 
   h1 {

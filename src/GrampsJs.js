@@ -45,6 +45,7 @@ import {
 } from './routing.js'
 import './components/GrampsjsAppBar.js'
 import './components/GrampsjsBottomNav.js'
+import './components/GrampsjsSiteFooter.js'
 import './components/GrampsjsDnaTabBar.js'
 import './components/GrampsjsCreateTree.js'
 import './components/GrampsjsFirstRun.js'
@@ -172,11 +173,26 @@ export class GrampsJs extends LitElement {
 
         main {
           padding: 0;
+          min-height: calc(100dvh - 68px);
+          --workspace-header-height: 64px;
+          --workspace-bottom-inset: 0px;
+        }
+        @media (max-width: 991px) {
+          main {
+            --workspace-bottom-inset: calc(
+              66px + env(safe-area-inset-bottom, 0px)
+            );
+          }
+        }
+        @media (max-width: 599px) {
+          main {
+            --workspace-header-height: 56px;
+          }
         }
 
         /* Chỗ trống dưới cùng để thanh điều hướng điện thoại không đè lên nội dung */
         .bottom-nav-spacer {
-          height: calc(64px + env(safe-area-inset-bottom, 0px));
+          height: calc(66px + env(safe-area-inset-bottom, 0px));
         }
 
         .page {
@@ -188,7 +204,7 @@ export class GrampsJs extends LitElement {
         }
 
         mwc-drawer {
-          --mdc-drawer-width: 230px;
+          --mdc-drawer-width: min(320px, 88vw);
           --mdc-typography-headline6-font-family: var(
             --grampsjs-heading-font-family
           );
@@ -644,11 +660,7 @@ export class GrampsJs extends LitElement {
       this._loadStrings(grampsStrings, this.appState.settings.lang)
     }
     return html`
-      <mwc-drawer
-        type="${this.appState.screenSize !== 'small' ? 'dismissible' : 'modal'}"
-        id="app-drawer"
-        ?open="${this.appState.screenSize !== 'small'}"
-      >
+      <mwc-drawer type="modal" id="app-drawer">
         <div>
           <grampsjs-main-menu .appState="${this.appState}"></grampsjs-main-menu>
         </div>
@@ -678,6 +690,11 @@ export class GrampsJs extends LitElement {
               .pageId2="${this.appState.path.pageId2}"
             >
             </grampsjs-pages>
+            <grampsjs-site-footer
+              ?compact=${['tree', 'map', 'chat'].includes(
+                this.appState.path.page
+              )}
+            ></grampsjs-site-footer>
             ${this.appState.screenSize === 'small'
               ? html`<div class="bottom-nav-spacer"></div>
                   <grampsjs-bottom-nav
@@ -1065,9 +1082,7 @@ export class GrampsJs extends LitElement {
       })
     }
 
-    if (this.appState.screenSize === 'small') {
-      this._closeDrawer()
-    }
+    this._closeDrawer()
   }
 
   _updateTitle() {

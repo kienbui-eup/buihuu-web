@@ -9,6 +9,8 @@ import {mdiCheckCircle} from '@mdi/js'
 
 import './GrampsjsIcon.js'
 import './GrampsjsHeritageMark.js'
+import './GrampsjsTempleHero.js'
+import './GrampsjsSiteFooter.js'
 import {APP_NAME} from '../branding.js'
 import './GrampsjsOidcButton.js'
 import {sharedStyles} from '../SharedStyles.js'
@@ -33,8 +35,30 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
           height: 100%;
           width: 100%;
           max-width: 30em;
-          padding: 48px 20px;
+          padding: 32px 24px;
           box-sizing: border-box;
+        }
+        .login-layout {
+          display: grid;
+          grid-template-columns: minmax(0, 1.2fr) minmax(400px, 1fr);
+          min-height: 100dvh;
+          background: var(--md-sys-color-surface);
+        }
+        .login-layout > grampsjs-temple-hero {
+          background: var(--heritage-wood);
+        }
+        .login-panel {
+          align-content: center;
+        }
+        .brand grampsjs-heritage-mark {
+          --grampsjs-mark-size: 60px;
+        }
+        @media (max-width: 900px) {
+          .login-layout {
+            grid-template-columns: minmax(0, 1fr);
+          }
+        }
+        @media (max-width: 600px) {
         }
 
         #login-form {
@@ -62,6 +86,9 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
           margin: 0 0 24px;
         }
         @media (max-width: 600px) {
+          .brand h1 {
+            font-size: 27px;
+          }
           #login-container {
             padding: 28px 16px;
           }
@@ -273,10 +300,13 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
   }
 
   render() {
-    if (this.resetpw) {
-      return this._renderResetPw()
-    }
-    return this._renderLogin()
+    return html`<div class="login-layout">
+        <grampsjs-temple-hero welcome></grampsjs-temple-hero>
+        <div class="login-panel">
+          ${this.resetpw ? this._renderResetPw() : this._renderLogin()}
+        </div>
+      </div>
+      <grampsjs-site-footer .public=${true}></grampsjs-site-footer>`
   }
 
   _renderLogin() {

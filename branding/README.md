@@ -12,8 +12,8 @@ Dùng công cụ ImageGen tích hợp, không dùng CLI/API dự phòng.
 
 Nhận diện dùng chung tại đăng nhập, menu, lời tựa và thanh đầu trang của mọi
 màn hình, gồm cả cây gia phả. Thanh đầu trang thu tên thành “Bùi Hữu” ở màn
-hình nhỏ; tên cây tùy chỉnh vẫn được giữ. Open Graph/Twitter dùng logo 512 px
-cho ảnh liên kết, không đưa hình ảnh hoặc thông tin người trong gia phả vào
+hình nhỏ; tên cây tùy chỉnh vẫn được giữ. Open Graph/Twitter dùng ảnh nhà thờ
+tổ bên dưới, không đưa hình ảnh hoặc thông tin người trong gia phả vào
 metadata công khai. Các file `favicon.ico`, `icon192.png`, `icon512.png` cũ
 cũng được xuất lại bằng logo mới để đồng bộ các đường dẫn còn lưu.
 
@@ -21,6 +21,20 @@ Chạy `pwsh -File branding/export-icons.ps1` trên Windows để xuất lại k
 Ảnh gốc giữ trong `branding/`, không được chép vào bản build web. Chỉ các bản
 thu nhỏ trong `images/` được dùng trên trang. Không gắn `purpose: maskable` vì
 con dấu vuông có chi tiết gần viền.
+
+## Ảnh nhà thờ tổ và bố cục ngày 03/09/2026
+
+`nha-tho-to-chi-bo.png` là ảnh nhà thờ họ Bùi Hữu, thôn Chỉ Bồ do người dùng
+cung cấp để thiết kế lại website. Giữ nguyên hình ảnh kiến trúc, chỉ thu nhỏ
+và nén bằng `pwsh -File branding/export-temple.ps1` thành JPEG 800/1600 px
+trong `images/`. Trình duyệt chọn kích thước theo màn hình bằng `srcset`.
+Ảnh gốc không đưa vào bản build.
+
+Trang chủ và đăng nhập dùng ảnh làm phần mở đầu. Bảng màu lấy từ gỗ sẫm,
+mái ngói đỏ, cột đá và hoành phi vàng; header, thẻ nội dung, popup, cây gia
+phả và footer dùng chung các biến `--heritage-*` trong `global.css`.
+Ảnh chia sẻ liên kết là bản JPEG 1600 × 900; favicon và icon ứng dụng vẫn
+dùng ấn son để dễ nhận ra ở kích thước nhỏ.
 
 ## Prompt thiết kế
 

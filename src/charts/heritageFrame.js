@@ -9,7 +9,7 @@ export function appendHeritageFrame(nodes, width, height, x = 0, y = 0) {
     .attr('width', width - 8)
     .attr('height', height - 8)
     .attr('fill', 'none')
-    .attr('stroke', 'var(--md-sys-color-outline-variant)')
+    .attr('stroke', 'var(--heritage-rule)')
     .attr('stroke-width', 0.7)
     .attr('pointer-events', 'none')
   nodes
@@ -22,7 +22,7 @@ export function appendHeritageFrame(nodes, width, height, x = 0, y = 0) {
       }V${y + height - 12}`
     )
     .attr('fill', 'none')
-    .attr('stroke', 'var(--md-sys-color-primary)')
+    .attr('stroke', 'var(--heritage-gold)')
     .attr('stroke-width', 1.5)
     .attr('pointer-events', 'none')
 }

@@ -3,7 +3,7 @@ Thanh điều hướng dưới cùng cho điện thoại.
 
 Bản gốc bắt người dùng mở ngăn kéo cho mọi lần chuyển trang. Người trong họ
 chỉ đi lại giữa năm chỗ, nên năm chỗ đó nằm sẵn dưới ngón tay cái. Chỉ hiện ở
-màn hình nhỏ; máy tính vẫn dùng ngăn kéo bên trái.
+màn hình nhỏ; máy tính dùng điều hướng ngang và menu bổ sung.
 */
 
 import {html, css, LitElement} from 'lit'
@@ -45,7 +45,7 @@ class GrampsjsBottomNav extends GrampsjsAppStateMixin(LitElement) {
           justify-content: space-around;
           align-items: stretch;
           background: var(--md-sys-color-surface);
-          border-top: 1px solid var(--md-sys-color-outline-variant);
+          border-top: 2px solid var(--heritage-gold);
           box-shadow: 0 -4px 20px var(--grampsjs-body-font-color-5);
           padding-bottom: env(safe-area-inset-bottom, 0px);
           font-family: var(--grampsjs-body-font-family);
@@ -73,7 +73,11 @@ class GrampsjsBottomNav extends GrampsjsAppStateMixin(LitElement) {
         }
 
         a[aria-current='page'] .pill {
-          background: var(--md-sys-color-secondary-container, #eee);
+          background: color-mix(
+            in srgb,
+            var(--heritage-gold) 20%,
+            var(--md-sys-color-surface)
+          );
         }
 
         a:focus-visible {
@@ -84,7 +88,7 @@ class GrampsjsBottomNav extends GrampsjsAppStateMixin(LitElement) {
         .pill {
           height: 28px;
           width: 52px;
-          border-radius: 8px;
+          border-radius: 3px;
           display: flex;
           align-items: center;
           justify-content: center;

@@ -82,18 +82,19 @@ class GrampsjsMainMenu extends GrampsjsAppStateMixin(LitElement) {
       sharedStyles,
       css`
         .identity {
-          padding: 28px 20px 20px;
-          border-bottom: 1px solid var(--md-sys-color-outline-variant);
+          padding: 32px 24px 24px;
+          border-bottom: 3px solid var(--heritage-gold);
+          background: var(--heritage-wood);
         }
         .identity strong {
           display: block;
           font: 600 20px/1.5 var(--grampsjs-heading-font-family);
-          color: var(--md-sys-color-primary);
+          color: #fff8e9;
           margin-top: 12px;
         }
         .identity small {
           font-size: 12px;
-          color: var(--md-sys-color-on-surface-variant);
+          color: #decaab;
         }
         md-list {
           background: transparent;
@@ -104,11 +105,15 @@ class GrampsjsMainMenu extends GrampsjsAppStateMixin(LitElement) {
           --md-list-item-label-text-size: 1rem;
           --md-list-item-label-text-weight: 400;
           --md-list-item-one-line-container-height: 48px;
-          border-radius: 8px;
+          border-radius: 3px;
         }
 
         md-list-item[selected] {
-          background: var(--md-sys-color-secondary-container);
+          background: color-mix(
+            in srgb,
+            var(--heritage-gold) 18%,
+            var(--md-sys-color-surface)
+          );
           --md-list-item-label-text-color: var(--grampsjs-color-icon-selected);
           --md-list-item-label-text-weight: 500;
         }
@@ -205,8 +210,7 @@ class GrampsjsMainMenu extends GrampsjsAppStateMixin(LitElement) {
       @click=${event => {
         if (href === '/search') {
           handleSearchLink(event, this)
-          if (event.defaultPrevented && this.appState.screenSize === 'small')
-            fireEvent(this, 'drawer:close')
+          if (event.defaultPrevented) fireEvent(this, 'drawer:close')
         }
       }}
     >

@@ -36,7 +36,7 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
             260px,
             calc(
               100dvh - var(--tree-content-top, 64px) -
-                var(--tree-bottom-inset, 0px)
+                var(--tree-bottom-inset, 0px) - 40px
             )
           );
         }
@@ -47,7 +47,7 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
 
         @media (max-width: 991px) {
           .chart-shell {
-            --tree-bottom-inset: calc(65px + env(safe-area-inset-bottom, 0px));
+            --tree-bottom-inset: calc(66px + env(safe-area-inset-bottom, 0px));
           }
         }
 

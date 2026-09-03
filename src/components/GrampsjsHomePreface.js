@@ -36,14 +36,10 @@ export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
         .manuscript-page {
           position: relative;
           padding: 34px clamp(24px, 5vw, 72px) 24px;
-          border: 1px solid var(--preface-rule);
+          border: 0;
+          border-top: 3px solid var(--heritage-gold);
           color: var(--preface-ink);
-          background: radial-gradient(
-              ellipse at top,
-              transparent 35%,
-              color-mix(in srgb, var(--md-sys-color-primary) 5%, transparent)
-            ),
-            var(--md-sys-color-surface);
+          background: var(--md-sys-color-surface);
         }
         header {
           text-align: center;
@@ -61,9 +57,9 @@ export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
           text-transform: uppercase;
           color: var(--md-sys-color-primary);
         }
-        h1 {
+        h2 {
           margin: 0;
-          font: 700 clamp(54px, 6vw, 76px) / 1.4 'Charm', var(--preface-serif);
+          font: 700 clamp(44px, 4vw, 58px) / 1.4 'Charm', var(--preface-serif);
           color: var(--md-sys-color-primary);
         }
         grampsjs-heritage-mark {
@@ -227,7 +223,7 @@ export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
     return html`<header>
       <p class="eyebrow">Bùi Hữu gia phả</p>
       <div class="title-line">
-        <h1>Lời tựa</h1>
+        <h2>Lời tựa</h2>
         <grampsjs-heritage-mark></grampsjs-heritage-mark>
       </div>
       <div class="ornament" aria-hidden="true"><span></span></div>
