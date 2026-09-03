@@ -14,7 +14,6 @@ import {
   mdiContentSave,
   mdiDelete,
   mdiMagnify,
-  mdiMenu,
 } from '@mdi/js'
 import './GrampsjsIcon.js'
 import '@material/web/dialog/dialog.js'
@@ -25,6 +24,7 @@ import './GrampsjsSettingsMenu.js'
 import './GrampsjsTooltip.js'
 import './GrampsjsTreeToolbar.js'
 import './GrampsjsHeritageMark.js'
+import './GrampsjsHeaderNav.js'
 import {requestPageSearch, pageSearchLabel} from '../pageSearch.js'
 
 import {fireEvent} from '../util.js'
@@ -54,43 +54,22 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
           --grampsjs-mark-size: 36px;
           flex: 0 0 36px;
         }
-        .primary-nav {
-          display: flex;
-          gap: 6px;
-          margin-right: 24px;
-          align-items: center;
+        grampsjs-header-nav {
+          margin-right: 8px;
         }
-        .primary-nav a {
-          display: flex;
-          align-items: center;
-          min-height: 48px;
-          padding: 0 14px;
-          color: var(--grampsjs-top-app-bar-font-color);
-          font: 500 14px/1.4 var(--grampsjs-body-font-family);
-          text-decoration: none;
-          border-bottom: 2px solid transparent;
-          box-sizing: border-box;
-        }
-        .primary-nav a:hover,
-        .primary-nav a[aria-current='page'] {
-          color: #e2c891;
-          border-bottom-color: #d1af70;
-        }
-        .primary-nav a:focus-visible {
-          outline-color: #e2c891;
-        }
-        .tree-header .primary-nav {
+        .tree-header grampsjs-header-nav {
           order: 2;
           flex: 1 1 100%;
-          margin: 0 0 0 44px;
+          margin: 0;
+          padding: 4px 0;
           border-top: 1px solid #65503c;
         }
-        .tree-header .primary-nav a {
-          min-height: 40px;
-        }
-        @media (max-width: 1199px) {
-          .primary-nav {
-            display: none;
+        @media (max-width: 1279px) {
+          .tree-header grampsjs-header-nav {
+            order: 0;
+            flex: 0 0 auto;
+            border: 0;
+            padding: 0;
           }
         }
         .brand-name {
@@ -173,7 +152,26 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
           --mdc-theme-on-primary: var(--mdc-theme-on-secondary);
         }
 
+        @media (max-width: 760px) {
+          #button-add {
+            display: none;
+          }
+        }
         @media (max-width: 360px) {
+          .brand-title {
+            gap: 4px;
+          }
+          .brand-title grampsjs-heritage-mark {
+            --grampsjs-mark-size: 28px;
+            flex-basis: 28px;
+          }
+          grampsjs-header-nav {
+            margin-right: 4px;
+          }
+          .tree-header #app-title {
+            font-size: 16px;
+            margin-right: 4px;
+          }
           mwc-top-app-bar {
             --mdc-typography-headline6-font-size: 16px;
           }
@@ -270,13 +268,10 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
 
   _renderTreeHeader(savingIndicator) {
     const searchLabel = pageSearchLabel('tree')
-    return html`<header class="tree-header" aria-label="Gia phả">
-      <md-icon-button aria-label=${this._('Menu')} @click=${this._toggleDrawer}
-        ><grampsjs-icon path=${mdiMenu} color="currentColor"></grampsjs-icon
-      ></md-icon-button>
+    return html`<header class="tree-header" aria-label="Cây gia phả">
       <div id="app-title" class="brand-title">
         <grampsjs-heritage-mark></grampsjs-heritage-mark>
-        <span class="brand-name">Gia phả</span>
+        <span class="brand-name">Cây gia phả</span>
       </div>
       <grampsjs-tree-toolbar
         .state=${this._treeTools || {view: 'main'}}
@@ -347,16 +342,7 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
               <grampsjs-tooltip for="button-close" .appState="${this.appState}"
                 >${this._('Stop editing')}</grampsjs-tooltip
               >`
-          : html`<md-icon-button
-              slot="navigationIcon"
-              aria-label="${this._('Menu')}"
-              @click="${this._toggleDrawer}"
-            >
-              <grampsjs-icon
-                path="${mdiMenu}"
-                color="currentColor"
-              ></grampsjs-icon>
-            </md-icon-button>`}
+          : ''}
         <div id="app-title" class="brand-title" slot="title">
           ${this.editMode && this.editTitle
             ? this.editTitle
@@ -457,35 +443,10 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
   }
 
   _renderPrimaryNav() {
-    const page = this.appState.path.page
-    const items = [
-      ['home', '/', 'Trang chủ'],
-      ['tree', '/tree', 'Gia phả'],
-      ['people', '/people', 'Người trong họ'],
-      ['lich-gio', '/lich-gio', 'Lịch giỗ'],
-      ['blog', '/blog', 'Bài viết'],
-    ]
-    return html`<nav
-      class="primary-nav"
+    return html`<grampsjs-header-nav
       slot="actionItems"
-      aria-label="Điều hướng chính"
-    >
-      ${items.map(
-        ([key, href, label]) =>
-          html`<a
-            href=${href}
-            aria-current=${page === key ||
-            (key === 'people' && page === 'person')
-              ? 'page'
-              : 'false'}
-            >${label}</a
-          >`
-      )}
-    </nav>`
-  }
-
-  _toggleDrawer() {
-    fireEvent(this, 'drawer:toggle')
+      .appState=${this.appState}
+    ></grampsjs-header-nav>`
   }
 
   _handleNav(path) {

@@ -1,5 +1,4 @@
 import '@material/mwc-button'
-import '@material/mwc-drawer'
 import '@material/web/progress/linear-progress.js'
 import '@material/mwc-list'
 import '@material/mwc-list/mwc-list-item'
@@ -52,7 +51,6 @@ import './components/GrampsjsFirstRun.js'
 import './components/GrampsjsIcon.js'
 import './components/GrampsjsFormRegister.js'
 import './components/GrampsjsLogin.js'
-import './components/GrampsjsMainMenu.js'
 import './components/GrampsjsPages.js'
 import './components/GrampsjsTabBar.js'
 import './components/GrampsjsUndoTransaction.js'
@@ -153,7 +151,6 @@ export class GrampsJs extends LitElement {
     this._loadingStrings = false
     this._reindexNeeded = false
     this._semanticIndexStale = false
-    this._drawerWasOpen = false
     this._metadataConfirmed = false
   }
 
@@ -169,6 +166,13 @@ export class GrampsJs extends LitElement {
       css`
         :host {
           height: 100%;
+        }
+
+        .app-shell {
+          position: relative;
+          height: 100dvh;
+          overflow-y: auto;
+          overflow-x: hidden;
         }
 
         main {
@@ -195,6 +199,13 @@ export class GrampsJs extends LitElement {
           height: calc(66px + env(safe-area-inset-bottom, 0px));
         }
 
+        grampsjs-tab-bar,
+        grampsjs-dna-tab-bar {
+          display: block;
+          max-width: 100%;
+          overflow-x: auto;
+        }
+
         .page {
           display: none;
         }
@@ -203,26 +214,13 @@ export class GrampsJs extends LitElement {
           display: block;
         }
 
-        mwc-drawer {
-          --mdc-drawer-width: min(320px, 88vw);
-          --mdc-typography-headline6-font-family: var(
-            --grampsjs-heading-font-family
-          );
-          --mdc-typography-headline6-font-weight: 400;
-          --mdc-typography-headline6-font-size: 19px;
-        }
-
-        mwc-drawer[open]:not([type='modal']) {
-          --mdc-top-app-bar-width: calc(100% - var(--mdc-drawer-width, 256px));
-        }
-
         md-linear-progress {
           --md-linear-progress-active-indicator-color: var(
             --grampsjs-color-page-loading-progress
           );
         }
 
-        [slot='appContent'] md-linear-progress {
+        .app-shell md-linear-progress {
           position: sticky;
           top: 64px;
           z-index: 4;
@@ -230,12 +228,12 @@ export class GrampsJs extends LitElement {
         }
 
         @media (max-width: 599px) {
-          [slot='appContent'] md-linear-progress {
+          .app-shell md-linear-progress {
             top: 56px;
           }
         }
 
-        [slot='appContent'] md-linear-progress.active {
+        .app-shell md-linear-progress.active {
           visibility: visible;
         }
 
@@ -319,13 +317,7 @@ export class GrampsJs extends LitElement {
             overflow: visible !important;
           }
 
-          mwc-drawer {
-            --mdc-drawer-width: 0px;
-            height: auto !important;
-            overflow: visible !important;
-          }
-
-          [slot='appContent'] {
+          .app-shell {
             height: auto !important;
             overflow: visible !important;
           }
@@ -335,11 +327,10 @@ export class GrampsJs extends LitElement {
             overflow: visible !important;
           }
 
-          grampsjs-main-menu,
           grampsjs-app-bar,
           grampsjs-tab-bar,
           grampsjs-dna-tab-bar,
-          [slot='appContent'] md-linear-progress {
+          .app-shell md-linear-progress {
             display: none !important;
           }
         }
@@ -660,65 +651,46 @@ export class GrampsJs extends LitElement {
       this._loadStrings(grampsStrings, this.appState.settings.lang)
     }
     return html`
-      <mwc-drawer type="modal" id="app-drawer">
-        <div>
-          <grampsjs-main-menu .appState="${this.appState}"></grampsjs-main-menu>
-        </div>
-        <div slot="appContent">
-          <grampsjs-app-bar
+      <div class="app-shell">
+        <grampsjs-app-bar
+          .appState="${this.appState}"
+          ?saving="${this._saving}"
+          ?saveComplete="${this._saveComplete}"
+        ></grampsjs-app-bar>
+        <md-linear-progress
+          ?indeterminate="${this.progress}"
+          class="${this.progress ? 'active' : ''}"
+        ></md-linear-progress>
+
+        <main>
+          <grampsjs-tab-bar .appState="${this.appState}"></grampsjs-tab-bar>
+          <grampsjs-dna-tab-bar
             .appState="${this.appState}"
-            ?saving="${this._saving}"
-            ?saveComplete="${this._saveComplete}"
-          ></grampsjs-app-bar>
-          <md-linear-progress
-            ?indeterminate="${this.progress}"
-            class="${this.progress ? 'active' : ''}"
-          ></md-linear-progress>
-
-          <main>
-            <grampsjs-tab-bar .appState="${this.appState}"></grampsjs-tab-bar>
-            <grampsjs-dna-tab-bar
-              .appState="${this.appState}"
-            ></grampsjs-dna-tab-bar>
-            <grampsjs-pages
-              .appState="${this.appState}"
-              .dbInfo="${this.appState.dbInfo}"
-              .homePersonDetails=${this._homePersonDetails}
-              .settings="${this.appState.settings}"
-              .page="${this.appState.path.page}"
-              .pageId="${this.appState.path.pageId}"
-              .pageId2="${this.appState.path.pageId2}"
-            >
-            </grampsjs-pages>
-            <grampsjs-site-footer
-              ?compact=${['tree', 'map', 'chat'].includes(
-                this.appState.path.page
-              )}
-            ></grampsjs-site-footer>
-            ${this.appState.screenSize === 'small'
-              ? html`<div class="bottom-nav-spacer"></div>
-                  <grampsjs-bottom-nav
-                    .appState="${this.appState}"
-                  ></grampsjs-bottom-nav>`
-              : ''}
-          </main>
-        </div>
-      </mwc-drawer>
+          ></grampsjs-dna-tab-bar>
+          <grampsjs-pages
+            .appState="${this.appState}"
+            .dbInfo="${this.appState.dbInfo}"
+            .homePersonDetails=${this._homePersonDetails}
+            .settings="${this.appState.settings}"
+            .page="${this.appState.path.page}"
+            .pageId="${this.appState.path.pageId}"
+            .pageId2="${this.appState.path.pageId2}"
+          >
+          </grampsjs-pages>
+          <grampsjs-site-footer
+            ?compact=${['tree', 'map', 'chat'].includes(
+              this.appState.path.page
+            )}
+          ></grampsjs-site-footer>
+          ${this.appState.screenSize === 'small'
+            ? html`<div class="bottom-nav-spacer"></div>
+                <grampsjs-bottom-nav
+                  .appState="${this.appState}"
+                ></grampsjs-bottom-nav>`
+            : ''}
+        </main>
+      </div>
     `
-  }
-
-  _toggleDrawer() {
-    const drawer = this.shadowRoot.getElementById('app-drawer')
-    if (drawer !== null) {
-      drawer.open = !drawer.open
-    }
-  }
-
-  _closeDrawer() {
-    const drawer = this.shadowRoot.getElementById('app-drawer')
-    if (drawer !== null && drawer.open) {
-      drawer.open = false
-    }
   }
 
   _handleReload() {
@@ -756,8 +728,6 @@ export class GrampsJs extends LitElement {
     window.addEventListener('tree:missing', () => {
       this.loadingState = LOADING_STATE_NO_TREE
     })
-    this.addEventListener('drawer:toggle', this._toggleDrawer)
-    this.addEventListener('drawer:close', this._closeDrawer)
     window.addEventListener('keydown', event => this._handleKey(event))
     window.addEventListener('shortcuts:show', event =>
       this._handleShowShortcuts(event)
@@ -837,48 +807,11 @@ export class GrampsJs extends LitElement {
     })
     this.addEventListener('nav', this._handleNav.bind(this))
     this.addEventListener('grampsjs:error', this._handleError.bind(this))
-    window.addEventListener('beforeprint', this._handleBeforePrint.bind(this))
-    window.addEventListener('afterprint', this._handleAfterPrint.bind(this))
     this.addEventListener(
       'grampsjs:notification',
       this._handleNotification.bind(this)
     )
     window.addEventListener('user:loggedout', this._handleLogout.bind(this))
-  }
-
-  _handleBeforePrint() {
-    const drawer = this.shadowRoot.getElementById('app-drawer')
-    if (!drawer) return
-    this._drawerWasOpen = drawer.open
-    drawer.open = false
-    // Also update mwc-drawer's shadow DOM synchronously — setting drawer.open
-    // only schedules a Lit microtask, which may not run before the browser
-    // captures the print layout.
-    drawer.shadowRoot
-      ?.querySelector('.mdc-drawer')
-      ?.classList.remove('mdc-drawer--open', 'mdc-drawer--animate')
-    const appContent = drawer.shadowRoot?.querySelector(
-      '.mdc-drawer-app-content'
-    )
-    if (appContent) {
-      appContent.style.marginLeft = '0'
-      appContent.style.overflow = 'visible'
-      appContent.style.height = 'auto'
-    }
-  }
-
-  _handleAfterPrint() {
-    const drawer = this.shadowRoot.getElementById('app-drawer')
-    if (!drawer) return
-    const appContent = drawer.shadowRoot?.querySelector(
-      '.mdc-drawer-app-content'
-    )
-    if (appContent) {
-      appContent.style.marginLeft = ''
-      appContent.style.overflow = ''
-      appContent.style.height = ''
-    }
-    drawer.open = this._drawerWasOpen
   }
 
   async _loadFrontendStrings(lang) {
@@ -1051,6 +984,7 @@ export class GrampsJs extends LitElement {
 
   _loadPage(path) {
     this._disableEditMode()
+    this.renderRoot.querySelector('.app-shell')?.scrollTo(0, 0)
 
     if (path.includes('/oidc/callback')) {
       handleOIDCCallback(msg => this._showError(msg))
@@ -1081,8 +1015,6 @@ export class GrampsJs extends LitElement {
         path: {page, pageId: pageId ?? '', pageId2: pageId2 ?? ''},
       })
     }
-
-    this._closeDrawer()
   }
 
   _updateTitle() {
