@@ -16,8 +16,9 @@ import '@material/web/list/list'
 import '@material/web/list/list-item'
 
 import {GrampsjsConnectedComponent} from '../components/GrampsjsConnectedComponent.js'
-import {ATTR_DEATH_ANNIVERSARY} from '../branding.js'
+import {ATTR_DEATH_ANNIVERSARY, DEFAULT_LANGUAGE} from '../branding.js'
 import {collectAnniversaries} from '../gioCalendar.js'
+import {formatBranch, getBranch} from '../charts/util.js'
 
 const MAX_SHOWN = 5
 
@@ -63,7 +64,7 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
     const upcoming = this._upcoming()
     return html`<h3>${this._('Upcoming death anniversaries')}</h3>
       <p class="calendar-note">
-        Kính nhớ tiền nhân · Ô ngày ghi theo dương lịch
+        Số to là ngày dương lịch năm nay · Ngày giỗ ghi theo âm lịch
       </p>
       ${upcoming.length === 0
         ? html`<p>${this._('No upcoming death anniversaries.')}</p>`
@@ -83,6 +84,9 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
 
   _renderEntry({person, lunar, next, name, generation}) {
     const [day, month] = next.solar
+    // "Thuộc chi nào" là câu hỏi đầu tiên của người trong họ, nhất là với
+    // các tên trùng nhau; thẻ ngành chi đã có sẵn trong extended.tags.
+    const branch = formatBranch(getBranch(person.extended?.tags))
     return html`
       <a class="remembrance" href="/person/${person.gramps_id}">
         <span
@@ -97,7 +101,7 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
             >${this._('Death anniversary')} ${lunar.day}/${lunar.month}
             ${this._('lunar')}${generation
               ? html` · ${this._('Generation')} ${generation}`
-              : ''}</span
+              : ''}${branch ? html` · ${branch}` : ''}</span
           >
           <span class="meta">${this._daysAwayLabel(next.daysAway)}</span>
         </span>
@@ -119,10 +123,13 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
         rules: [{name: 'HasAttribute', values: [ATTR_DEATH_ANNIVERSARY, '']}],
       })
     )
+    // extend=tag_list để có tên thẻ ngành chi trong extended.tags.
     return (
       `/api/people/?rules=${rules}` +
-      `&keys=gramps_id,attribute_list,profile&profile=self` +
-      `&locale=${this.appState.i18n.lang || 'en'}&pagesize=1000&page=1`
+      `&keys=gramps_id,attribute_list,profile,extended` +
+      `&profile=self&extend=tag_list` +
+      `&locale=${this.appState.i18n.lang || DEFAULT_LANGUAGE}` +
+      `&pagesize=1000&page=1`
     )
   }
 }

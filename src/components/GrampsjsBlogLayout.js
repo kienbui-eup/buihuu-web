@@ -16,6 +16,34 @@ const categories = post =>
     .map(name => name.slice('Chuyên mục:'.length).trim())
     .filter(Boolean)
 
+// Bài không có thẻ chuyên mục: mục lục (thẻ "Mục lục nghiên cứu") thành nhóm
+// riêng đứng đầu, còn lại (Lời tựa) vào nhóm "Văn bản gốc" ngay sau.
+const INDEX_TAG = 'Mục lục nghiên cứu'
+const ORIGINAL_TEXTS = 'Văn bản gốc'
+const LEADING_GROUPS = [INDEX_TAG, ORIGINAL_TEXTS]
+
+const isIndex = post =>
+  (post.extended?.tags || []).some(tag => tag.name === INDEX_TAG)
+
+const categoryList = post => {
+  const list = categories(post)
+  if (list.length) return list
+  return [isIndex(post) ? INDEX_TAG : ORIGINAL_TEXTS]
+}
+
+const groupRank = name => {
+  const rank = LEADING_GROUPS.indexOf(name)
+  return rank < 0 ? LEADING_GROUPS.length : rank
+}
+
+const compareCategories = (a, b) =>
+  groupRank(a) - groupRank(b) || a.localeCompare(b, 'vi')
+
+// Theo chuyên mục rồi tiêu đề.
+const comparePosts = (a, b) =>
+  compareCategories(categoryList(a)[0], categoryList(b)[0]) ||
+  (a.title || '').localeCompare(b.title || '', 'vi')
+
 export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
   static get properties() {
     return {
@@ -119,6 +147,17 @@ export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
         }
         li + li {
           border-top: 1px solid var(--md-sys-color-outline-variant);
+        }
+        li.group {
+          padding: 12px 10px 4px;
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          color: var(--md-sys-color-primary);
+        }
+        li.group + li {
+          border-top: 0;
         }
         a {
           display: block;
@@ -277,15 +316,17 @@ export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
 
   render() {
     const posts = this._data.data || []
-    const options = [...new Set(posts.flatMap(categories))].sort((a, b) =>
-      a.localeCompare(b, 'vi')
+    const options = [...new Set(posts.flatMap(categoryList))].sort(
+      compareCategories
     )
     const query = searchable(this._query.trim())
-    const matches = posts.filter(
-      post =>
-        (!this._category || categories(post).includes(this._category)) &&
-        searchable(post.title || '').includes(query)
-    )
+    const matches = posts
+      .filter(
+        post =>
+          (!this._category || categoryList(post).includes(this._category)) &&
+          searchable(post.title || '').includes(query)
+      )
+      .sort(comparePosts)
     return html`
       <div class="layout">
         <aside aria-label="Xem nhanh danh sách bài viết">
@@ -341,30 +382,37 @@ export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
                   <nav aria-label="Danh sách bài viết">
                     <ul>
                       ${matches.map(
-                        post => html` <li>
-                          <a
-                            href=${`/blog/${encodeURIComponent(
-                              post.gramps_id
-                            )}`}
-                            aria-current=${ifDefined(
-                              post.gramps_id === this.currentId
-                                ? 'page'
-                                : undefined
-                            )}
-                            @click=${event =>
-                              this._openPost(event, post.gramps_id)}
-                          >
-                            ${post.title || 'Bài viết chưa có tiêu đề'}
-                            ${categories(post).length
-                              ? html`<span class="category"
-                                  >${categories(post).join(' · ')}</span
-                                >`
-                              : ''}
-                            ${post.gramps_id === this.currentId
-                              ? html`<span class="current">Đang đọc</span>`
-                              : ''}
-                          </a>
-                        </li>`
+                        (post, i) => html` ${i === 0 ||
+                          categoryList(post)[0] !==
+                            categoryList(matches[i - 1])[0]
+                            ? html`<li class="group" role="presentation">
+                                ${categoryList(post)[0]}
+                              </li>`
+                            : ''}
+                          <li>
+                            <a
+                              href=${`/blog/${encodeURIComponent(
+                                post.gramps_id
+                              )}`}
+                              aria-current=${ifDefined(
+                                post.gramps_id === this.currentId
+                                  ? 'page'
+                                  : undefined
+                              )}
+                              @click=${event =>
+                                this._openPost(event, post.gramps_id)}
+                            >
+                              ${post.title || 'Bài viết chưa có tiêu đề'}
+                              ${categories(post).length > 1
+                                ? html`<span class="category"
+                                    >${categories(post).join(' · ')}</span
+                                  >`
+                                : ''}
+                              ${post.gramps_id === this.currentId
+                                ? html`<span class="current">Đang đọc</span>`
+                                : ''}
+                            </a>
+                          </li>`
                       )}
                     </ul>
                     ${matches.length

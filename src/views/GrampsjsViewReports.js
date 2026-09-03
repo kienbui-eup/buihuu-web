@@ -54,8 +54,15 @@ export class GrampsjsViewReports extends GrampsjsView {
 
   renderContent() {
     return html`
-      <h2>${this._('_Reports').replace('_', '')}</h2>
-      <md-list> ${this.data.map(item => this._selectListItem(item))} </md-list>
+      <header class="page-heading">
+        <p class="section-label">${this._('Tools')}</p>
+        <h2>${this._('_Reports').replace('_', '')}</h2>
+      </header>
+      <div class="heritage-frame">
+        <md-list>
+          ${this.data.map(item => this._selectListItem(item))}
+        </md-list>
+      </div>
     `
   }
 

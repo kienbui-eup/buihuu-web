@@ -1,4 +1,4 @@
-# Giữ nguyên ảnh nhà thờ do người dùng cung cấp; chỉ xuất JPEG nhẹ hơn cho web.
+# Giữ nguyên bản ảnh nhà thờ được người dùng chọn; chỉ xuất JPEG nhẹ hơn cho web.
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 $sourceImage = [Drawing.Image]::FromFile((Join-Path $PSScriptRoot 'nha-tho-to-chi-bo.png'))

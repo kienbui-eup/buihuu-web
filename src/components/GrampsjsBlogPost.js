@@ -1,14 +1,27 @@
 import {html, css, LitElement} from 'lit'
 import {sharedStyles} from '../SharedStyles.js'
-import '@material/mwc-button'
+import '@material/web/button/text-button.js'
 
 import './GrampsjsImg.js'
 import './GrampsjsGallery.js'
 import './GrampsjsNoteContent.js'
-import './GrampsjsTimedelta.js'
 import './GrampsjsArticleContents.js'
 import {getArticleSections} from '../articleContents.js'
+import {fireEvent} from '../util.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
+
+// Lời tựa gia phả: nguồn duy nhất hiển thị theo lối bản thảo và có lời người
+// biên tập kèm theo.
+const PREFACE_ID = 'S0001'
+
+export function formatPostedDate(timestamp) {
+  if (!timestamp) return ''
+  return new Date(timestamp * 1000).toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+}
 
 export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
@@ -54,14 +67,57 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
           border-bottom: 2px solid var(--grampsjs-note-color);
         }
 
-        h3.author {
-          font-family: var(--grampsjs-body-font-family);
-          font-weight: 400;
-          font-size: 16px;
-          text-transform: uppercase;
-          letter-spacing: 0.15em;
-          margin-bottom: 28px;
+        .byline {
+          margin: 0 0 6px;
           text-align: center;
+          font-family: var(--grampsjs-body-font-family);
+          font-size: 17px;
+          font-style: italic;
+          font-weight: 400;
+          color: var(--grampsjs-body-font-color-75);
+        }
+
+        .posted {
+          margin: 0 0 28px;
+          text-align: center;
+          font-family: var(--grampsjs-body-font-family);
+          font-size: 13px;
+          letter-spacing: 0.02em;
+          color: var(--grampsjs-body-font-color-60);
+        }
+
+        .editor-note {
+          max-width: 44rem;
+          margin: 2.5em auto 0;
+          padding: 14px 20px;
+          border-left: 3px solid var(--md-sys-color-outline-variant);
+          font-family: var(--grampsjs-body-font-family);
+          font-size: 16px;
+          line-height: 1.6;
+          color: var(--grampsjs-body-font-color-75);
+        }
+
+        .editor-note h3 {
+          margin: 0 0 8px;
+          font-family: var(--grampsjs-body-font-family);
+          font-size: 14px;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--md-sys-color-primary);
+        }
+
+        .editor-note p {
+          margin: 0 0 0.75em;
+        }
+
+        .editor-note p:last-child {
+          margin-bottom: 0;
+        }
+
+        .editor-note a {
+          color: var(--md-sys-color-primary);
+          text-underline-offset: 3px;
         }
 
         #img-container grampsjs-img {
@@ -89,7 +145,10 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
           --grampsjs-note-column-width: auto;
         }
 
-        #btn-details {
+        .actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
           margin-top: 2em;
         }
 
@@ -160,15 +219,7 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
       >
         <header class="article-header">
           <h2>${this.source.title}</h2>
-          <h3 class="author">
-            ${this.source.author} ~
-            ${this.appState.i18n.lang
-              ? html`<grampsjs-timedelta
-                  timestamp="${this.source.change}"
-                  locale="${this.appState.i18n.lang}"
-                ></grampsjs-timedelta>`
-              : ''}
-          </h3>
+          ${this._renderByline()}
           ${this.source?.media_list?.length
             ? html`<div id="image">${this._renderImage()}</div>`
             : ''}
@@ -185,6 +236,7 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
           <div id="note-wrapper">
             <grampsjs-note-content
               grampsId="${this.note?.gramps_id || ''}"
+              ?manuscript="${this._isPreface}"
               content="${this.note?.formatted?.html ||
               this.note?.text?.string ||
               'Error loading note'}"
@@ -200,16 +252,97 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
                   ></grampsjs-gallery>
                 `
               : ''}
-
-            <mwc-button
-              id="btn-details"
-              @click="${() => this._clickDetails(this.source.gramps_id)}"
-              >${this._('Details')}</mwc-button
-            >
+            ${this._isPreface ? this._renderEditorNote() : ''}
+            ${this.appState.permissions?.canEdit ? this._renderActions() : ''}
           </div>
         </div>
       </div>
     `
+  }
+
+  get _isPreface() {
+    return this.source?.gramps_id === PREFACE_ID
+  }
+
+  _renderByline() {
+    // pubinfo giữ mốc thật của văn bản ("lập tháng Giêng năm Canh Tý (2020)");
+    // ngày đưa lên trang chỉ là mốc kỹ thuật nên để chữ nhỏ.
+    const byline = this.source.pubinfo || this.source.author || ''
+    const posted = formatPostedDate(this.source.change)
+    return html`
+      ${byline ? html`<p class="byline">${byline}</p>` : ''}
+      ${posted ? html`<p class="posted">Đưa lên trang: ${posted}</p>` : ''}
+    `
+  }
+
+  _renderEditorNote() {
+    return html`
+      <aside class="editor-note" aria-label="Lời người biên tập">
+        <h3>Lời người biên tập</h3>
+        <p>
+          Bản chép của cụ Bùi Hữu Đặng, tháng Giêng năm Canh Tý (2020), chép lại
+          lời tựa viết năm Duy Tân thứ tư (1910) của bản phả biên soạn năm 1893.
+          Địa danh ghi theo thời điểm chép; từ 01/07/2025 xã Thụy Trường thuộc
+          xã Đông Thụy Anh, tỉnh Hưng Yên.
+        </p>
+        <p>
+          Đoạn kể về cụ Bùi Thứ và ba người con là truyền thuyết về gốc gác
+          trước khi về Chỉ Bồ, chưa nối được với cây; cây trên trang bắt đầu từ
+          thủy tổ Bùi Huyền Nhân (đời 1).
+        </p>
+        <p>
+          Xem bài
+          «${this._renderLink(
+            'blog/SBHNC03',
+            'Lời tựa, niên đại và những cách ghi tên'
+          )}»
+          và
+          «${this._renderLink(
+            'blog/SBHNC21',
+            'Các cụ tổ theo Lời tựa gia phả'
+          )}».
+        </p>
+      </aside>
+    `
+  }
+
+  _renderLink(path, label) {
+    return html`<a
+      href="/${path}"
+      @click="${event => this._navigate(event, path)}"
+      >${label}</a
+    >`
+  }
+
+  _renderActions() {
+    const noteId = this.note?.gramps_id
+    return html`
+      <div class="actions">
+        ${noteId
+          ? html`<md-text-button
+              @click="${event => this._navigate(event, `note/${noteId}`)}"
+              >Sửa bài</md-text-button
+            >`
+          : ''}
+        <md-text-button
+          @click="${() => this._clickDetails(this.source.gramps_id)}"
+          >${this._('Details')}</md-text-button
+        >
+      </div>
+    `
+  }
+
+  _navigate(event, path) {
+    if (
+      event?.button ||
+      event?.ctrlKey ||
+      event?.metaKey ||
+      event?.shiftKey ||
+      event?.altKey
+    )
+      return
+    event?.preventDefault()
+    fireEvent(this, 'nav', {path})
   }
 
   async updated(changed) {

@@ -13,11 +13,22 @@ import '../components/GrampsjsFilterText.js'
 export class GrampsjsViewPlaces extends GrampsjsViewObjectsBase {
   constructor() {
     super()
+    // Mã Gramps và mốc sửa là dữ liệu của người biên tập, tắt sẵn.
     this._columns = [
-      {name: 'Gramps ID', key: 'grampsId', sortKey: 'gramps_id'},
+      {
+        name: 'Gramps ID',
+        key: 'grampsId',
+        sortKey: 'gramps_id',
+        defaultVisible: false,
+      },
       {name: 'Name', key: 'title', sortKey: 'title'},
       {name: 'Place type:', key: 'type'},
-      {name: 'Last changed', key: 'change', sortKey: 'change'},
+      {
+        name: 'Last changed',
+        key: 'change',
+        sortKey: 'change',
+        defaultVisible: false,
+      },
     ]
     this._objectsName = 'places'
   }

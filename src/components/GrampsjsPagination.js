@@ -15,8 +15,7 @@ class GrampsjsPagination extends GrampsjsAppStateMixin(LitElement) {
       css`
         .paging {
           font-size: 14px;
-          font-size: 14px;
-          margin-top: 50px;
+          margin-top: 32px;
           text-align: center;
         }
 
@@ -27,11 +26,22 @@ class GrampsjsPagination extends GrampsjsAppStateMixin(LitElement) {
 
         mwc-button {
           --mdc-ripple-focus-opacity: 0;
-          --mdc-theme-primary: var(--grampsjs-body-font-color-70);
+          --mdc-theme-primary: var(--md-sys-color-primary);
+          --mdc-typography-button-font-family: var(--grampsjs-body-font-family);
+          --mdc-typography-button-font-weight: 500;
+          --mdc-typography-button-letter-spacing: 0.01em;
+          --mdc-typography-button-text-transform: none;
+          --mdc-shape-small: var(--grampsjs-frame-radius);
         }
 
         .pagebtn {
           --mdc-button-horizontal-padding: 0;
+        }
+
+        /* Trang hiện tại: nút bị vô hiệu nhưng phải nhìn như đang được chọn. */
+        .pagebtn[unelevated] {
+          --mdc-button-disabled-fill-color: var(--md-sys-color-primary);
+          --mdc-button-disabled-ink-color: var(--md-sys-color-on-primary);
         }
 
         grampsjs-icon.more {

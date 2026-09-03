@@ -1,10 +1,21 @@
 import {LitElement, html, css} from 'lit'
 import {sharedStyles} from '../SharedStyles.js'
 import {fireEvent} from '../util.js'
+import {PLACE_SHORT} from '../branding.js'
 
-// Dùng ảnh nguyên gốc của nhà thờ tổ; không dựng lại kiến trúc bằng AI.
+// Dùng bản ảnh nhà thờ đã phục dựng và được người dùng chọn cho giao diện.
 class GrampsjsTempleHero extends LitElement {
-  static properties = {welcome: {type: Boolean, reflect: true}}
+  static properties = {
+    welcome: {type: Boolean, reflect: true},
+    // Số người trong gia phả, trang chủ truyền từ dbInfo; 0 là chưa biết.
+    people: {type: Number},
+  }
+
+  constructor() {
+    super()
+    this.welcome = false
+    this.people = 0
+  }
 
   static styles = [
     sharedStyles,
@@ -93,6 +104,7 @@ class GrampsjsTempleHero extends LitElement {
       figure {
         margin: 0;
         min-width: 0;
+        align-self: center;
         position: relative;
         overflow: hidden;
       }
@@ -103,9 +115,9 @@ class GrampsjsTempleHero extends LitElement {
       img {
         display: block;
         width: 100%;
-        height: 100%;
-        min-height: 400px;
-        object-fit: cover;
+        height: auto;
+        min-height: 0;
+        object-fit: contain;
         object-position: center 56%;
       }
       figcaption {
@@ -122,6 +134,7 @@ class GrampsjsTempleHero extends LitElement {
       }
       :host([welcome]) .hero {
         grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
         height: 100%;
       }
       :host([welcome]) figure {
@@ -191,13 +204,21 @@ class GrampsjsTempleHero extends LitElement {
   render() {
     return html`<section class="hero" aria-label="Nhà thờ tổ họ Bùi Hữu">
       <div class="intro">
-        <p class="eyebrow">Thôn Chỉ Bồ · Nơi trở về của con cháu</p>
+        <p class="eyebrow">${PLACE_SHORT}</p>
         ${this.welcome
-          ? html`<h2>Nhà thờ tổ <strong>Họ Bùi Hữu</strong></h2>`
-          : html`<h1>Gia phả <strong>Bùi Hữu</strong></h1>`}
+          ? html`<h2>Nhà thờ tổ <strong>họ Bùi Hữu</strong></h2>`
+          : html`<h1>Phả hệ <strong>họ Bùi Hữu</strong></h1>`}
         <p class="description">
-          Gìn giữ cội nguồn, kết nối các thế hệ. Cùng tra cứu gia phả, tưởng nhớ
-          tổ tiên và tiếp nối những câu chuyện của dòng họ.
+          Chép từ thủy tổ Bùi Công tự Huyền Nhân đến nay đã 17 đời, chia 3
+          ngành, 5 chi.
+          ${this.welcome
+            ? 'Con cháu trong họ mở bằng mã dòng họ; người biên soạn đăng nhập tài khoản.'
+            : html`Bản số hóa này ghi
+              ${this.people
+                ? `${this.people.toLocaleString('vi-VN')} người`
+                : 'từng người'},
+              để con cháu tra được một người thuộc chi nào, đời mấy, con ai, giỗ
+              ngày nào.`}
         </p>
         ${this.welcome
           ? ''
@@ -212,10 +233,10 @@ class GrampsjsTempleHero extends LitElement {
       <figure>
         <picture
           ><img
-            src="images/nha-tho-to-1600.jpg"
+            src="images/nha-tho-to-1600.jpg?v=a19b7c8f"
             srcset="
-              images/nha-tho-to-800.jpg   800w,
-              images/nha-tho-to-1600.jpg 1600w
+              images/nha-tho-to-800.jpg?v=a19b7c8f   800w,
+              images/nha-tho-to-1600.jpg?v=a19b7c8f 1600w
             "
             sizes="(max-width: 760px) 100vw, 65vw"
             width="1672"

@@ -48,6 +48,12 @@ export const sharedStyles = css`
     --md-outlined-button-container-shape: 4px;
     --md-filled-button-container-shape: 4px;
     --md-filled-tonal-button-container-shape: 4px;
+    --md-assist-chip-container-shape: var(--grampsjs-frame-radius);
+    --md-input-chip-container-shape: var(--grampsjs-frame-radius);
+    --md-filter-chip-container-shape: var(--grampsjs-frame-radius);
+    --md-suggestion-chip-container-shape: var(--grampsjs-frame-radius);
+    --md-fab-container-shape: 6px;
+    --mdc-shape-small: 4px;
     --mdc-shape-medium: 4px;
   }
 
@@ -300,7 +306,7 @@ export const sharedStyles = css`
   .alert {
     background-color: var(--grampsjs-alert-background-color);
     border-left: 4px solid var(--grampsjs-alert-border-color);
-    border-radius: 5px;
+    border-radius: var(--grampsjs-frame-radius);
     padding: 0.8em 1em;
     font-size: 0.8em;
     color: var(--grampsjs-body-font-color);
@@ -354,7 +360,7 @@ export const sharedStyles = css`
   .monospace {
     font-family: var(--grampsjs-mono-font-family);
     border: 1px solid var(--grampsjs-body-font-color-15);
-    border-radius: 5px;
+    border-radius: var(--grampsjs-frame-radius);
     background-color: var(--grampsjs-body-font-color-5);
     padding: 0.3em;
     font-size: 0.9em;

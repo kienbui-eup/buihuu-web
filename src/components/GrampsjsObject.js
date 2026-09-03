@@ -206,9 +206,40 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
         }
 
         #picture {
-          margin-bottom: 60px;
+          margin-bottom: 24px;
           position: relative;
           text-align: center;
+        }
+
+        #picture:empty {
+          display: none;
+        }
+
+        /* Khối đầu hồ sơ: nhãn mục, tên và các dòng chính, cùng khung giấy với
+           trang chủ và hồ sơ người. */
+        .profile-card {
+          padding: 28px;
+          margin-bottom: 20px;
+        }
+
+        .profile-card h2 {
+          margin: 0 0 8px;
+          color: var(--md-sys-color-primary);
+          line-height: 1.4;
+        }
+
+        .profile-card dl {
+          margin: 12px 0 0;
+        }
+
+        .profile-card p.button-list {
+          margin-bottom: 0;
+        }
+
+        @media (max-width: 600px) {
+          .profile-card {
+            padding: 24px 20px;
+          }
         }
 
         .content-wrapper {
@@ -248,7 +279,7 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
           margin-bottom: 1.5rem;
           font-size: 24px;
           padding-bottom: 12px;
-          border-bottom: 1px solid var(--md-sys-color-outline-variant);
+          border-bottom: 1px solid var(--heritage-rule);
         }
 
         .section * {
@@ -313,6 +344,7 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
             text-align: right;
             margin-left: 40px;
             margin-right: 0px;
+            margin-bottom: 0;
           }
         }
 
@@ -445,11 +477,7 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
       return html``
     }
     return html`
-      ${this.renderHeader()}
-
-      <div id="picture">${this.renderPicture()}</div>
-
-      ${this.renderProfile()}
+      ${this.renderHeader()} ${this.renderProfileCard()}
 
       <div style="clear:left;"></div>
 
@@ -519,6 +547,16 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
 
   renderHeader() {
     return html``
+  }
+
+  // Khung đầu hồ sơ: nhãn loại đối tượng, ảnh và phần renderProfile() của
+  // từng loại. Hồ sơ người ghi đè để thêm nhãn và các nút riêng.
+  renderProfileCard() {
+    return html`<div class="profile-card heritage-frame">
+      <p class="section-label">${this._(this._objectsName)}</p>
+      <div id="picture">${this.renderPicture()}</div>
+      ${this.renderProfile()}
+    </div>`
   }
 
   renderPicture() {
@@ -605,8 +643,17 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
   }
 
   renderTags() {
+    const tags = this.data?.extended?.tags || []
+    // Thẻ "Đời N" lặp lại số đời đã in ngay dưới tên ở đầu hồ sơ; khi chỉ xem
+    // thì ẩn đi cho đỡ rối, lúc sửa vẫn thấy đủ để gỡ hay gắn.
+    const redundant = this.edit
+      ? []
+      : tags
+          .map(tag => (tag.name || '').normalize('NFC').trim())
+          .filter(name => /^Đời\s+\d+$/u.test(name))
     return html` <grampsjs-tags
-      .data=${this.data?.extended?.tags || []}
+      .data=${tags}
+      .hideTags=${redundant}
       ?edit="${this.edit}"
       .appState="${this.appState}"
       @tag:new="${this._handleNewTag}"

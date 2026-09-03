@@ -37,7 +37,10 @@ export class GrampsjsViewTasks extends GrampsjsStaleDataMixin(GrampsjsView) {
   }
 
   render() {
-    return html`<h2>${this._('Tasks')}</h2>
+    return html`<header class="page-heading">
+        <p class="section-label">${this._('Tools')}</p>
+        <h2>${this._('Tasks')}</h2>
+      </header>
 
       <grampsjs-tasks
         .appState="${this.appState}"

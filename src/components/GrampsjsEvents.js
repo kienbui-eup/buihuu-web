@@ -9,6 +9,7 @@ import {
   eventTypeIconPath,
 } from '../util.js'
 import {renderIcon} from '../objectRender.js'
+import {localizeServerValue, describesSameLunarDate} from '../glossary.js'
 import './GrampsjsFormSelectObject.js'
 import './GrampsjsFormEventRef.js'
 import './GrampsjsFormNewEvent.js'
@@ -104,21 +105,39 @@ export class GrampsjsEvents extends GrampsjsEditableList {
     if (this.useSummary) {
       return obj.profile.summary
     }
+    // Loại và vai trò về từ máy chủ đã dịch theo locale ("Chết ", "Chủ yếu"),
+    // nên phải đưa qua lớp thuật ngữ trước khi in và trước khi so với
+    // this._('Primary'); không thì "(Chủ yếu)" đứng sau mọi sự kiện của chính
+    // người đó. So cả khoá gốc lẫn hai bản dịch phòng khi bảng chuỗi chưa tải.
+    const role = localizeServerValue(obj.profile?.role || '')
+    const primaryRole =
+      !role ||
+      [
+        'Primary',
+        'Family',
+        'Chủ yếu',
+        'Chính',
+        'Gia đình',
+        this._('Primary'),
+        this._('Family'),
+      ].includes(role)
     return html`
-      ${obj.profile.type}
-      ${!obj.profile?.role ||
-      ['Primary', 'Family', this._('Primary'), this._('Family')].includes(
-        obj.profile?.role
-      )
-        ? ''
-        : `(${obj.profile?.role})`}
+      ${localizeServerValue(obj.profile.type)} ${primaryRole ? '' : `(${role})`}
     `
   }
 
   _getSecondaryText(obj) {
     const detail = objectDetail('event', obj, this.appState.i18n.strings) || ''
     const context = obj.profile?.context || ''
-    const titleLine = [obj.description, context].filter(Boolean).join(' • ')
+    // Mô tả chỉ chép lại ngày giỗ ("Giỗ ngày 21 tháng 12") thì dòng ngày ngay
+    // dưới đã nói rồi, không in hai lần.
+    const description = describesSameLunarDate(
+      obj.description,
+      obj.profile?.date
+    )
+      ? ''
+      : obj.description
+    const titleLine = [description, context].filter(Boolean).join(' • ')
     return html`
       ${titleLine} ${titleLine && detail.trim() ? html`<br />` : ''} ${detail}
     `

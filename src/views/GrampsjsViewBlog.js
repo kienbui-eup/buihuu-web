@@ -11,6 +11,13 @@ import {GrampsjsStaleDataMixin} from '../mixins/GrampsjsStaleDataMixin.js'
 
 import {fireEvent, clickKeyHandler} from '../util.js'
 
+// Hai bài luôn ghim đầu trang: danh sách xếp theo ngày đưa lên nên Lời tựa
+// (mốc cũ nhất) và Mục lục nghiên cứu sẽ trôi xuống các trang sau.
+const PINNED_POSTS = [
+  {id: 'S0001', label: 'Lời tựa gia phả'},
+  {id: 'SBHNC00', label: 'Mục lục nghiên cứu'},
+]
+
 export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
   static get styles() {
     return [
@@ -26,6 +33,29 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
 
         .muted {
           opacity: 0.4;
+        }
+
+        .pinned {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 0 10px;
+          margin: -8px 0 12px;
+          font-size: 15px;
+        }
+
+        .pinned a {
+          display: inline-flex;
+          align-items: center;
+          min-height: 44px;
+          color: var(--md-sys-color-primary);
+          text-decoration: underline;
+          text-underline-offset: 3px;
+        }
+
+        .pinned a:focus-visible {
+          outline: 2px solid var(--md-sys-color-primary);
+          outline-offset: 2px;
         }
 
         #posts {
@@ -126,10 +156,17 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
     fireEvent(this, 'nav', {path: 'new_blog_post'})
   }
 
+  _renderHeading() {
+    return html`<header class="page-heading">
+      <p class="section-label">Chuyện dòng họ</p>
+      <h2>${this._('Blog')}</h2>
+    </header>`
+  }
+
   renderPosts() {
     if (this._firstLoaded && this._dataSources.length === 0) {
       return html`
-        <h2>${this._('Blog')}</h2>
+        ${this._renderHeading()}
         <p class="muted">
           ${this._("To start using the blog, add a source with tag 'Blog'.")}
         </p>
@@ -139,7 +176,7 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
       return html``
     }
     return html`
-      <h2>${this._('Blog')}</h2>
+      ${this._renderHeading()} ${this.renderPinned()}
       <div id="posts">
         ${this._dataSources.map(
           (source, i) => this.renderPost(source, this._dataNotes[i]),
@@ -147,6 +184,36 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
         )}
       </div>
     `
+  }
+
+  renderPinned() {
+    return html`
+      <nav class="pinned" aria-label="Bài ghim đầu trang">
+        ${PINNED_POSTS.map(
+          (post, i) => html`
+            ${i > 0 ? html`<span aria-hidden="true">·</span>` : ''}
+            <a
+              href="/blog/${post.id}"
+              @click="${event => this._handlePinnedClick(event, post.id)}"
+              >${post.label}</a
+            >
+          `
+        )}
+      </nav>
+    `
+  }
+
+  _handlePinnedClick(event, grampsId) {
+    if (
+      event.button ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return
+    event.preventDefault()
+    this._handlePreviewClick(grampsId)
   }
 
   renderPagination() {

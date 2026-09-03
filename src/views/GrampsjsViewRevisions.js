@@ -134,12 +134,16 @@ export class GrampsjsViewRevisions extends GrampsjsStaleDataMixin(
 
   render() {
     return html`
-      <h2>${this._('Revision History')}</h2>
+      <header class="page-heading">
+        <p class="section-label">${this._('Tools')}</p>
+        <h2>${this._('Revision History')}</h2>
+      </header>
 
-      <md-list>
-        <md-divider></md-divider>
-        ${this._data.map(txn => this._renderTransaction(txn))}
-      </md-list>
+      <div class="heritage-frame">
+        <md-list>
+          ${this._data.map(txn => this._renderTransaction(txn))}
+        </md-list>
+      </div>
 
       <grampsjs-pagination
         page="${this._page}"

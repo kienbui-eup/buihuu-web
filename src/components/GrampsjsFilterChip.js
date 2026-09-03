@@ -25,13 +25,15 @@ export class GrampsjsFilterChip extends GrampsjsAppStateMixin(LitElement) {
           display: inline-flex;
           align-items: center;
           font-size: 13px;
-          font-weight: 400;
+          font-weight: 500;
           font-family: var(--grampsjs-body-font-family);
-          padding: 6px 14px;
-          border-radius: 8px;
-          margin: 5px 5px;
-          background-color: var(--mdc-theme-primary);
-          color: var(--mdc-theme-on-primary);
+          padding: 5px 6px 5px 12px;
+          border-radius: var(--grampsjs-frame-radius);
+          border: 1px solid
+            color-mix(in srgb, var(--heritage-gold) 60%, transparent);
+          margin: 4px 4px;
+          background-color: var(--md-sys-color-secondary-container);
+          color: var(--md-sys-color-on-secondary-container);
           line-height: 18px;
         }
 
@@ -75,7 +77,7 @@ export class GrampsjsFilterChip extends GrampsjsAppStateMixin(LitElement) {
         >
           <grampsjs-icon
             path="${mdiClose}"
-            color="var(--mdc-theme-on-primary)"
+            color="var(--md-sys-color-on-secondary-container)"
             width="14"
             height="14"
           ></grampsjs-icon> </md-icon-button

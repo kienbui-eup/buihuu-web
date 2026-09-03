@@ -29,7 +29,8 @@ const menuItems = [
   ['Administration', '/settings/administration', mdiWrench, true],
   ['Manage users', '/settings/users', mdiAccountMultiple, true],
   ['System Information', '/settings/info', mdiInformation, false],
-  ['Help', '/help', mdiHelp, false],
+  // Trỏ vào bài hướng dẫn tra cứu bằng tiếng Việt thay cho tài liệu Gramps Web.
+  ['Help', '/blog/SBHNC17', mdiHelp, false],
 ]
 
 class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {

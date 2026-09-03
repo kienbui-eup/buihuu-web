@@ -17,7 +17,14 @@ import {toSvgDataURL} from 'lean-qr/extras/svg'
 import {GrampsjsObject} from './GrampsjsObject.js'
 import {heritageFrameStyles} from '../HeritageStyles.js'
 import {getCourtesyName, getLineage} from '../charts/util.js'
-import {ATTR_DEATH_ANNIVERSARY} from '../branding.js'
+import {
+  ATTR_DEATH_ANNIVERSARY,
+  ATTR_GENERATION,
+  DEFAULT_HOME_PERSON,
+  PERSON_HEADING_ATTRIBUTES,
+  READING_GUIDE_PATH,
+  TAG_HINTS,
+} from '../branding.js'
 import './GrampsjsImg.js'
 import './GrampsjsEditGender.js'
 import './GrampsjsPersonRelationship.js'
@@ -35,12 +42,6 @@ export class GrampsjsPerson extends GrampsjsObject {
       super.styles,
       heritageFrameStyles,
       css`
-        #picture:empty {
-          display: none;
-        }
-        .person-heading {
-          padding: 28px;
-        }
         .person-heading h2 {
           margin: 0 0 8px;
           color: var(--md-sys-color-primary);
@@ -62,6 +63,23 @@ export class GrampsjsPerson extends GrampsjsObject {
           padding-top: 12px;
           color: var(--md-sys-color-primary);
         }
+        .memorial.missing {
+          font-size: 14px;
+          color: var(--md-sys-color-on-surface-variant);
+        }
+        /* Chú thích thẻ: chữ nhỏ, nhạt, ngay dưới dãy thẻ */
+        .tag-hints {
+          margin: 0 0 12px;
+          font-size: 13px;
+          line-height: 1.6;
+          color: var(--md-sys-color-on-surface-variant);
+        }
+        .tag-hints .tag-hint {
+          display: block;
+        }
+        .tag-hints a {
+          color: var(--md-sys-color-primary);
+        }
         .person-tools {
           margin-top: 16px;
         }
@@ -71,11 +89,6 @@ export class GrampsjsPerson extends GrampsjsObject {
           font-size: 14px;
           cursor: pointer;
           color: var(--md-sys-color-on-surface-variant);
-        }
-        @media (max-width: 600px) {
-          .person-heading {
-            padding: 24px 20px;
-          }
         }
         .events-chips {
           margin-bottom: 16px;
@@ -104,7 +117,7 @@ export class GrampsjsPerson extends GrampsjsObject {
           max-width: 70vw;
           max-height: 70vw;
           background: #fff;
-          border-radius: 8px;
+          border-radius: var(--grampsjs-frame-radius);
         }
 
         #qr-dialog .url {
@@ -139,28 +152,12 @@ export class GrampsjsPerson extends GrampsjsObject {
     this._qrDataUrl = ''
   }
 
-  renderProfile() {
-    const courtesy = getCourtesyName(this.data)
-    const lineage = getLineage(this.data)
-    const memorial = getAttributeValue(this.data, ATTR_DEATH_ANNIVERSARY)
+  renderProfileCard() {
     return html`
-      <div class="person-heading heritage-frame">
+      <div class="person-heading profile-card heritage-frame">
         <p class="section-label">Hồ sơ gia phả</p>
-        <h2>
-          <grampsjs-edit-gender
-            ?edit="${this.edit}"
-            gender="${this.data.gender}"
-          ></grampsjs-edit-gender>
-          ${this._displayName()}
-        </h2>
-        ${courtesy ? html`<p class="courtesy">${courtesy}</p>` : ''}
-        ${lineage ? html`<p class="lineage">${lineage}</p>` : ''}
-        ${this._renderBirth()} ${this._renderDeath()}
-        ${memorial
-          ? html`<p class="memorial">
-              <strong>Ngày giỗ</strong> · ${memorial} âm lịch
-            </p>`
-          : ''}
+        <div id="picture">${this.renderPicture()}</div>
+        ${this.renderProfile()}
       </div>
       ${this.preview
         ? ''
@@ -168,13 +165,137 @@ export class GrampsjsPerson extends GrampsjsObject {
             <summary>Xem trên cây, mã QR và các liên kết</summary>
             <p class="button-list">
               ${this._renderTreeBtn()} ${this._renderQrBtn()}
-              ${this._renderTimelineBtn()} ${this._renderMapBtn()}
-              ${this._renderDnaBtn()} ${this._renderExternalSearchBtn()}
+              ${this._hasDatedEvents() ? this._renderTimelineBtn() : ''}
+              ${this._hasPlacedEvents() ? this._renderMapBtn() : ''}
+              ${this._renderDnaBtn()}
             </p>
             ${this._renderRelation()}
           </details>`}
       ${this.preview ? '' : this._renderQrDialog()}
     `
+  }
+
+  renderProfile() {
+    const courtesy = getCourtesyName(this.data)
+    const lineage = getLineage(this.data)
+    const memorial = getAttributeValue(this.data, ATTR_DEATH_ANNIVERSARY)
+    return html`
+      <h2>
+        <grampsjs-edit-gender
+          ?edit="${this.edit}"
+          gender="${this.data.gender}"
+        ></grampsjs-edit-gender>
+        ${this._displayName()}
+      </h2>
+      ${courtesy ? html`<p class="courtesy">${courtesy}</p>` : ''}
+      ${lineage ? html`<p class="lineage">${lineage}</p>` : ''}
+      ${this._renderBirth()} ${this._renderDeath()}
+      ${memorial
+        ? html`<p class="memorial">
+            <strong>Ngày giỗ</strong> · ${memorial} âm lịch
+          </p>`
+        : this._memorialUnknown()
+        ? html`<p class="memorial missing">Ngày giỗ: phả chưa chép</p>`
+        : ''}
+    `
+  }
+
+  /*
+  Người gần như chắc đã mất mà sổ không chép ngày giỗ: từ đời 13 trở lên, hoặc
+  đã có sự kiện Mất/An táng. Nói rõ "phả chưa chép" để người tra biết đây không
+  phải trang lỗi, mà là chỗ dòng họ có thể bổ sung.
+  */
+  _memorialUnknown() {
+    const generation = parseInt(
+      getAttributeValue(this.data, ATTR_GENERATION),
+      10
+    )
+    if (Number.isFinite(generation) && generation <= 13) {
+      return true
+    }
+    if (Object.keys(this.data?.profile?.death || {}).length > 0) {
+      return true
+    }
+    return (this.data?.extended?.events || []).some(event =>
+      ['Death', 'Burial'].includes(this._eventTypeKey(event))
+    )
+  }
+
+  // Loại sự kiện về từ máy chủ khi là chuỗi, khi là đối tượng EventType.
+  // eslint-disable-next-line class-methods-use-this
+  _eventTypeKey(event) {
+    const {type} = event || {}
+    if (!type) {
+      return ''
+    }
+    return typeof type === 'string' ? type : type.string || type.value || ''
+  }
+
+  // Dòng thời gian chỉ có gì để xem khi người có ít nhất một ngày dương lịch;
+  // ngày giỗ âm lịch của phả là ngày chữ, không có năm.
+  _hasDatedEvents() {
+    return (this.data?.extended?.events || []).some(
+      event =>
+        (event?.date?.sortval ?? 0) > 0 || (event?.date?.dateval?.[2] ?? 0) > 0
+    )
+  }
+
+  // Bản đồ cần địa danh có toạ độ; dữ liệu người không mang toạ độ nên chỉ
+  // biết được là có địa danh hay không. Không có địa danh nào thì chắc chắn
+  // bản đồ trống, khỏi hiện nút.
+  _hasPlacedEvents() {
+    return (this.data?.extended?.events || []).some(event => event?.place)
+  }
+
+  /*
+  Thẻ do pipeline gắn ("Chỉ có tên", "Cần soát lại"...) không tự giải thích;
+  in một dòng chú thích cho mỗi thẻ có trong TAG_HINTS, kèm liên kết tới bài
+  hướng dẫn đọc gia phả.
+  */
+  renderTags() {
+    const hints = this.edit
+      ? []
+      : (this.data?.extended?.tags || [])
+          .map(tag => (tag.name || '').normalize('NFC').trim())
+          .filter((name, index, names) => names.indexOf(name) === index)
+          .map(name => [name, TAG_HINTS[name]])
+          .filter(([, hint]) => hint)
+    return html`${super.renderTags()}
+    ${hints.length
+      ? html`<p class="tag-hints">
+          ${hints.map(
+            ([name, hint]) =>
+              html`<span class="tag-hint"
+                ><strong>${name}</strong>: ${hint}.</span
+              >`
+          )}
+          <a href="${READING_GUIDE_PATH}">Cách đọc gia phả</a>
+        </p>`
+      : ''}`
+  }
+
+  /*
+  Bỏ hai mục chỉ lặp lại đầu trang: "Tên" khi người không có tên phụ (1.397
+  người chỉ có một tên), và "Thông tin thêm" khi mọi thuộc tính đều đã in ở
+  đầu trang. Lúc sửa thì giữ đủ.
+  */
+  _getTabs(edit) {
+    const tabs = super._getTabs(edit)
+    if (edit) {
+      return tabs
+    }
+    const hasAlternateNames = this.data?.alternate_names?.length > 0
+    const hasMetadata =
+      (this.data?.attribute_list || []).some(
+        attr => !PERSON_HEADING_ATTRIBUTES.includes((attr.type || '').trim())
+      ) ||
+      this.data?.urls?.length > 0 ||
+      this.data?.address_list?.length > 0
+    return tabs.filter(
+      key =>
+        (key !== 'names' || hasAlternateNames) &&
+        (key !== 'metadata' || hasMetadata)
+    )
   }
 
   /*
@@ -302,17 +423,22 @@ export class GrampsjsPerson extends GrampsjsObject {
       // no home person set
       return ''
     }
+    // Người gốc mặc định là thuỷ tổ, nhãn gọi đúng tên; ai tự đặt người gốc
+    // khác thì dùng nhãn chung.
+    const homeGrampsId = this.homePersonDetails.gramps_id ?? ''
+    const label =
+      homeGrampsId === DEFAULT_HOME_PERSON
+        ? 'Quan hệ với thủy tổ'
+        : this._('Relationship to home person')
     return html`
-      <dl>
-        <dt>${this._('Relationship to home person')}</dt>
-        <dd>
-          <grampsjs-person-relationship
-            person1="${this.homePersonDetails.handle}"
-            person2="${this.data.handle}"
-            .appState="${this.appState}"
-          ></grampsjs-person-relationship>
-        </dd>
-      </dl>
+      <grampsjs-person-relationship
+        person1="${this.homePersonDetails.handle}"
+        person2="${this.data.handle}"
+        homeGrampsId="${homeGrampsId}"
+        generation="${getAttributeValue(this.data, ATTR_GENERATION)}"
+        label="${label}"
+        .appState="${this.appState}"
+      ></grampsjs-person-relationship>
     `
   }
 
@@ -356,6 +482,10 @@ export class GrampsjsPerson extends GrampsjsObject {
     `
   }
 
+  // Không còn được gọi: nút này gửi họ tên, năm sinh, nơi sinh của người trong
+  // cây (nhiều người còn sống) sang các dịch vụ phả hệ nước ngoài, mà với
+  // dòng họ Việt thì không tìm được gì. Giữ hàm để lần trộn ngược upstream
+  // chỉ đụng một dòng gọi.
   _renderExternalSearchBtn() {
     return html`
       <md-outlined-button @click="${this._handleExternalSearchClick}">

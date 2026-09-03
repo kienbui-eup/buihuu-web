@@ -12,7 +12,6 @@ import '@material/web/button/outlined-button'
 import {GrampsjsView} from './GrampsjsView.js'
 import './GrampsjsViewRecentlyChanged.js'
 import './GrampsjsViewRecentBlogPosts.js'
-import './GrampsjsViewAnniversaries.js'
 import './GrampsjsViewDeathAnniversaries.js'
 import '../components/GrampsjsHomePerson.js'
 import '../components/GrampsjsImg.js'
@@ -20,6 +19,15 @@ import {
   TREE_CONFIG_HOME_PAGE_NOTE,
   TREE_CONFIG_HOME_PAGE_IMAGE,
 } from '../api.js'
+import {GENERATIONS, BRANCHES_LABEL} from '../branding.js'
+import {
+  ARTICLE_GIOI_THIEU,
+  ARTICLE_HUONG_DAN,
+  ARTICLE_GOP_Y,
+} from '../components/GrampsjsSiteFooter.js'
+
+// Bài "Cách đọc gia phả": giải thích đời, ngành chi, dòng trưởng, các thẻ.
+const ARTICLE_CACH_DOC = '/blog/SBHNC15'
 
 export class GrampsjsViewDashboard extends GrampsjsView {
   static get properties() {
@@ -81,13 +89,21 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         .family-ledger dl {
           margin: 24px 0;
         }
+        /* Kiểu chung của trang cho "dl div" trôi trái (float) để xếp các cặp
+           nhãn/giá trị cạnh nhau; ở đây mỗi số liệu là một dòng kẻ trọn chiều
+           ngang, không trôi thì hai liên kết bên dưới mới không chen lên cạnh. */
         .family-ledger dl > div {
+          float: none;
           display: flex;
           justify-content: space-between;
           align-items: baseline;
           gap: 16px;
+          margin-right: 0;
           border-top: 1px solid var(--heritage-rule);
           padding: 14px 0;
+        }
+        .family-ledger .ledger-links {
+          clear: both;
         }
         .family-ledger dt {
           font-size: 13px;
@@ -98,6 +114,12 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           padding: 0;
           color: var(--heritage-ink);
         }
+        .family-ledger .ledger-links {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 4px 18px;
+          margin: 0;
+        }
         .family-ledger a {
           display: inline-flex;
           min-height: 44px;
@@ -105,6 +127,50 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           font-size: 14px;
           text-decoration: underline;
           text-underline-offset: 5px;
+        }
+        .family-ledger dd.text {
+          font-size: 20px;
+        }
+        .family-ledger dd small {
+          display: block;
+          font: 400 12px/1.5 var(--grampsjs-body-font-family);
+          color: var(--md-sys-color-on-surface-variant);
+        }
+        .search-hint {
+          flex-basis: 100%;
+          margin: 0;
+          font-size: 13px;
+          line-height: 1.6;
+          color: var(--md-sys-color-on-surface-variant);
+        }
+        .starter h3 {
+          margin: 0 0 8px;
+          font-size: 24px;
+        }
+        .starter ul {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+        }
+        .starter li {
+          border-top: 1px solid var(--heritage-rule);
+          padding: 10px 0;
+        }
+        .starter li:first-child {
+          border-top: 0;
+        }
+        .starter a {
+          display: block;
+          min-height: 44px;
+          font: 600 16px/1.5 var(--grampsjs-heading-font-family);
+          text-decoration: none;
+          color: var(--md-sys-color-primary);
+        }
+        .starter small {
+          display: block;
+          font-size: 13px;
+          line-height: 1.6;
+          color: var(--md-sys-color-on-surface-variant);
         }
         .section-heading {
           border-top: 1px solid var(--heritage-rule);
@@ -118,8 +184,9 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         }
         .dashboard-actions {
           display: flex;
+          flex-wrap: wrap;
           align-items: center;
-          gap: 16px;
+          gap: 12px 16px;
           margin: 0;
           padding: 24px 0;
           border-bottom: 1px solid var(--heritage-rule);
@@ -264,6 +331,18 @@ export class GrampsjsViewDashboard extends GrampsjsView {
             border-right: 1px solid var(--md-sys-color-outline-variant);
           }
         }
+        /* Khổ 320 px: ô nhập chỉ còn chừng 60 px nếu chen cùng hàng với ba lối
+           tắt, chữ gợi ý bị cắt còn "Gõ tê…". Cho ô tìm nguyên một hàng, ba lối
+           tắt xuống hàng dưới. Đặt sau khối 880 px để thắng quy tắc flex: 1. */
+        @container home-actions (max-width: 340px) {
+          .search {
+            flex: 1 1 100%;
+          }
+          .quick-links {
+            flex: 1 1 100%;
+            justify-content: flex-start;
+          }
+        }
         .dashboard-grid {
           display: grid;
           grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
@@ -373,10 +452,13 @@ export class GrampsjsViewDashboard extends GrampsjsView {
     const {canEdit} = this.appState.permissions
     return html`
       <grampsjs-temple-hero
-        @preface:open=${() =>
-          this.renderRoot
-            .querySelector('#loi-tua')
-            ?.scrollIntoView({behavior: 'smooth', block: 'start'})}
+        .people=${this.appState.dbInfo?.object_counts?.people ?? 0}
+        @preface:open=${() => {
+          const preface = this.renderRoot.querySelector('#loi-tua')
+          // Mở sẵn toàn văn để người bấm "Đọc lời tựa" không phải bấm lần nữa.
+          preface?.expand?.()
+          preface?.scrollIntoView({behavior: 'smooth', block: 'start'})
+        }}
       ></grampsjs-temple-hero>
       <div class="dashboard-content">
         <div class="dashboard-actions">
@@ -389,7 +471,7 @@ export class GrampsjsViewDashboard extends GrampsjsView {
               id="home-search"
               type="search"
               aria-label="Tìm người trong họ"
-              placeholder="Tìm người…"
+              placeholder="Gõ tên người cần tìm"
               enterkeyhint="search"
               required
             />
@@ -413,15 +495,19 @@ export class GrampsjsViewDashboard extends GrampsjsView {
               '/people',
               mdiAccountGroup,
               'Người trong họ',
-              'Tra cứu tên và đời'
+              'Tìm theo tên, đời, ngành chi'
             )}
             ${this._quickLink(
               '/lich-gio',
               mdiCandle,
               'Lịch giỗ',
-              'Tưởng nhớ tổ tiên'
+              'Giỗ cả năm, đã đổi sang dương lịch'
             )}
           </nav>
+          <p class="search-hint">
+            Gõ một phần tên, có dấu hay không dấu đều được. Trùng tên thì xem
+            thêm Đời và ngành chi ghi cạnh tên.
+          </p>
         </div>
         <div class="opening-grid">
           <grampsjs-home-preface
@@ -431,39 +517,52 @@ export class GrampsjsViewDashboard extends GrampsjsView {
               TREE_CONFIG_HOME_PAGE_NOTE
             ] ?? ''}
           ></grampsjs-home-preface>
-          <aside class="family-ledger" aria-label="Khái quát gia phả">
-            <p class="section-label">Từng người, từng nếp nhà</p>
-            <h2>Gia phả hôm nay</h2>
+          <aside class="family-ledger" aria-label="Số liệu bản phả">
+            <p class="section-label">Bản số hóa</p>
+            <h2>Số liệu bản phả</h2>
             <p>
-              Những trang phả nối các thế hệ với nhau, để mỗi người tìm thấy vị
-              trí của mình trong dòng họ.
+              Tính trên phần gia phả đã nhập từ các sổ chi, chưa phải điều tra
+              dân số hay xác nhận huyết thống.
             </p>
             <dl>
-              ${[
-                ['people', 'Người trong gia phả'],
-                ['families', 'Gia đình'],
-                ['places', 'Địa danh'],
-              ].map(
-                ([key, label]) =>
-                  html`<div>
-                    <dt>${label}</dt>
-                    <dd>
-                      ${this.appState.dbInfo?.object_counts?.[
-                        key
-                      ]?.toLocaleString('vi-VN') ?? '—'}
-                    </dd>
-                  </div>`
-              )}
+              <div>
+                <dt>Đời</dt>
+                <dd>${GENERATIONS}</dd>
+              </div>
+              <div>
+                <dt>Ngành, chi</dt>
+                <dd class="text">${BRANCHES_LABEL}</dd>
+              </div>
+              <div>
+                <dt>Người ghi trong phả</dt>
+                <dd>
+                  ${this.appState.dbInfo?.object_counts?.people?.toLocaleString(
+                    'vi-VN'
+                  ) ?? '—'}
+                  <small>nhiều người mới có tên, chưa có dòng riêng</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Cặp vợ chồng</dt>
+                <dd>
+                  ${this.appState.dbInfo?.object_counts?.families?.toLocaleString(
+                    'vi-VN'
+                  ) ?? '—'}
+                </dd>
+              </div>
             </dl>
-            <a href="/blog"
-              >Tìm hiểu chuyện dòng họ
-              <span aria-hidden="true">&nbsp;→</span></a
-            >
+            <p class="ledger-links">
+              <a href="${ARTICLE_GIOI_THIEU}"
+                >Giới thiệu dòng họ <span aria-hidden="true">&nbsp;→</span></a
+              ><a href="${ARTICLE_CACH_DOC}"
+                >Cách đọc gia phả <span aria-hidden="true">&nbsp;→</span></a
+              >
+            </p>
           </aside>
         </div>
         <div class="section-heading">
-          <p class="section-label">Gìn giữ & tiếp nối</p>
-          <h2>Những trang ký ức dòng họ</h2>
+          <p class="section-label">Hôm nay trong họ</p>
+          <h2>Giỗ sắp tới, thủy tổ và bài viết mới</h2>
         </div>
         <div class="dashboard-grid">
           <div>
@@ -489,7 +588,7 @@ export class GrampsjsViewDashboard extends GrampsjsView {
             ${hasPeople
               ? html`
                   <div class="panel memorial heritage-frame">
-                    <p class="section-label">Tưởng niệm</p>
+                    <p class="section-label">Lịch giỗ</p>
                     <grampsjs-view-death-anniversaries
                       id="death-anniversaries"
                       .appState="${this.appState}"
@@ -498,6 +597,48 @@ export class GrampsjsViewDashboard extends GrampsjsView {
                   </div>
                 `
               : ''}
+            <div class="panel starter heritage-frame">
+              <p class="section-label">Mới vào trang</p>
+              <h3>Đọc trước khi tra cứu</h3>
+              <ul>
+                <li>
+                  <a href="${ARTICLE_GIOI_THIEU}"
+                    >Giới thiệu dòng họ
+                    <small
+                      >Thủy tổ, các đời đầu, ba ngành năm chi và nhà thờ tổ ở
+                      Chỉ Bồ</small
+                    ></a
+                  >
+                </li>
+                <li>
+                  <a href="${ARTICLE_CACH_DOC}"
+                    >Cách đọc gia phả
+                    <small
+                      >Đời tính từ ai, ngành chi là gì, dòng trưởng, tên tự, các
+                      thẻ "Chỉ có tên", "Cần soát lại"</small
+                    ></a
+                  >
+                </li>
+                <li>
+                  <a href="${ARTICLE_HUONG_DAN}"
+                    >Hướng dẫn tra cứu trên điện thoại
+                    <small
+                      >Tìm người, đọc cây, xem giỗ, tải lịch giỗ về máy, mã dòng
+                      họ</small
+                    ></a
+                  >
+                </li>
+                <li>
+                  <a href="${ARTICLE_GOP_Y}"
+                    >Góp ý và sửa sai
+                    <small
+                      >Thấy sai tên, đời, ngày giỗ hay thiếu người thì báo thế
+                      nào</small
+                    ></a
+                  >
+                </li>
+              </ul>
+            </div>
           </div>
           <div>
             ${this._renderHomePageImage()}
@@ -528,11 +669,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           ? html`
               <details class="editor-tools">
                 <summary>Công cụ biên soạn gia phả</summary>
-                ${this.appState.dbInfo?.object_counts?.events
-                  ? html`<grampsjs-view-anniversaries
-                      .appState="${this.appState}"
-                    ></grampsjs-view-anniversaries>`
-                  : ''}
                 <grampsjs-view-recently-changed
                   id="recently-changed"
                   .appState="${this.appState}"

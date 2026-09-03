@@ -24,20 +24,81 @@ const tabs = {
   },
 }
 
+/*
+Thanh tab của các trang danh sách và cài đặt. Kéo dài hết chiều ngang, gạch
+chân vàng dưới mục đang chọn, cùng ngữ pháp với điều hướng chính trên header.
+*/
 class GrampsjsTabBar extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
     return [
       sharedStyles,
       css`
+        :host {
+          display: block;
+        }
+
+        .tabs-shell {
+          padding: 0 var(--heritage-gutter);
+          border-bottom: 1px solid var(--heritage-rule);
+          background: color-mix(
+            in srgb,
+            var(--md-sys-color-surface) 55%,
+            transparent
+          );
+        }
+
         md-tabs {
-          margin: 20px;
           width: max-content;
           max-width: 100%;
+          --md-primary-tab-container-color: transparent;
+          --md-primary-tab-container-height: 52px;
+          --md-primary-tab-label-text-font: var(--grampsjs-body-font-family);
+          --md-primary-tab-label-text-size: 15px;
+          --md-primary-tab-label-text-weight: 500;
+          --md-primary-tab-label-text-color: var(
+            --md-sys-color-on-surface-variant
+          );
+          --md-primary-tab-hover-label-text-color: var(--md-sys-color-primary);
+          --md-primary-tab-focus-label-text-color: var(--md-sys-color-primary);
+          --md-primary-tab-pressed-label-text-color: var(
+            --md-sys-color-primary
+          );
+          --md-primary-tab-active-label-text-color: var(--md-sys-color-primary);
+          --md-primary-tab-active-hover-label-text-color: var(
+            --md-sys-color-primary
+          );
+          --md-primary-tab-active-focus-label-text-color: var(
+            --md-sys-color-primary
+          );
+          --md-primary-tab-active-pressed-label-text-color: var(
+            --md-sys-color-primary
+          );
+          --md-primary-tab-active-indicator-color: var(--heritage-gold);
+          --md-primary-tab-active-indicator-height: 3px;
+          --md-primary-tab-hover-state-layer-color: var(--heritage-gold);
+          --md-primary-tab-pressed-state-layer-color: var(--heritage-gold);
+          --md-divider-thickness: 0px;
         }
 
         md-primary-tab {
           flex: 0 0 auto;
           width: auto;
+        }
+
+        @media (max-width: 768px) {
+          .tabs-shell {
+            padding: 0 8px;
+          }
+          md-tabs {
+            --md-primary-tab-container-height: 48px;
+            --md-primary-tab-label-text-size: 14px;
+          }
+        }
+
+        @media print {
+          :host {
+            display: none;
+          }
         }
       `,
     ]
@@ -63,21 +124,39 @@ class GrampsjsTabBar extends GrampsjsAppStateMixin(LitElement) {
     } else {
       currentTabs = tabs[this.appState.path.page]
     }
-    const filteredTabKeys = Object.keys(currentTabs).filter(key =>
-      this._permissionToSeeTab(this.appState.path.page, key)
+    const filteredTabKeys = Object.keys(currentTabs).filter(
+      key =>
+        this._permissionToSeeTab(this.appState.path.page, key) &&
+        this._hasContent(this.appState.path.page, key, currentKey)
     )
     return html`
-      <md-tabs .activeTabIndex=${filteredTabKeys.indexOf(currentKey)}>
-        ${filteredTabKeys.map(
-          key =>
-            html`
-              <md-primary-tab @click="${() => this._goTo(key)}"
-                >${this._(currentTabs[key])}</md-primary-tab
-              >
-            `
-        )}
-      </md-tabs>
+      <div class="tabs-shell">
+        <md-tabs .activeTabIndex=${filteredTabKeys.indexOf(currentKey)}>
+          ${filteredTabKeys.map(
+            key =>
+              html`
+                <md-primary-tab @click="${() => this._goTo(key)}"
+                  >${this._(currentTabs[key])}</md-primary-tab
+                >
+              `
+          )}
+        </md-tabs>
+      </div>
     `
+  }
+
+  // Con cháu tra cứu không cần thấy những loại dữ liệu cây này chưa có (trích
+  // dẫn, kho tư liệu, hình ảnh). Người có quyền thêm vẫn thấy đủ để nhập; tab
+  // đang mở luôn giữ lại để không mất chỗ đứng.
+  _hasContent(page, key, currentKey) {
+    if (page === 'settings' || this.appState.permissions?.canAdd) {
+      return true
+    }
+    const counts = this.appState.dbInfo?.object_counts
+    if (!counts || !(key in counts)) {
+      return true
+    }
+    return counts[key] > 0 || key === currentKey
   }
 
   _permissionToSeeTab(page, key) {

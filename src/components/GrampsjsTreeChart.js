@@ -11,6 +11,7 @@ import {
   getPersonByGrampsId,
   getTree,
   getImageUrl,
+  rescaleViewBox,
 } from '../charts/util.js'
 import {fireEvent, clickKeyHandler} from '../util.js'
 
@@ -92,6 +93,20 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
     this._savedViewBox = !this._focusPending
       ? svg?.getAttribute('viewBox')
       : null
+    if (
+      this._savedViewBox &&
+      (changed.has('containerWidth') || changed.has('containerHeight'))
+    ) {
+      // Xoay điện thoại hay mở menu bên: giữ tâm và tỷ lệ, đổi khung theo
+      // kích cỡ mới thay vì để SVG co giãn theo khung cũ.
+      this._savedViewBox = rescaleViewBox(
+        this._savedViewBox,
+        changed.get('containerWidth') ?? this.containerWidth,
+        changed.get('containerHeight') ?? this.containerHeight,
+        this.containerWidth,
+        this.containerHeight
+      )
+    }
   }
 
   updated() {
@@ -166,11 +181,15 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
       width / (box.width + 2 * margin),
       height / (box.height + 2 * margin)
     )
-    if (width <= 600 && fit < 0.85) {
-      const mobileScale = 0.85
-      const viewWidth = width / mobileScale
-      const viewHeight = height / mobileScale
-      const rootMargin = 60 / mobileScale
+    // Không thu nhỏ quá mức đọc được: 85% trên điện thoại, 70% trên máy tính.
+    // Cây 17 đời ép vừa khung 900 px thì ô người cao 20 px, chữ 5 px, nhìn ra
+    // hình dáng cây nhưng không đọc được tên ai. Nút Vừa khung vẫn còn đó cho
+    // ai muốn xem toàn cảnh.
+    const minScale = width <= 600 ? 0.85 : 0.7
+    if (fit < minScale) {
+      const viewWidth = width / minScale
+      const viewHeight = height / minScale
+      const rootMargin = 60 / minScale
       let y = -viewHeight / 2
       if (!this.ancestors) {
         y = -rootMargin

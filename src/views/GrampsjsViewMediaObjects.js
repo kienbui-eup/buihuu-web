@@ -80,6 +80,7 @@ export class GrampsjsViewMediaObjects extends GrampsjsViewObjectsBase {
 
         .tile {
           cursor: pointer;
+          border: 1px solid var(--heritage-rule);
           border-radius: var(--grampsjs-frame-radius);
           background: var(--grampsjs-frame-paper);
           padding: 8px;
@@ -107,18 +108,23 @@ export class GrampsjsViewMediaObjects extends GrampsjsViewObjectsBase {
           padding: 16px;
           margin-bottom: 12px;
           background: var(--grampsjs-frame-paper);
+          border: 1px solid var(--heritage-rule);
           border-radius: var(--grampsjs-frame-radius);
+          box-shadow: 0 3px 16px var(--grampsjs-body-font-color-5);
           cursor: pointer;
         }
 
         .media-list-item:hover {
-          background-color: var(--grampsjs-color-shade-240);
+          background-color: color-mix(
+            in srgb,
+            var(--heritage-gold) 14%,
+            var(--grampsjs-frame-paper)
+          );
         }
 
         .media-list-item:focus-visible {
           outline: 2px solid var(--mdc-theme-primary);
           outline-offset: -2px;
-          background-color: var(--grampsjs-color-shade-240);
         }
 
         .media-list-thumb {
@@ -164,7 +170,7 @@ export class GrampsjsViewMediaObjects extends GrampsjsViewObjectsBase {
 
         .tag-chip {
           display: inline-block;
-          border-radius: var(--md-sys-shape-corner-small, 8px);
+          border-radius: var(--grampsjs-frame-radius);
           padding: 1px 8px;
           font-size: 12px;
           border: 1px solid var(--tag-color);
@@ -204,8 +210,7 @@ export class GrampsjsViewMediaObjects extends GrampsjsViewObjectsBase {
 
   renderContent() {
     return html`
-      <h2>${this._('Media')}</h2>
-      ${this._renderFilter()}
+      ${this._renderHeading()} ${this._renderFilter()}
       ${this.altView ? this.renderAltView() : this._renderMediaList()}
       <grampsjs-pagination
         page="${this._page}"

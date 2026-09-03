@@ -70,7 +70,10 @@ export class GrampsjsViewBlogPost extends GrampsjsStaleDataMixin(GrampsjsView) {
   renderPosts() {
     if (this._firstLoaded && this._dataSources.length === 0) {
       return html`
-        <h2>${this._('Blog')}</h2>
+        <header class="page-heading">
+          <p class="section-label">Chuyện dòng họ</p>
+          <h2>${this._('Blog')}</h2>
+        </header>
         <p class="muted">
           ${this._("To start using the blog, add a source with tag 'Blog'.")}
         </p>

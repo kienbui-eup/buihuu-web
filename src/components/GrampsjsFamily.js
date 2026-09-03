@@ -11,6 +11,7 @@ import './GrampsjsFormEditFamily.js'
 import './GrampsjsFormNewPerson.js'
 import './GrampsjsFormPersonRef.js'
 import {GrampsjsObject} from './GrampsjsObject.js'
+import {localizeServerValue} from '../glossary.js'
 
 export class GrampsjsFamily extends GrampsjsObject {
   static get styles() {
@@ -90,13 +91,27 @@ export class GrampsjsFamily extends GrampsjsObject {
   }
 
   _renderMarriageBlock() {
-    const relType = this.data?.profile?.relationship
+    // Khoá gốc của loại quan hệ ("Married") nằm trong data.type; chữ đi qua
+    // lớp thuật ngữ thành "Vợ chồng". profile.relationship là bản máy chủ dịch
+    // sẵn ("Kêt hôn/ có gia đình", có lỗi chính tả) nên chỉ dùng khi không có
+    // khoá.
+    const typeKey = this.data?.type?.string || this.data?.type || ''
+    const relType =
+      typeof typeKey === 'string' && typeKey
+        ? this._(typeKey)
+        : localizeServerValue(this.data?.profile?.relationship)
     const marriage = this.data?.profile?.marriage
     const divorce = this.data?.profile?.divorce
     const hasMarriage = marriage?.date || marriage?.place
     const hasDivorce = divorce && Object.keys(divorce).length > 0
-    if (!relType && !hasMarriage && !hasDivorce && !this.edit) {
-      return ''
+    if (this.edit) {
+      // giữ khối để còn nút sửa
+    } else if (!hasMarriage && !hasDivorce) {
+      // Cả 483 gia đình trong phả đều là vợ chồng và không gia đình nào chép
+      // ngày cưới, nên dòng "Loại quan hệ: Vợ chồng" không nói thêm được gì.
+      if (!relType || typeKey === 'Married') {
+        return ''
+      }
     }
     return html`
       <dl>

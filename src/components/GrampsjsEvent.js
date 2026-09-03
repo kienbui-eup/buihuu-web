@@ -16,6 +16,13 @@ import {
   personProfileDisplayName,
 } from '../util.js'
 import './GrampsjsObjectLink.js'
+import {localizeServerValue, describesSameLunarDate} from '../glossary.js'
+
+// Vai trò "người chính" và "gia đình" của một sự kiện, ở cả ba dạng có thể
+// gặp: khoá gốc, bản dịch máy chủ và chữ của nhà.
+const PRIMARY_ROLES = ['Primary', 'Chủ yếu', 'Chính']
+
+const FAMILY_ROLES = ['Family', 'Gia đình']
 
 export class GrampsjsEvent extends GrampsjsObject {
   static get styles() {
@@ -60,7 +67,12 @@ export class GrampsjsEvent extends GrampsjsObject {
             `
           : ''}
       </h2>
-      ${this.data.description || this.edit
+      ${(this.data.description &&
+        !describesSameLunarDate(
+          this.data.description,
+          this.data?.profile?.date
+        )) ||
+      this.edit
         ? html` <dl>
             <div>
               <dt>${this._('Description')}</dt>
@@ -168,15 +180,18 @@ export class GrampsjsEvent extends GrampsjsObject {
   }
 
   _renderPrimaryPeople() {
-    const primary = this._('Primary')
-    const family = this._('Family')
+    // Vai trò về từ máy chủ đã dịch ("Chủ yếu"); so với "Chính" của lớp thuật
+    // ngữ mà không đổi trước thì không nhận ra ai là người chính, tiêu đề chỉ
+    // còn "Mất:" trống.
+    const primary = [...PRIMARY_ROLES, this._('Primary')]
+    const family = [...FAMILY_ROLES, this._('Family')]
     const people =
-      this.data?.profile?.participants?.people.filter(
-        obj => obj.role === primary || obj.role === 'Primary'
+      this.data?.profile?.participants?.people?.filter(obj =>
+        primary.includes(localizeServerValue(obj.role))
       ) || []
     const families =
-      this.data?.profile?.participants?.families.filter(
-        obj => obj.role === family || obj.role === 'Family'
+      this.data?.profile?.participants?.families?.filter(obj =>
+        family.includes(localizeServerValue(obj.role))
       ) || []
     return `${people
       .map(obj => this._renderPerson(obj.person), this)
@@ -190,9 +205,10 @@ export class GrampsjsEvent extends GrampsjsObject {
       !this.data?.profile?.participants?.families?.length
     ) {
       // event without participants
-      return html`${this.data.profile.type}`
+      return html`${localizeServerValue(this.data.profile.type)}`
     }
-    return html`${this.data.profile.type}: ${this._renderPrimaryPeople()}`
+    return html`${localizeServerValue(this.data.profile.type)}:
+    ${this._renderPrimaryPeople()}`
   }
 
   _handleEditDetails() {

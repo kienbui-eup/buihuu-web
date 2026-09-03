@@ -3,6 +3,7 @@ import '@material/web/checkbox/checkbox.js'
 import '@material/web/iconbutton/icon-button.js'
 import '@material/web/icon/icon.js'
 import '@material/web/iconbutton/filled-icon-button'
+import '@material/web/button/text-button.js'
 import '@material/web/menu/menu'
 import {mdiSort, mdiSortAscending, mdiSortDescending} from '@mdi/js'
 import {classMap} from 'lit/directives/class-map.js'
@@ -32,21 +33,27 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
           display: none;
         }
 
+        /* Bố cục dọc (điện thoại): mỗi dòng là một thẻ, các ô xếp bằng flex
+           để tên chiếm trọn hàng đầu, các ô meta nối thành một dòng nhỏ, còn
+           lại chia đôi. */
         tbody tr {
-          display: grid;
-          gap: 0.75em;
-          border-top: 1px solid var(--grampsjs-body-font-color-10);
-          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          display: flex;
+          flex-wrap: wrap;
+          align-items: baseline;
+          gap: 0.6em 0.75em;
+          border-top: 1px solid var(--heritage-rule);
           padding: 10px 0;
         }
 
         tbody tr:last-child {
-          border-bottom: 1px solid var(--grampsjs-body-font-color-10);
+          border-bottom: 1px solid var(--heritage-rule);
         }
 
         tbody td {
           text-align: left;
           display: block;
+          flex: 1 1 calc(50% - 0.75em);
+          min-width: 0;
           padding: 0 10px;
           border: none;
           position: relative;
@@ -72,7 +79,7 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
         /* Tên là thứ người ta quét mắt tìm, nên cho nó nguyên một dòng và bỏ
            nhãn "Họ và tên" — dòng đầu của mỗi khối thì không cần chú thích. */
         tbody td[data-key='name'] {
-          grid-column: 1 / -1;
+          flex: 1 0 100%;
           font-size: 17px;
           font-weight: 500;
         }
@@ -81,21 +88,37 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
           display: none;
         }
 
-        /* Đời đi liền dưới tên như một nhãn nhỏ, không phải một cột ngang hàng
-           với ngày tháng. */
-        tbody td[data-key='generation'] {
-          grid-column: 1 / -1;
-          margin-top: -0.5em;
+        /* Cột đánh dấu meta (đời, ngành chi, giỗ) nối thành một dòng nhỏ ngay
+           dưới tên: "Đời 13 · Ngành 3 - Chi 2 · Giỗ 12/8 ÂL", không tách mỗi
+           thứ thành một khối riêng. Dấu chấm giữa đặt vào nhãn của ô đứng sau
+           một ô meta có dữ liệu; ô rỗng đã ẩn nên không tính. */
+        table:not(.wide) tbody td.meta {
+          flex: 0 0 auto;
+          max-width: 100%;
+          margin-top: -0.55em;
+          font-size: 15px;
+          color: var(--grampsjs-body-font-color-70);
         }
 
-        tbody td[data-key='generation']::before {
-          display: inline;
-          margin-bottom: 0;
-          margin-right: 0.4em;
+        table:not(.wide) tbody td.meta + td.meta {
+          margin-left: -0.45em;
         }
 
-        tbody td[data-key='generation'] .cell-content {
+        table:not(.wide) tbody td.meta::before {
           display: inline;
+          margin: 0 0.15em 0 0;
+          font-size: 15px;
+        }
+
+        table:not(.wide) tbody td.meta .cell-content {
+          display: inline;
+        }
+
+        table:not(.wide)
+          tbody
+          td.meta:not(.is-empty)
+          ~ td.meta:not(.is-empty)::before {
+          content: '· ' attr(data-label);
         }
 
         table.linked tbody tr:hover {
@@ -103,19 +126,25 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
         }
 
         table.linked tbody tr:not(.selected):hover {
-          background-color: var(--grampsjs-color-shade-240);
+          background-color: color-mix(
+            in srgb,
+            var(--heritage-gold) 14%,
+            var(--grampsjs-frame-paper)
+          );
         }
 
         table:not(.wide) {
           width: 100%;
         }
 
+        /* Điện thoại: mỗi dòng là một thẻ giấy, cùng khung với các khối khác. */
         table:not(.wide) tbody tr {
           margin-bottom: 12px;
-          padding: 16px 8px;
-          border: 1px solid transparent;
+          padding: 16px 12px;
+          border: 1px solid var(--heritage-rule);
           border-radius: var(--grampsjs-frame-radius);
           background: var(--grampsjs-frame-paper);
+          box-shadow: 0 3px 16px var(--grampsjs-body-font-color-5);
         }
 
         table.linked tbody tr:focus-visible,
@@ -131,17 +160,31 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
           display: table-header-group;
         }
 
+        /* Máy tính: cả bảng nằm trong một khung giấy, đầu cột viết như nhãn mục. */
+        .table-container.wide {
+          border: 1px solid var(--heritage-rule);
+          border-radius: var(--grampsjs-frame-radius);
+          background: var(--grampsjs-frame-paper);
+          box-shadow: 0 3px 16px var(--grampsjs-body-font-color-5);
+          overflow-x: auto;
+        }
+
         table.wide {
-          border: 1px solid var(--md-sys-color-outline-variant);
-          background: var(--md-sys-color-surface);
+          background: transparent;
         }
 
         table.wide thead th {
           text-align: left;
-          padding: 20px 20px;
-          font-size: 14px;
-          color: var(--grampsjs-body-font-color-50);
-          font-weight: 400;
+          padding: 16px 20px;
+          font: 500 11px/1.6 var(--grampsjs-body-font-family);
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: var(--md-sys-color-primary);
+          background: color-mix(
+            in srgb,
+            var(--heritage-gold) 8%,
+            var(--grampsjs-frame-paper)
+          );
           vertical-align: middle;
           white-space: nowrap;
         }
@@ -152,8 +195,12 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
           padding: 0;
         }
 
+        table.wide tbody tr:last-child {
+          border-bottom: 0;
+        }
+
         table.wide thead tr {
-          border-bottom: 1px solid var(--grampsjs-body-font-color-10);
+          border-bottom: 1px solid var(--heritage-rule);
         }
 
         table.wide tbody td {
@@ -191,8 +238,16 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
 
         .mobile-sort {
           position: relative;
+          display: flex;
+          justify-content: flex-end;
           margin-top: 5px;
-          margin-bottom: 15px;
+          margin-bottom: 8px;
+        }
+
+        .mobile-sort md-text-button {
+          --md-text-button-label-text-size: 14px;
+          --md-text-button-label-text-color: var(--grampsjs-body-font-color-70);
+          --md-text-button-icon-size: 20px;
         }
 
         .mobile-sort md-menu {
@@ -319,9 +374,15 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
     return this._containerWidth > this.breakPoint && !this.narrow
   }
 
+  // Dòng có liên kết thì vào được bằng Tab; quy tắc lit-a11y không đọc được
+  // biểu thức điều kiện đặt thẳng trong template.
+  get _rowTabIndex() {
+    return this.linked ? 0 : -1
+  }
+
   render() {
     return html`
-      <div class="table-container">
+      <div class="table-container ${this._isWide ? 'wide' : ''}">
         ${this.data.length > 0 && this.sortable && !this._isWide
           ? this._renderMobileSort()
           : ''}
@@ -365,7 +426,7 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
                   class="${this._selectedIndices.has(index) ? 'selected' : ''}"
                   @click="${() => this._handleRowClick(index)}"
                   @keydown="${clickKeyHandler}"
-                  .tabIndex=${this.linked ? 0 : -1}
+                  .tabIndex=${this._rowTabIndex}
                   role="${this.linked ? 'button' : 'row'}"
                 >
                   ${this.selectable
@@ -383,15 +444,17 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
                   ${item.map(
                     (value, colIndex) => html`
                       <td
-                        data-label="${this._colLabel(
-                          this.columns[colIndex].name
-                        )}"
+                        data-label="${this.columns[colIndex].noLabel
+                          ? ''
+                          : this._colLabel(this.columns[colIndex].name)}"
                         data-key="${this.columns[colIndex].key ?? ''}"
-                        class="${value === '' ||
-                        value === null ||
-                        value === undefined
-                          ? 'is-empty'
-                          : ''}"
+                        class="${classMap({
+                          'is-empty':
+                            value === '' ||
+                            value === null ||
+                            value === undefined,
+                          meta: Boolean(this.columns[colIndex].meta),
+                        })}"
                       >
                         <div class="cell-content">
                           ${this.loading
@@ -424,11 +487,23 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
     const isAscending = this.serverSort
       ? !this._isSortDescending()
       : !this.descending
+    // Nút có chữ, không chỉ một biểu tượng xám lẻ loi ở góc; ghi luôn cột đang
+    // xếp nếu cột đó có trong bảng.
+    const activeIndex = this.serverSort
+      ? this._getActiveSortColumn()
+      : this.sort
+    const activeLabel =
+      hasActive && this.columns[activeIndex]
+        ? `: ${this._colLabel(this.columns[activeIndex].name)}`
+        : ''
     return html`
       <div class="mobile-sort">
-        <md-icon-button @click="${this._toggleSortMenu}" id="btn-sort-menu">
-          <md-icon>${this._renderSortIcon(hasActive, isAscending)}</md-icon>
-        </md-icon-button>
+        <md-text-button @click="${this._toggleSortMenu}" id="btn-sort-menu">
+          <md-icon slot="icon"
+            >${this._renderSortIcon(hasActive, isAscending)}</md-icon
+          >
+          ${this._('Sort by')}${activeLabel}
+        </md-text-button>
         <md-menu id="sort-menu" anchor="btn-sort-menu">
           ${this.columns
             .filter(col => !this.serverSort || col.sortKey)

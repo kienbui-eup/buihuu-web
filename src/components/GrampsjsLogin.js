@@ -11,7 +11,7 @@ import './GrampsjsIcon.js'
 import './GrampsjsHeritageMark.js'
 import './GrampsjsTempleHero.js'
 import './GrampsjsSiteFooter.js'
-import {APP_NAME} from '../branding.js'
+import {APP_NAME, PLACE_SHORT} from '../branding.js'
 import './GrampsjsOidcButton.js'
 import {sharedStyles} from '../SharedStyles.js'
 import {heritageFrameStyles} from '../HeritageStyles.js'
@@ -61,9 +61,13 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
         @media (max-width: 600px) {
         }
 
-        #login-form {
+        #login-form,
+        #family-code-form {
           margin: auto;
           padding: 32px;
+        }
+        #family-code-form {
+          margin-bottom: 20px;
         }
 
         .brand {
@@ -81,9 +85,13 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
           color: var(--md-sys-color-on-surface-variant);
           margin: 0;
         }
-        #login-form > h2 {
+        #login-form > h2,
+        #family-code-form > h2 {
           font-size: 23px;
           margin: 0 0 24px;
+        }
+        #family-code-form > h2 {
+          margin-bottom: 8px;
         }
         @media (max-width: 600px) {
           .brand h1 {
@@ -92,12 +100,14 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
           #login-container {
             padding: 28px 16px;
           }
-          #login-form {
+          #login-form,
+          #family-code-form {
             padding: 24px 20px;
           }
         }
 
-        #login-form md-filled-button {
+        #login-form md-filled-button,
+        #family-code-form md-filled-button {
           --md-filled-button-container-shape: 3px;
           width: 100%;
           margin-bottom: 0.5em;
@@ -241,20 +251,15 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
           margin-bottom: 2em;
         }
 
-        .family-code h3 {
-          margin: 0 0 0.3em;
-          font-size: 1.05em;
-        }
-
         .family-code p.hint {
           font-size: 0.9em;
+          line-height: 1.6;
           color: var(--grampsjs-body-font-color-70);
           margin: 0 0 1em;
         }
 
-        .family-code md-outlined-button {
-          width: 100%;
-          height: 48px;
+        .family-code md-filled-button + p.hint {
+          margin: 0.6em 0 0;
         }
       `,
     ]
@@ -318,16 +323,17 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
         <header class="brand">
           <grampsjs-heritage-mark></grampsjs-heritage-mark>
           <h1>${APP_NAME}</h1>
-          <p>Gìn giữ cội nguồn · Kết nối cháu con</p>
-          <p>Chỉ Bồ · Thụy Trường · Thái Bình</p>
+          <p>Thủy tổ Bùi Công tự Huyền Nhân · 17 đời · 3 ngành, 5 chi</p>
+          <p>${PLACE_SHORT} · Thái Bình (nay: Đông Thụy Anh, Hưng Yên)</p>
         </header>
+        ${this._renderFamilyCode()}
         <form
           id="login-form"
           class="heritage-frame"
           @submit="${this._submitLogin}"
           @keydown="${this._handleFormKeydown}"
         >
-          <h2>${this._('login')}</h2>
+          <h2>Người biên soạn: đăng nhập tài khoản</h2>
           ${localAuthDisabled
             ? ''
             : html`
@@ -391,7 +397,6 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
                     >${this._('Lost password?')}</span
                   >
                 </p>
-                ${this._renderFamilyCode()}
               `}
           ${this.oidcConfig?.enabled &&
           this.oidcConfig?.providers &&
@@ -433,10 +438,15 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
   */
   _renderFamilyCode() {
     if (!window.grampsjsConfig?.guestUsername) return ''
+    // Đây là lối vào của đa số người trong họ nên đứng trước form tài khoản.
     return html`
-      <hr />
-      <div class="family-code">
-        <h3>${this._('View with the family code')}</h3>
+      <form
+        id="family-code-form"
+        class="heritage-frame family-code"
+        @submit="${this._submitFamilyCode}"
+        @keydown="${this._handleFormKeydown}"
+      >
+        <h2>${this._('View with the family code')}</h2>
         <p class="hint">
           ${this._(
             'People in the clan do not need an account. Enter the code the clan shares to open the family tree.'
@@ -453,19 +463,29 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
           />
           <label for="family-code">${this._('Family code')}</label>
         </div>
-        <md-outlined-button @click="${this._submitFamilyCode}">
+        <md-filled-button
+          type="button"
+          style="width: 100%;"
+          @click="${this._submitFamilyCode}"
+        >
           ${this._('Open the family tree')}
-        </md-outlined-button>
-      </div>
+        </md-filled-button>
+        <p class="hint">
+          Mã chỉ dùng trong họ, xin không đăng lên mạng xã hội.
+        </p>
+      </form>
     `
   }
 
-  async _submitFamilyCode() {
+  async _submitFamilyCode(e) {
+    e?.preventDefault?.()
     const code = this.shadowRoot.getElementById('family-code')?.value
     if (!code) return
     const res = await apiGetTokens(window.grampsjsConfig.guestUsername, code)
     if ('error' in res) {
-      this._showError(res.error)
+      this._showError(
+        'Mã dòng họ chưa đúng. Kiểm tra lại hoặc hỏi người giữ gia phả.'
+      )
     } else {
       document.location.href = '/'
     }
@@ -563,7 +583,8 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
       if ('error' in res) {
         submitProgress.style.display = 'none'
         submitProgress.closed = true
-        this._showError(res.error)
+        // Thông báo của api.js là tiếng Anh; lang/vi.json có bản dịch cho nó.
+        this._showError(this._(res.error))
       } else {
         document.location.href = '/'
       }
@@ -572,7 +593,7 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
 
   async _submitOIDCLogin(providerId) {
     if (!providerId) {
-      this._showError('No OIDC provider specified')
+      this._showError('Chưa cấu hình nhà cung cấp đăng nhập.')
       return
     }
     const res = await apiOIDCLogin(providerId)
@@ -587,7 +608,7 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
 
     const userField = this.shadowRoot.getElementById('username')
     if (userField.value === '') {
-      this._showError('Username must not be empty.')
+      this._showError('Chưa nhập tên người dùng.')
       return
     }
     const res = await apiResetPassword(userField.value)

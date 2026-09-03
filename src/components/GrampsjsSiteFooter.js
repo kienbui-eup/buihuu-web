@@ -1,6 +1,13 @@
 import {LitElement, html, css} from 'lit'
 import {sharedStyles} from '../SharedStyles.js'
 import './GrampsjsHeritageMark.js'
+import {APP_NAME, PLACE_SHORT, PLACE_FULL, PLACE_NOW} from '../branding.js'
+
+// Ba bài giới thiệu, hướng dẫn và góp ý là bài viết trong cây (sửa được trên
+// trang), mã cố định để footer, menu tài khoản và trang chủ cùng trỏ tới.
+export const ARTICLE_GIOI_THIEU = '/blog/SBHNC19'
+export const ARTICLE_HUONG_DAN = '/blog/SBHNC17'
+export const ARTICLE_GOP_Y = '/blog/SBHNC18'
 
 class GrampsjsSiteFooter extends LitElement {
   static properties = {
@@ -116,35 +123,39 @@ class GrampsjsSiteFooter extends LitElement {
         <div class="identity">
           <grampsjs-heritage-mark></grampsjs-heritage-mark>
           <div>
-            <strong>Gia phả Bùi Hữu</strong>
-            <p>Gìn giữ cội nguồn<br />Kết nối cháu con</p>
+            <strong>${APP_NAME}</strong>
+            <p>
+              ${PLACE_SHORT}<br />Thủy tổ Bùi Công tự Huyền Nhân · 17 đời · 3
+              ngành, 5 chi
+            </p>
           </div>
         </div>
         <div>
-          <h2>Nhà thờ tổ</h2>
-          <p>
-            Thôn Chỉ Bồ · Thụy Trường<br />Thái Bình<br />Nơi con cháu hướng về
-            nguồn cội.
-          </p>
+          <h2>Nhà thờ tổ họ Bùi Hữu</h2>
+          <p>${PLACE_FULL}<br />(${PLACE_NOW})</p>
         </div>
         <div>
-          <h2>${this.public ? 'Nếp nhà còn mãi' : 'Tra cứu & tìm hiểu'}</h2>
+          <h2>${this.public ? 'Xem và góp ý' : 'Tra cứu và tìm hiểu'}</h2>
           ${this.public
             ? html`<p>
-                Mỗi thế hệ tiếp nối một câu chuyện.<br />Cùng lưu giữ cho những
-                đời sau.
+                Con cháu trong họ xem bằng mã dòng họ ở ô trên.<br />Thấy sai
+                tên, đời, ngày giỗ hay thiếu người, báo cho người giữ gia phả
+                của chi mình.
               </p>`
             : html`<nav aria-label="Điều hướng cuối trang">
                 <a href="/tree">Cây gia phả</a
                 ><a href="/people">Người trong họ</a
                 ><a href="/lich-gio">Lịch giỗ</a><a href="/blog">Bài viết</a
-                ><a href="/map">Bản đồ</a><a href="/search">Tìm kiếm</a>
+                ><a href="${ARTICLE_GIOI_THIEU}">Giới thiệu dòng họ</a
+                ><a href="${ARTICLE_HUONG_DAN}">Hướng dẫn tra cứu</a
+                ><a href="${ARTICLE_GOP_Y}">Góp ý, sửa sai</a
+                ><a href="/map">Bản đồ</a>
               </nav>`}
         </div>
       </div>
       <div class="base">
-        <span>Phả hệ Bùi Hữu · Thôn Chỉ Bồ</span
-        ><span>Cùng gìn giữ và tiếp nối</span>
+        <span>${APP_NAME} · Thôn Chỉ Bồ</span
+        ><span>Lời tựa: Bùi Hữu Đặng, 2020 · Số hóa 2026</span>
       </div>
     </footer>`
   }

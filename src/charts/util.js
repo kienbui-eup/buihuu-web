@@ -266,6 +266,83 @@ const ATTR_RANK = 'Ngôi vị'
 
 const ATTR_SENIOR_LINE = 'Dòng trưởng'
 
+// Thẻ ngành chi do pipeline gắn: "Ngành 2 - Chi 3", riêng ngành 1 không tách
+// chi nên chỉ có "Ngành 1".
+const BRANCH_TAG = /^Ngành\s*(\d+)(?:\s*[-–·,]\s*Chi\s*(\d+))?$/iu
+
+// Số đếm viết bằng chữ trong Ngôi vị: "Chi thứ ba", "Ngành hai".
+const NUMBER_WORDS = {
+  nhất: 1,
+  một: 1,
+  hai: 2,
+  nhì: 2,
+  ba: 3,
+  tư: 4,
+  bốn: 4,
+  năm: 5,
+  sáu: 6,
+  bảy: 7,
+  bẩy: 7,
+  tám: 8,
+  chín: 9,
+  mười: 10,
+}
+
+const tagNames = tags =>
+  (tags || [])
+    .map(tag => (typeof tag === 'string' ? tag : tag?.name) || '')
+    .map(name => name.normalize('NFC').trim())
+
+/*
+Ngành và chi đọc từ thẻ của một người: {branch, sub} hoặc null khi không có
+thẻ ngành chi (tám cụ đời 1-4 ở thân chung, hoặc dữ liệu chưa tải thẻ).
+*/
+export const getBranch = tags => {
+  const names = tagNames(tags)
+  for (let i = 0; i < names.length; i += 1) {
+    const match = names[i].match(BRANCH_TAG)
+    if (match) {
+      return {branch: Number(match[1]), sub: match[2] ? Number(match[2]) : null}
+    }
+  }
+  return null
+}
+
+export const formatBranch = branch => {
+  if (!branch) {
+    return ''
+  }
+  return branch.sub
+    ? `Ngành ${branch.branch} · Chi ${branch.sub}`
+    : `Ngành ${branch.branch}`
+}
+
+// "Chi thứ ba" → {kind: 'chi', n: 3}; "Chi phái 1", "Chi trưởng" → null vì
+// không phải một số thứ tự ngành/chi.
+const parseRank = rank => {
+  const match = rank
+    .normalize('NFC')
+    .trim()
+    .match(/^(ngành|chi)\s+(?:thứ\s+)?(\S+)$/iu)
+  if (!match) {
+    return null
+  }
+  const word = match[2].toLowerCase()
+  const n = /^\d+$/.test(word) ? Number(word) : NUMBER_WORDS[word]
+  return n ? {kind: match[1].toLowerCase(), n} : null
+}
+
+// Ngôi vị nói cùng một điều với thẻ ngành chi thì không in lần thứ hai.
+const rankRepeatsBranch = (rank, branch) => {
+  const parsed = parseRank(rank)
+  if (!parsed || !branch) {
+    return false
+  }
+  return parsed.kind === 'ngành'
+    ? parsed.n === branch.branch
+    : parsed.n === branch.sub
+}
+
 // Tên chữ đặt thêm, xếp theo thứ tự ưu tiên hiển thị: húy là tên thật nên đứng
 // trước, còn lại là tên chữ. "Tên trong bảng đối chiếu" cố ý không nằm ở đây -
 // nó là dị bản chép trong bảng gốc, để dành cho trang chi tiết.
@@ -298,21 +375,40 @@ export const getCourtesyName = person => {
   return ''
 }
 
-export const getLineage = person => {
+/*
+Dòng thế thứ của một người, cùng một cú pháp ở mọi chỗ:
+
+    Đời 6 · Ngành 2 · Chi 3 · Dòng trưởng · Chi phái 1
+
+Đời và ngành chi lấy từ thuộc tính "Đời" và thẻ "Ngành x - Chi y"; Dòng trưởng
+khi có thẻ hoặc thuộc tính cùng tên. Ngôi vị (chữ tự do trong sổ chi: "Chi thứ
+ba", "Ngành hai", "Chi phái 1") chỉ in khi nó nói thêm điều gì ngoài thẻ, vì
+"Chi thứ ba" cạnh "Chi 3" làm người đọc tưởng là hai thứ. Ngôi vị dạng mã số
+("3.4.1.1") chỉ có nghĩa với người chép sổ nên bỏ.
+
+Thẻ mặc định đọc từ person.extended.tags (trang người, cây); chỗ nào lấy thẻ
+từ nơi khác thì truyền vào tham số thứ hai.
+*/
+export const getLineage = (person, tags = person?.extended?.tags) => {
   const parts = []
   const generation = getGeneration(person)
   if (generation) {
     parts.push(`Đời ${generation}`)
   }
-  // Ngôi vị có khi là chữ ("Chi phái 1", "Ngành hai"), có khi là mã đánh số
-  // trong sổ chi ("3.4.1.1"). Mã số chỉ có nghĩa với người chép sổ.
-  const rank = attributeValue(person, ATTR_RANK)
-  if (/^(ngành|chi)\b/i.test(rank)) {
+  const branch = getBranch(tags)
+  const branchLabel = formatBranch(branch)
+  if (branchLabel) {
+    parts.push(branchLabel)
+  }
+  if (
+    tagNames(tags).includes(ATTR_SENIOR_LINE) ||
+    attributeValue(person, ATTR_SENIOR_LINE)
+  ) {
+    parts.push(ATTR_SENIOR_LINE)
+  }
+  const rank = attributeValue(person, ATTR_RANK).trim()
+  if (/^(ngành|chi)\b/iu.test(rank) && !rankRepeatsBranch(rank, branch)) {
     parts.push(rank)
-  } else if (attributeValue(person, ATTR_SENIOR_LINE)) {
-    // Dòng trưởng là ngôi thứ được nhắc tới nhiều nhất trong họ, nhưng nó chỉ
-    // vào được ô khi chỗ đó không phải dành cho tên chi.
-    parts.push('Dòng trưởng')
   }
   return parts.join(' · ')
 }
@@ -359,4 +455,37 @@ export const personCardLines = (person, profile, fullName) => {
     lines.push({text: lifespan, weight: '400', size: 12, muted: true})
   }
   return lines.slice(0, 4)
+}
+
+/*
+Giữ tâm và tỷ lệ của khung nhìn khi vùng vẽ đổi kích cỡ: xoay điện thoại, mở
+hay đóng menu bên, kéo cửa sổ. Không làm gì thì SVG co giãn theo viewBox cũ
+(preserveAspectRatio), người gốc trôi khỏi giữa và có dải trống hai bên.
+Tỷ lệ tính từ khung cũ: số điểm ảnh trên một đơn vị SVG là oldWidth / w.
+*/
+export const rescaleViewBox = (viewBox, oldWidth, oldHeight, width, height) => {
+  const parts = String(viewBox || '')
+    .trim()
+    .split(/[\s,]+/)
+    .map(Number)
+  if (
+    parts.length !== 4 ||
+    parts.some(Number.isNaN) ||
+    !(oldWidth > 0) ||
+    !(oldHeight > 0) ||
+    !(width > 0) ||
+    !(height > 0)
+  ) {
+    return viewBox
+  }
+  const [x, y, w, h] = parts
+  if (!(w > 0) || !(h > 0)) {
+    return viewBox
+  }
+  const pxPerUnit = oldWidth / w
+  const nextWidth = width / pxPerUnit
+  const nextHeight = height / pxPerUnit
+  return `${x + w / 2 - nextWidth / 2} ${
+    y + h / 2 - nextHeight / 2
+  } ${nextWidth} ${nextHeight}`
 }

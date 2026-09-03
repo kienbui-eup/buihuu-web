@@ -14,7 +14,7 @@ export class GrampsjsPillToggle extends GrampsjsAppStateMixin(LitElement) {
           display: inline-flex;
           border: 1px solid
             var(--md-sys-color-outline, var(--mdc-theme-primary));
-          border-radius: 999px;
+          border-radius: var(--grampsjs-frame-radius, 4px);
           margin: 12px 0;
         }
 
@@ -46,15 +46,17 @@ export class GrampsjsPillToggle extends GrampsjsAppStateMixin(LitElement) {
         }
 
         button:first-child {
-          border-radius: 999px 0 0 999px;
+          border-radius: var(--grampsjs-frame-radius, 4px) 0 0
+            var(--grampsjs-frame-radius, 4px);
         }
 
         button:last-child {
-          border-radius: 0 999px 999px 0;
+          border-radius: 0 var(--grampsjs-frame-radius, 4px)
+            var(--grampsjs-frame-radius, 4px) 0;
         }
 
         button:only-child {
-          border-radius: 999px;
+          border-radius: var(--grampsjs-frame-radius, 4px);
         }
 
         button:hover {

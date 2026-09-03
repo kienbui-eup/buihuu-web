@@ -56,15 +56,27 @@ export class GrampsjsTags extends GrampsjsAppStateMixin(LitElement) {
           --md-input-chip-pressed-icon-color: var(--tag-color);
         }
 
+        /* Thẻ chỉ xem đi theo theme của trang, màu riêng của thẻ thu về một
+           chấm nhỏ. Màu thẻ trong dữ liệu nhập là xanh dương mặc định, tô cả
+           viền và chữ thì chỏi với nền nâu, trông như nút lạ. */
         md-assist-chip {
-          --md-assist-chip-container-color: var(--tag-color-bg);
-          --md-assist-chip-label-text-color: var(--tag-color);
-          --md-assist-chip-outline-color: var(--tag-color);
-          --md-assist-chip-hover-label-text-color: var(--tag-color);
-          --md-assist-chip-hover-outline-color: var(--tag-color);
-          --md-assist-chip-focus-label-text-color: var(--tag-color);
-          --md-assist-chip-focus-outline-color: var(--tag-color);
-          --md-assist-chip-pressed-label-text-color: var(--tag-color);
+          --md-assist-chip-container-shape: var(--grampsjs-frame-radius, 4px);
+          --md-assist-chip-label-text-color: var(--md-sys-color-on-surface);
+          --md-assist-chip-outline-color: var(--md-sys-color-outline-variant);
+          --md-assist-chip-hover-label-text-color: var(--md-sys-color-primary);
+          --md-assist-chip-hover-outline-color: var(--md-sys-color-primary);
+          --md-assist-chip-focus-label-text-color: var(--md-sys-color-primary);
+          --md-assist-chip-focus-outline-color: var(--md-sys-color-primary);
+          --md-assist-chip-pressed-label-text-color: var(
+            --md-sys-color-primary
+          );
+          --md-assist-chip-icon-size: 12px;
+          --md-assist-chip-leading-space: 12px;
+        }
+
+        md-assist-chip svg[slot='icon'] {
+          width: 12px;
+          height: 12px;
         }
 
         md-icon-button {
@@ -116,13 +128,16 @@ export class GrampsjsTags extends GrampsjsAppStateMixin(LitElement) {
                       this._handleClear(obj.handle)
                     }}
                   ></md-input-chip>`
-                : html`<md-assist-chip
-                    label="${obj.name}"
-                    style="--tag-color:${colorToCss(
-                      obj.color,
-                      0.9
-                    )};--tag-color-bg:${colorToCss(obj.color, 0.12)}"
-                  ></md-assist-chip>`
+                : html`<md-assist-chip label="${obj.name}">
+                    <svg slot="icon" viewBox="0 0 12 12" aria-hidden="true">
+                      <circle
+                        cx="6"
+                        cy="6"
+                        r="4.5"
+                        fill="${colorToCss(obj.color, 0.85)}"
+                      />
+                    </svg>
+                  </md-assist-chip>`
             )}
         </md-chip-set>
         ${this.edit

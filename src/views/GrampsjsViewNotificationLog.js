@@ -161,8 +161,11 @@ export class GrampsjsViewNotificationLog extends GrampsjsView {
 
   renderContent() {
     return html`
-      <div class="header">
-        <h2>${this._('Notifications')}</h2>
+      <header class="page-heading with-actions">
+        <div>
+          <p class="section-label">${this._('Tools')}</p>
+          <h2>${this._('Notifications')}</h2>
+        </div>
         <md-outlined-button
           ?disabled="${this._notifications.length === 0}"
           @click="${() => this.appState?.clearNotifications()}"
@@ -176,7 +179,7 @@ export class GrampsjsViewNotificationLog extends GrampsjsView {
           ></grampsjs-icon>
           ${this._('Clear _All')}
         </md-outlined-button>
-      </div>
+      </header>
 
       ${this._runningTasks.length > 0
         ? html`

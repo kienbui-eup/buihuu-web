@@ -18,6 +18,11 @@ export class GrampsjsHomePerson extends GrampsjsAppStateMixin(LitElement) {
           margin: 0 0 15px;
           font-size: 24px;
         }
+        .lineage-note {
+          margin: 8px 0 0;
+          font-size: 14px;
+          color: var(--md-sys-color-on-surface-variant);
+        }
       `,
     ]
   }
@@ -49,7 +54,9 @@ export class GrampsjsHomePerson extends GrampsjsAppStateMixin(LitElement) {
               <grampsjs-search-result-list
                 large
                 linked
-                metaIcon="${mdiPencil}"
+                metaIcon="${this.appState.permissions?.canEdit
+                  ? mdiPencil
+                  : ''}"
                 .appState="${this.appState}"
                 ?loading="${!this.homePersonDetails?.handle}"
                 numberLoading="1"
@@ -59,6 +66,11 @@ export class GrampsjsHomePerson extends GrampsjsAppStateMixin(LitElement) {
                 @search-result:metaClicked="${this._handleEditClick}"
               >
               </grampsjs-search-result-list>
+              ${this.homePersonGrampsId === DEFAULT_HOME_PERSON
+                ? html`<p class="lineage-note">
+                    Từ đời 5 chia 3 ngành, nay đến đời 17
+                  </p>`
+                : ''}
             </div>
           `
         : html` <md-text-button trailing-icon @click="${this._handleEditClick}">

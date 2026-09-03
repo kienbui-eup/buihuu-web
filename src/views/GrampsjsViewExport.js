@@ -45,7 +45,10 @@ export class GrampsjsViewExport extends GrampsjsView {
 
   renderContent() {
     return html`
-      <h2>${this._('Export')}</h2>
+      <header class="page-heading">
+        <p class="section-label">${this._('Tools')}</p>
+        <h2>${this._('Export')}</h2>
+      </header>
       <h3>${this._('Export your family tree')}</h3>
 
       ${this.data.length === 0

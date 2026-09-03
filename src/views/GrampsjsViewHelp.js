@@ -46,7 +46,10 @@ export class GrampsjsViewHelp extends GrampsjsView {
   renderContent() {
     const docLang = this._getDocLang()
     return html`
-      <h2>${this._('Help')}</h2>
+      <header class="page-heading">
+        <p class="section-label">${this._('Tools')}</p>
+        <h2>${this._('Help')}</h2>
+      </header>
 
       <div>
         <h3>${this._('Documentation')}</h3>

@@ -37,7 +37,9 @@ Khoá là chuỗi tiếng Anh gốc, đúng như Gramps gửi lên trong `gramps
 */
 export const VI_GLOSSARY = {
   // Gia phả và các nhóm dữ liệu chính
-  'Family Tree': 'Gia phả',
+  // Mục điều hướng tới trang cây. Tên trang là "Phả hệ Bùi Hữu", nên trang cây
+  // gọi là "Cây gia phả" ở mọi chỗ để không lẫn với tên trang.
+  'Family Tree': 'Cây gia phả',
   'Family Tree name': 'Tên gia phả',
   'Family Tree Processing': 'Xử lý gia phả',
   'Import Family Tree': 'Nhập gia phả',
@@ -108,11 +110,27 @@ export const VI_GLOSSARY = {
   'Select an existing person': 'Chọn người đã có',
   Stepchild: 'Con riêng',
   Adopted: 'Con nuôi',
-  Married: 'Đã kết hôn',
+  // Loại quan hệ của một gia đình, không phải tình trạng hôn nhân của một người
+  Married: 'Vợ chồng',
   Unmarried: 'Chưa kết hôn',
 
-  // Tên người
-  'Birth Name': 'Tên khai sinh',
+  // Bộ lọc trang Người. Bản gốc dịch "without a known death date" thành
+  // "không có ngày sinh" (sai nghĩa) và "Adopted" thành "thừa nhận".
+  'People without a known birth date': 'Người chưa rõ ngày sinh',
+  'People without a known death date': 'Người chưa rõ ngày mất',
+  'Adopted people': 'Con nuôi',
+  'Disconnected people': 'Người chưa nối vào cây',
+  'People with an alternate name': 'Người có tên tự, hiệu',
+  'People with a nickname': 'Người có tên gọi khác',
+  'People with incomplete names': 'Người chưa đủ họ tên',
+  'People with no marriage records': 'Người chưa ghi hôn nhân',
+  'People with multiple marriage records': 'Người có nhiều đời vợ/chồng',
+  'People with children': 'Người có con',
+  'People with unknown gender': 'Người chưa rõ giới tính',
+
+  // Tên người. Tổ tiên thế kỷ 17 không có "tên khai sinh"; đây là tên chép
+  // trong sổ họ.
+  'Birth Name': 'Tên trong phả',
   'Married Name': 'Tên sau khi kết hôn',
   'Call name': 'Tên thường gọi',
   'Family nick name': 'Tên tục của dòng họ',
@@ -147,6 +165,10 @@ export const VI_GLOSSARY = {
   Informant: 'Người cung cấp thông tin',
   Witness: 'Người làm chứng',
 
+  // Chuỗi máy chủ trả nguyên tiếng Anh
+  Help: 'Hướng dẫn',
+  _Copy: 'Sao chép',
+
   // Sửa những chỗ bản gốc dịch sai nghĩa hoặc sai chính tả
   Language: 'Ngôn ngữ',
   Association: 'Người liên quan',
@@ -162,6 +184,10 @@ export const VI_GLOSSARY = {
   Redo: 'Làm lại',
   Refresh: 'Tải lại',
   'Sort by': 'Sắp xếp theo',
+  // Nút cạnh "Chọn" trên trang danh sách: viết hoa chữ đầu như nút bên cạnh.
+  filter: 'Bộ lọc',
+  // Dấu gạch dưới là phím tắt của Gramps; bỏ đi thì chuỗi gốc dính chữ.
+  'Clear _All': 'Xóa hết',
   OK: 'Đồng ý',
   Next: 'Tiếp',
   Preferences: 'Tùy chọn',
@@ -212,11 +238,125 @@ Chỉ chạy cho tiếng Việt; ngôn ngữ khác trả về nguyên bảng cũ
 */
 export function applyVietnameseGlossary(strings, lang) {
   if (lang !== 'vi') {
+    serverTermMap = new Map()
     return strings
   }
   const trimmed = {}
   Object.entries(strings).forEach(([key, value]) => {
     trimmed[key] = typeof value === 'string' ? value.trim() : value
   })
+  serverTermMap = new Map()
+  Object.entries(VI_GLOSSARY).forEach(([key, value]) => {
+    const server = trimmed[key]
+    if (typeof server === 'string' && server && server !== value) {
+      serverTermMap.set(server, value)
+    }
+  })
   return {...trimmed, ...VI_GLOSSARY}
+}
+
+/*
+Chữ máy chủ đã dịch sẵn → chữ của nhà.
+
+Ngoài bảng chuỗi, máy chủ còn dịch sẵn một số giá trị rồi gửi lên trong
+`profile` của từng đối tượng: loại sự kiện (`profile.events[].type`,
+`profile.type`), vai trò (`role`), loại quan hệ gia đình
+(`profile.relationship`). Những chỗ đó không đi qua `_()`, nên VI_GLOSSARY ở
+trên không với tới được: người xem vẫn thấy "Chết", "Chủ yếu", "Kêt hôn/ có
+gia đình" (lỗi chính tả của bản gốc). Bảng này đối chiếu ngược từ chữ máy chủ
+gửi lên. Ghi cả khoá tiếng Anh gốc để khi máy chủ chưa dịch (locale khác, hoặc
+kiểu tuỳ biến) vẫn ra đúng chữ.
+*/
+export const SERVER_VALUES = {
+  // Loại sự kiện
+  Chết: 'Mất',
+  Death: 'Mất',
+  'Lễ an táng': 'An táng',
+  Burial: 'An táng',
+  Cremation: 'Hỏa táng',
+  Birth: 'Sinh',
+  Marriage: 'Kết hôn',
+
+  // Vai trò trong sự kiện
+  'Chủ yếu': 'Chính',
+  Primary: 'Chính',
+  Family: 'Gia đình',
+
+  // Loại quan hệ của gia đình
+  'Kêt hôn/ có gia đình': 'Vợ chồng',
+  'Kết hôn/ có gia đình': 'Vợ chồng',
+  Married: 'Vợ chồng',
+  'Không kết hôn': 'Chưa kết hôn',
+  Unmarried: 'Chưa kết hôn',
+  'Bà con': 'Họ hàng',
+}
+
+/*
+Bảng động bổ sung cho SERVER_VALUES: dựng lại mỗi lần tải bản dịch máy chủ,
+từ những khoá VI_GLOSSARY có bản dịch máy chủ khác chữ của nhà ("Chết " →
+"Mất"). Nhờ đó những giá trị chưa kịp ghi vào bảng tĩnh (loại địa điểm, vai
+trò ít gặp) vẫn được đổi, miễn là khoá tiếng Anh có trong VI_GLOSSARY.
+*/
+let serverTermMap = new Map()
+
+/*
+Đổi một giá trị máy chủ đã dịch sang chữ của nhà. Cắt khoảng trắng hai đầu
+trước khi tra (bản dịch gốc để dấu cách cuối); tra bảng tĩnh trước, bảng động
+sau, không có ở đâu thì trả về nguyên chuỗi đã cắt.
+*/
+export function localizeServerValue(value) {
+  if (typeof value !== 'string') {
+    return value ?? ''
+  }
+  const trimmed = value.trim()
+  return SERVER_VALUES[trimmed] ?? serverTermMap.get(trimmed) ?? trimmed
+}
+
+// Tên cũ của localizeServerValue, giữ cho các chỗ đã gọi.
+export function localizeServerTerm(text) {
+  return localizeServerValue(text)
+}
+
+/*
+Khoá ngày/tháng âm lịch đọc từ một câu tiếng Việt: "Giỗ ngày 21 tháng 12",
+"21/12", "Giỗ ngày 15 tháng chạp" đều cho "21/12" hoặc "15/12". Không đọc được
+thì trả chuỗi rỗng.
+*/
+const LUNAR_MONTH_WORDS = {giêng: 1, chạp: 12}
+
+export function lunarDateKey(text) {
+  const lower = String(text ?? '')
+    .normalize('NFC')
+    .toLowerCase()
+  const match = lower.match(
+    /(\d{1,2})\s*(?:tháng|\/|-)\s*(\d{1,2}|giêng|chạp)(?!\d)/u
+  )
+  if (!match) {
+    return ''
+  }
+  const month = LUNAR_MONTH_WORDS[match[2]] ?? Number(match[2])
+  return `${Number(match[1])}/${month}`
+}
+
+/*
+Mô tả của sự kiện có nói gì hơn ngày của nó không.
+
+Pipeline ghi vào 344 sự kiện Mất cả mô tả "Giỗ ngày 21 tháng 12" lẫn ngày
+"Giỗ ngày 21 tháng 12 âm lịch", nên trang in cùng một điều hai lần. Trả về
+true khi mô tả chỉ gồm đúng ngày ấy (và vài chữ đệm "giỗ", "ngày", "âm lịch"),
+tức là in thêm cũng không cho người đọc biết gì mới. Mô tả có năm mất hay lời
+kể kèm theo thì vẫn là thông tin riêng, giữ nguyên.
+*/
+export function describesSameLunarDate(description, date) {
+  const key = lunarDateKey(description)
+  if (!key || key !== lunarDateKey(date)) {
+    return false
+  }
+  const residual = String(description)
+    .normalize('NFC')
+    .toLowerCase()
+    .replace(/(\d{1,2})\s*(?:tháng|\/|-)\s*(\d{1,2}|giêng|chạp)/u, '')
+    .replace(/giỗ|ngày|tháng|âm lịch|âl/gu, '')
+    .replace(/[\s.,;:()-]/gu, '')
+  return residual === ''
 }

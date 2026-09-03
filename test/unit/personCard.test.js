@@ -88,7 +88,7 @@ describe('getLineage', () => {
     expect(getLineage(person)).toBe('Đời 13 · Dòng trưởng')
   })
 
-  it('có tên chi thì ưu tiên tên chi, không nhồi cả hai vào một dòng', () => {
+  it('dòng trưởng đứng trước ngôi vị khi có cả hai', () => {
     const person = {
       attribute_list: [
         {type: 'Đời', value: '7'},
@@ -96,7 +96,59 @@ describe('getLineage', () => {
         {type: 'Dòng trưởng', value: 'N2C2'},
       ],
     }
-    expect(getLineage(person)).toBe('Đời 7 · Chi phái 1')
+    expect(getLineage(person)).toBe('Đời 7 · Dòng trưởng · Chi phái 1')
+  })
+
+  // Thẻ "Ngành x - Chi y" là nguồn chuẩn của ngành chi; Ngôi vị "Chi thứ ba"
+  // nói cùng một điều thì không in lần thứ hai.
+  it('đọc ngành chi từ thẻ, viết thống nhất một kiểu', () => {
+    const person = {
+      attribute_list: [
+        {type: 'Đời', value: '6'},
+        {type: 'Ngôi vị', value: 'Chi thứ ba'},
+      ],
+      extended: {tags: [{name: 'Đời 6'}, {name: 'Ngành 2 - Chi 3'}]},
+    }
+    expect(getLineage(person)).toBe('Đời 6 · Ngành 2 · Chi 3')
+  })
+
+  it('ngôi vị "Ngành hai" trùng với thẻ Ngành 2 thì bỏ', () => {
+    const person = {
+      attribute_list: [
+        {type: 'Đời', value: '5'},
+        {type: 'Ngôi vị', value: 'Ngành hai'},
+      ],
+      extended: {tags: [{name: 'Ngành 2 - Chi 1'}]},
+    }
+    expect(getLineage(person)).toBe('Đời 5 · Ngành 2 · Chi 1')
+  })
+
+  it('ngôi vị dưới cấp chi vẫn giữ, thẻ dòng trưởng thêm vào', () => {
+    const person = {
+      attribute_list: [
+        {type: 'Đời', value: '7'},
+        {type: 'Ngôi vị', value: 'Chi phái 1'},
+      ],
+      extended: {tags: [{name: 'Ngành 2 - Chi 3'}, {name: 'Dòng trưởng'}]},
+    }
+    expect(getLineage(person)).toBe(
+      'Đời 7 · Ngành 2 · Chi 3 · Dòng trưởng · Chi phái 1'
+    )
+  })
+
+  it('ngành không tách chi chỉ in ngành', () => {
+    const person = {
+      attribute_list: [{type: 'Đời', value: '6'}],
+      extended: {tags: [{name: 'Ngành 1'}]},
+    }
+    expect(getLineage(person)).toBe('Đời 6 · Ngành 1')
+  })
+
+  it('nhận thẻ từ tham số khi dữ liệu không mang extended.tags', () => {
+    const person = {attribute_list: [{type: 'Đời', value: '8'}]}
+    expect(getLineage(person, [{name: 'Ngành 3 - Chi 2'}])).toBe(
+      'Đời 8 · Ngành 3 · Chi 2'
+    )
   })
 
   it('không có đời thì không dựng dòng trống', () => {

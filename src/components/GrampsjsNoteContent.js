@@ -28,6 +28,15 @@ const PREVIEWABLE = new Set([
 const NO_HOVER =
   typeof window !== 'undefined' && window.matchMedia?.('(hover: none)').matches
 
+// Một đoạn là thơ khi mọi dòng (tách theo <br>) đều ngắn và không kết thúc
+// bằng dấu câu của văn xuôi.
+export function isManuscriptVerse(paragraph) {
+  return paragraph.innerHTML
+    .split(/<br\s*\/?>/i)
+    .map(line => line.replace(/<[^>]*>/g, '').trim())
+    .every(line => line.length < 90 && !/[.:;!?]$/.test(line))
+}
+
 export function _parseGrampsHref(href) {
   // Resolved link from link_format: /person/I0042 or person/I0042
   const m = href.match(/^\/?([a-z]+)\/([^/]+)$/)
@@ -109,6 +118,24 @@ export class GrampsjsNoteContent extends LitElement {
           font-style: italic;
         }
 
+        /* Câu thơ cuối lời tựa: căn giữa, không thụt, xếp sát nhau. */
+        .manuscript .manuscript-verse {
+          margin: 0 0 0.35em;
+          text-align: center;
+          text-indent: 0;
+          font-style: italic;
+        }
+
+        /* Dòng "PHẢ HỆ HỌ BÙI HỮU" đầu bản thảo: khung ngoài đã có tiêu đề thì
+           ẩn đi bằng thuộc tính hideTitle hoặc biến CSS từ phần tử cha. */
+        .manuscript .manuscript-title {
+          display: var(--grampsjs-manuscript-title-display, block);
+        }
+
+        .manuscript.hide-title .manuscript-title {
+          display: none;
+        }
+
         @media (max-width: 768px) {
           .note.manuscript {
             text-align: left;
@@ -142,6 +169,7 @@ export class GrampsjsNoteContent extends LitElement {
       framed: {type: Boolean},
       columns: {type: Boolean},
       manuscript: {type: Boolean},
+      hideTitle: {type: Boolean},
     }
   }
 
@@ -150,6 +178,7 @@ export class GrampsjsNoteContent extends LitElement {
     this.framed = false
     this.columns = false
     this.manuscript = false
+    this.hideTitle = false
   }
 
   render() {
@@ -161,6 +190,7 @@ export class GrampsjsNoteContent extends LitElement {
             note: true,
             columns: this.columns,
             manuscript: this.manuscript,
+            'hide-title': this.hideTitle,
           })}"
         ></div>
         <slot></slot>
@@ -174,21 +204,33 @@ export class GrampsjsNoteContent extends LitElement {
     this.columns = !this.manuscript && noteContent.textContent.length > 1000
     if (this.manuscript) {
       const paragraphs = [...noteContent.querySelectorAll('p')]
-      const opening = paragraphs.findIndex(
-        paragraph => paragraph.textContent.trim().length > 160
-      )
+      if (/^PHẢ HỆ/i.test(paragraphs[0]?.textContent.trim() || '')) {
+        paragraphs[0].classList.add('manuscript-title')
+      }
+      const isLong = paragraph => paragraph.textContent.trim().length > 160
+      const opening = paragraphs.findIndex(isLong)
       if (opening >= 0) {
         paragraphs.slice(0, opening).forEach(paragraph => {
           paragraph.classList.add('manuscript-preamble')
         })
         paragraphs[opening].classList.add('manuscript-opening')
         const closing = paragraphs[paragraphs.length - 1]
+        let end = paragraphs.length
         if (
           closing !== paragraphs[opening] &&
           closing.textContent.length < 160
         ) {
           closing.classList.add('manuscript-closing')
+          end -= 1
         }
+        // Thơ: các đoạn ngắn nằm sau đoạn văn dài cuối và trước chữ ký. Câu
+        // dẫn ("... rằng:") kết thúc bằng dấu nên không tính là thơ.
+        const lastLong =
+          paragraphs.length - 1 - [...paragraphs].reverse().findIndex(isLong)
+        paragraphs
+          .slice(lastLong + 1, end)
+          .filter(paragraph => isManuscriptVerse(paragraph))
+          .forEach(paragraph => paragraph.classList.add('manuscript-verse'))
       }
     }
     this._wireLinks(noteContent)

@@ -24,15 +24,27 @@ con dấu vuông có chi tiết gần viền.
 
 ## Ảnh nhà thờ tổ và bố cục ngày 03/09/2026
 
-`nha-tho-to-chi-bo.png` là ảnh nhà thờ họ Bùi Hữu, thôn Chỉ Bồ do người dùng
-cung cấp để thiết kế lại website. Giữ nguyên hình ảnh kiến trúc, chỉ thu nhỏ
-và nén bằng `pwsh -File branding/export-temple.ps1` thành JPEG 800/1600 px
-trong `images/`. Trình duyệt chọn kích thước theo màn hình bằng `srcset`.
-Ảnh gốc không đưa vào bản build.
+`nha-tho-to-chi-bo.png` là bản phục dựng nhà thờ họ Bùi Hữu, thôn Chỉ Bồ
+bằng ImageGen tích hợp, được người dùng chọn thay vào website. Bản này đã
+chỉnh mái ngói, bàn thờ, mặt sân và bậc thềm, thêm cổng vòm hồi trái với
+bậc xuống khu chuẩn bị lễ, cất giữ và rửa đồ có mái che riêng ở bên hông,
+đồng bộ tường khu phụ; thêm cổng bên phải và biển tên tiếng Việt. Khu chuẩn
+bị lễ không đặt trên hiên nhà thờ. Hai khu bên dựng theo mô tả; chữ Hán
+trên mái là bản đọc tạm từ ảnh bị che, chưa phải bản chép văn tự đã xác minh.
+
+Giữ nguyên bản được chọn, chỉ thu nhỏ và nén bằng
+`pwsh -File branding/export-temple.ps1` thành JPEG 800/1600 px trong `images/`
+(khoảng 87/293 KiB). Trình duyệt chọn kích thước bằng `srcset`. Đường dẫn ảnh
+trong `GrampsjsTempleHero.js` và metadata chia sẻ kèm `v=a19b7c8f` (tám ký tự
+đầu SHA-256 ảnh nguồn) để trình duyệt tải lại ảnh mới. Khi thay ảnh, cập nhật
+cùng phiên bản tại các vị trí này. Ảnh nguồn không đưa vào bản build.
+Prompt hiệu chỉnh khu phụ lưu tại [nha-tho-to-prompt.md](nha-tho-to-prompt.md).
 
 Trang chủ và đăng nhập dùng ảnh làm phần mở đầu. Bảng màu lấy từ gỗ sẫm,
 mái ngói đỏ, cột đá và hoành phi vàng; header, thẻ nội dung, popup, cây gia
 phả và footer dùng chung các biến `--heritage-*` trong `global.css`.
+Khung ảnh giữ tỷ lệ nguồn trên điện thoại và máy tính để không cắt mất
+hai cột đá, khu chuẩn bị lễ hoặc cổng bên phải.
 Ảnh chia sẻ liên kết là bản JPEG 1600 × 900; favicon và icon ứng dụng vẫn
 dùng ấn son để dễ nhận ra ở kích thước nhỏ.
 

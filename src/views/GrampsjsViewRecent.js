@@ -64,31 +64,37 @@ export class GrampsjsViewRecentObject extends GrampsjsView {
   }
 
   render() {
-    return html` <md-outlined-button
-        class="float-right"
-        @click="${this._handleClear}"
-        ?disabled=${this._data.length === 0}
-      >
-        <grampsjs-icon
-          slot="icon"
-          path="${mdiDeleteSweep}"
-          color="var(--md-outlined-button-label-text-color, var(--md-sys-color-primary))"
-          height="20"
-          width="20"
-        ></grampsjs-icon>
-        ${this._('Clear _All')}
-      </md-outlined-button>
-      <h2>${this._('Recently browsed objects')}</h2>
+    return html`<header class="page-heading with-actions">
+        <div>
+          <p class="section-label">${this._('Tools')}</p>
+          <h2>${this._('Recently browsed objects')}</h2>
+        </div>
+        <md-outlined-button
+          @click="${this._handleClear}"
+          ?disabled=${this._data.length === 0}
+        >
+          <grampsjs-icon
+            slot="icon"
+            path="${mdiDeleteSweep}"
+            color="var(--md-outlined-button-label-text-color, var(--md-sys-color-primary))"
+            height="20"
+            width="20"
+          ></grampsjs-icon>
+          ${this._('Clear _All')}
+        </md-outlined-button>
+      </header>
       ${this._data.length === 0
         ? html` <p>${this._('None')}.</p> `
         : html`
-            <grampsjs-search-result-list
-              .data="${this._searchResult.slice().reverse()}"
-              .appState="${this.appState}"
-              large
-              noSep
-              linked
-            ></grampsjs-search-result-list>
+            <div class="heritage-frame list-frame">
+              <grampsjs-search-result-list
+                .data="${this._searchResult.slice().reverse()}"
+                .appState="${this.appState}"
+                large
+                noSep
+                linked
+              ></grampsjs-search-result-list>
+            </div>
           `}`
   }
 

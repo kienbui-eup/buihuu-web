@@ -8,6 +8,38 @@ import './GrampsjsNoteContent.js'
 import './GrampsjsTimedelta.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 
+// Các dòng siêu dữ liệu ở đầu bài nghiên cứu và dòng tiêu đề của Lời tựa:
+// không phải nội dung, không đưa vào đoạn trích.
+const SKIP_PARAGRAPH = [
+  /^Chuyên mục:/i,
+  /^Bản nghiên cứu mở/i,
+  /^Cập nhật nội dung/i,
+  /^Mục lục chuyên mục/i,
+  /^Hiệu chỉnh nội dung/i,
+  /^PHẢ HỆ HỌ BÙI HỮU/i,
+]
+
+const SENTENCE_ENDS = ['. ', '… ', '! ', '? ']
+
+export function getBlogPreviewText(text, limit = 250) {
+  const paragraphs = (text || '')
+    .split(/\n\s*\n/)
+    .map(paragraph => paragraph.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .filter(paragraph => !SKIP_PARAGRAPH.some(re => re.test(paragraph)))
+  if (paragraphs.length === 0) return ''
+  // Đoạn ngắn thường là đề mục hay dòng địa danh; ưu tiên đoạn văn thật sự.
+  const opening = paragraphs.find(paragraph => paragraph.length >= 100)
+  const body = opening || paragraphs[0]
+  if (body.length <= limit) return body
+  const head = body.slice(0, limit + 1)
+  const boundary = Math.max(
+    ...SENTENCE_ENDS.map(mark => head.lastIndexOf(mark))
+  )
+  if (boundary >= limit / 3) return body.slice(0, boundary + 1)
+  return `${body.slice(0, limit).replace(/\s+\S*$/, '')}…`
+}
+
 export class GrampsjsBlogPostPreview extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
     return [
@@ -17,11 +49,11 @@ export class GrampsjsBlogPostPreview extends GrampsjsAppStateMixin(LitElement) {
           font-family: var(--grampsjs-heading-font-family);
           font-size: 20px;
           margin-bottom: 20px;
-          font-weight: 400;
+          font-weight: 500;
           margin-top: 0;
           line-height: 1.3em;
           min-height: 2.6em;
-          color: var(--grampsjs-body-font-color-75);
+          color: var(--heritage-ink);
         }
 
         #image {
@@ -32,18 +64,18 @@ export class GrampsjsBlogPostPreview extends GrampsjsAppStateMixin(LitElement) {
 
         #note {
           flex-grow: 1;
-          font-size: 17px;
-          font-weight: 300;
-          color: var(--grampsjs-body-font-color-70);
-          line-height: 1.45em;
+          font-size: 16px;
+          font-weight: 400;
+          color: var(--md-sys-color-on-surface-variant);
+          line-height: 1.6em;
         }
 
         #date {
-          color: var(--grampsjs-body-font-color-60);
-          font-size: 14px;
+          color: var(--md-sys-color-on-surface-variant);
+          font-size: 13px;
           letter-spacing: 0.02em;
-          margin: 2em 0;
-          font-weight: 250;
+          margin: 1.6em 0 0;
+          font-weight: 400;
         }
 
         .clear {
@@ -99,16 +131,7 @@ export class GrampsjsBlogPostPreview extends GrampsjsAppStateMixin(LitElement) {
   }
 
   getPreviewText() {
-    const all = this.data?.extended?.notes[0]?.text?.string
-    if (!all) {
-      return ''
-    }
-    const re = /[\s\S]{250}[^\s]{0,50}\s?/g
-    const match = all.match(re)
-    if (match === null) {
-      return all
-    }
-    return `${match[0]} ...`
+    return getBlogPreviewText(this.data?.extended?.notes?.[0]?.text?.string)
   }
 
   _renderImage() {

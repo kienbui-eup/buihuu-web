@@ -6,7 +6,7 @@ import '@material/mwc-list/mwc-list-item'
 
 import {GrampsjsChartBase} from './GrampsjsChartBase.js'
 import {RelationshipChart} from '../charts/RelationshipChart.js'
-import {getImageUrl} from '../charts/util.js'
+import {getImageUrl, rescaleViewBox} from '../charts/util.js'
 
 class GrampsjsRelationshipChart extends GrampsjsChartBase {
   static get styles() {
@@ -73,6 +73,19 @@ class GrampsjsRelationshipChart extends GrampsjsChartBase {
     ) {
       this._savedZoom = null
       this._savedViewBox = null
+    } else if (
+      this._savedViewBox &&
+      (changed.has('containerWidth') || changed.has('containerHeight'))
+    ) {
+      // Xoay điện thoại hay mở menu bên: giữ tâm và tỷ lệ, đổi khung theo
+      // kích cỡ mới thay vì để SVG co giãn theo khung cũ.
+      this._savedViewBox = rescaleViewBox(
+        this._savedViewBox,
+        changed.get('containerWidth') ?? this.containerWidth,
+        changed.get('containerHeight') ?? this.containerHeight,
+        this.containerWidth,
+        this.containerHeight
+      )
     }
     if (changed.has('scope') && this.scope === 'all')
       this._overviewPending = true
@@ -108,22 +121,72 @@ class GrampsjsRelationshipChart extends GrampsjsChartBase {
         } ${height / scale}`
       )
     } else if (!this._savedViewBox || this._focusPending) {
-      const card = svg.querySelector('.person.selected .personBox')
-      const matrix = svg.getScreenCTM()
-      if (card && matrix) {
-        const box = card.getBoundingClientRect()
-        const point = svg.createSVGPoint()
-        point.x = box.x + box.width / 2
-        point.y = box.y + box.height / 2
-        const center = point.matrixTransform(matrix.inverse())
-        svg.setAttribute(
-          'viewBox',
-          `${center.x - width / 2} ${center.y - height / 2} ${width} ${height}`
-        )
-      }
+      this._frameRootFamily(svg, width, height)
     }
     this._focusPending = false
     this._overviewPending = false
+  }
+
+  /*
+  Khung nhìn ban đầu theo lối đọc sổ chi: cặp vợ chồng gốc nằm trên cùng, con
+  cháu trải xuống dưới. Căn gốc vào chính giữa như trước thì nửa trên màn hình
+  trống và trên điện thoại ô vợ/chồng bị cắt mất bên phải.
+
+  Điện thoại thu nhỏ vừa đủ để cả cặp vợ chồng nằm trong màn hình, nhưng không
+  dưới 80% để chữ trong ô còn đọc được. Nếu người gốc nằm sâu trong biểu đồ
+  (phạm vi toàn nhánh có tổ tiên phía trên) thì đưa người gốc về giữa; biểu đồ
+  nhỏ hơn khung thì căn giữa theo chiều dọc.
+  */
+  _frameRootFamily(svg, width, height) {
+    const root = svg.querySelector('.person.selected .personBox')
+    const content = svg.querySelector('#chart-content')
+    const matrix = svg.getScreenCTM()
+    if (!root || !content || !matrix) return
+    const inverse = matrix.inverse()
+    const toUser = rect => {
+      const a = svg.createSVGPoint()
+      a.x = rect.left
+      a.y = rect.top
+      const b = svg.createSVGPoint()
+      b.x = rect.right
+      b.y = rect.bottom
+      const p = a.matrixTransform(inverse)
+      const q = b.matrixTransform(inverse)
+      return {x: p.x, y: p.y, width: q.x - p.x, height: q.y - p.y}
+    }
+    const rootBox = toUser(root.getBoundingClientRect())
+    const rootMidY = rootBox.y + rootBox.height / 2
+    let minX = rootBox.x
+    let maxX = rootBox.x + rootBox.width
+    svg.querySelectorAll('.person:not(.selected) .personBox').forEach(card => {
+      const box = toUser(card.getBoundingClientRect())
+      const sameRank =
+        Math.abs(box.y + box.height / 2 - rootMidY) < box.height / 2
+      const adjacent = Math.abs(box.x - rootBox.x) <= rootBox.width * 1.6
+      if (sameRank && adjacent) {
+        minX = Math.min(minX, box.x)
+        maxX = Math.max(maxX, box.x + box.width)
+      }
+    })
+    const margin = 24
+    const coupleWidth = maxX - minX
+    const scale =
+      coupleWidth + 2 * margin > width
+        ? Math.max(0.8, (width - 2 * margin) / coupleWidth)
+        : 1
+    const viewWidth = width / scale
+    const viewHeight = height / scale
+    const x = (minX + maxX) / 2 - viewWidth / 2
+    let y = rootBox.y - margin / scale
+    const contentBox = toUser(content.getBoundingClientRect())
+    if (contentBox.height + 2 * margin <= viewHeight) {
+      y = contentBox.y + contentBox.height / 2 - viewHeight / 2
+    } else if (rootBox.y - contentBox.y > viewHeight / 3) {
+      y = rootMidY - viewHeight / 2
+    } else {
+      y = contentBox.y - margin / scale
+    }
+    svg.setAttribute('viewBox', `${x} ${y} ${viewWidth} ${viewHeight}`)
   }
 
   renderChart() {

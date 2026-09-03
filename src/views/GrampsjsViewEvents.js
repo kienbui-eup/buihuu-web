@@ -9,6 +9,7 @@ import '../components/GrampsjsFilterYears.js'
 import '../components/GrampsjsFilterTags.js'
 import '../components/GrampsjsFilterPrivate.js'
 import {GrampsjsViewObjectsBase} from './GrampsjsViewObjectsBase.js'
+import {localizeServerTerm} from '../glossary.js'
 import {
   prettyTimeDiffTimestamp,
   filterCounts,
@@ -17,18 +18,38 @@ import {
 } from '../util.js'
 
 const PRIMARY_ROLES_EN = new Set(['Primary', 'Family'])
+const PRIMARY_ROLES_VI = new Set(['Chủ yếu', 'Chính', 'Gia đình'])
 
 export class GrampsjsViewEvents extends GrampsjsViewObjectsBase {
   constructor() {
     super()
+    // Mã Gramps và mốc sửa là dữ liệu của người biên tập; trên điện thoại mỗi
+    // cột là một khối chiếm chỗ, nên tắt sẵn và để bật lại ở nút cài đặt cột.
     this._columns = [
-      {name: 'Gramps ID', key: 'grampsId', sortKey: 'gramps_id'},
-      {name: 'Event Type', key: 'type', sortKey: 'type'},
+      {
+        name: 'Gramps ID',
+        key: 'grampsId',
+        sortKey: 'gramps_id',
+        defaultVisible: false,
+      },
+      // Đổi "Chết" thành "Mất" lúc vẽ, không phải lúc nhận dữ liệu: danh sách
+      // có thể về trước bản dịch máy chủ, khi đó bảng thuật ngữ còn trống.
+      {
+        name: 'Event Type',
+        key: 'type',
+        sortKey: 'type',
+        format: localizeServerTerm,
+      },
       {name: 'Date', key: 'date', sortKey: 'date'},
       {name: 'Place', key: 'place', sortKey: 'place'},
       {name: 'Participants', key: 'participants'},
       {name: 'Description', key: 'description', defaultVisible: false},
-      {name: 'Last changed', key: 'change', sortKey: 'change'},
+      {
+        name: 'Last changed',
+        key: 'change',
+        sortKey: 'change',
+        defaultVisible: false,
+      },
     ]
     this._objectsName = 'events'
   }
@@ -102,11 +123,18 @@ export class GrampsjsViewEvents extends GrampsjsViewObjectsBase {
   }
 
   _formatRow(row) {
+    // Vai trò về từ máy chủ đã dịch ("Chủ yếu"). So với cả ba dạng có thể gặp
+    // (khoá gốc, bản dịch máy chủ, chữ của nhà) vì dòng có thể được dựng trước
+    // khi bản dịch tải xong; không thì cột người tham gia trống với tiếng Việt.
+    const isPrimary = role =>
+      PRIMARY_ROLES_EN.has(role) ||
+      PRIMARY_ROLES_VI.has(role) ||
+      [this._('Primary'), this._('Family')].includes(localizeServerTerm(role))
     const people = (row?.profile?.participants?.people || [])
-      .filter(p => PRIMARY_ROLES_EN.has(p.role) || p.role === this._('Primary'))
+      .filter(p => isPrimary(p.role))
       .map(p => personTitleFromProfile(p.person))
     const families = (row?.profile?.participants?.families || [])
-      .filter(f => PRIMARY_ROLES_EN.has(f.role) || f.role === this._('Family'))
+      .filter(f => isPrimary(f.role))
       .map(f => familyTitleFromProfile(f.family))
     return {
       grampsId: row.gramps_id,

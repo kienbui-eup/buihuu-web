@@ -44,14 +44,6 @@ export class GrampsjsViewSearch extends GrampsjsView {
           max-width: 880px;
           margin: 0 auto;
         }
-        h2 {
-          margin: 0 0 8px;
-        }
-        .intro {
-          margin: 0 0 24px;
-          color: var(--md-sys-color-on-surface-variant);
-          font-size: 15px;
-        }
         label {
           display: block;
           font-weight: 500;
@@ -297,12 +289,6 @@ export class GrampsjsViewSearch extends GrampsjsView {
           :host {
             margin: 20px 16px;
           }
-          h2 {
-            font-size: 26px;
-          }
-          .intro {
-            margin-bottom: 20px;
-          }
           .search-box > grampsjs-icon {
             display: none;
           }
@@ -375,10 +361,13 @@ export class GrampsjsViewSearch extends GrampsjsView {
     const onlyPlaces = this._onlyPlaces()
     return html`
       <div class="search-page">
-        <h2>${this._('Search')}</h2>
-        <p class="intro">
-          Tìm người thân và những thông tin đã ghi trong gia phả.
-        </p>
+        <header class="page-heading">
+          <p class="section-label">Tra cứu gia phả</p>
+          <h2>${this._('Search')}</h2>
+          <p class="lead">
+            Tìm người thân và những thông tin đã ghi trong gia phả.
+          </p>
+        </header>
         <section class="search-panel" aria-label="Tìm trong gia phả">
           <form role="search" @submit="${this._handleSubmit}">
             <label for="search-field"

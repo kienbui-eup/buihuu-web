@@ -7,6 +7,26 @@ import './GrampsjsFormEditAttribute.js'
 import './GrampsjsIcon.js'
 
 import {fireEvent, linkUrls} from '../util.js'
+import {
+  ATTR_CONFIDENCE,
+  ATTR_SENIOR_LINE,
+  PERSON_HEADING_ATTRIBUTES,
+} from '../branding.js'
+
+/*
+Giá trị "Độ tin cậy" của pipeline là mã ba mức; người trong họ cần biết mã ấy
+nói gì về việc nối người này với cha.
+*/
+const CONFIDENCE_VALUES = {
+  gốc: 'thủy tổ, không có đời trước',
+  cao: 'phả ghi rõ cha',
+  vừa: 'cha suy từ vị trí trong sổ',
+}
+
+const CONFIDENCE_LABEL = 'Căn cứ nối cha'
+
+// Mã dòng trưởng "N2C1" của bảng hệ thống → "Ngành 2 - Chi 1", cùng chữ với thẻ.
+const SENIOR_LINE_CODE = /^N(\d+)C(\d+)$/i
 
 export class GrampsjsAttributes extends GrampsjsEditableList {
   static get styles() {
@@ -35,7 +55,54 @@ export class GrampsjsAttributes extends GrampsjsEditableList {
     this.attributeCategory = ''
   }
 
+  get _isPerson() {
+    return this.attributeCategory === 'people'
+  }
+
+  /*
+  Khi chỉ xem hồ sơ người, bỏ hai thuộc tính đã in ở đầu trang (Đời, Ngày
+  giỗ). Lúc sửa thì hiện đủ, vì nút sửa/xoá đi theo chỉ số trong data.
+  */
+  sortData(dataCopy) {
+    if (this.edit || !this._isPerson) {
+      return dataCopy
+    }
+    return dataCopy.filter(
+      attr => !PERSON_HEADING_ATTRIBUTES.includes((attr.type || '').trim())
+    )
+  }
+
+  /*
+  Nhãn và giá trị để in. Trên hồ sơ người, mã của pipeline được viết lại thành
+  chữ ("cao" → "phả ghi rõ cha", "N2C1" → "Ngành 2 - Chi 1"); lúc sửa thì giữ
+  nguyên giá trị thật để người sửa thấy đúng thứ đang lưu.
+  */
+  _describe(obj) {
+    const type = (obj.type || '').trim()
+    const raw = obj.value ?? ''
+    if (this.edit || !this._isPerson) {
+      return {label: this._(type), value: raw}
+    }
+    if (type === ATTR_CONFIDENCE) {
+      return {
+        label: CONFIDENCE_LABEL,
+        value: CONFIDENCE_VALUES[raw.trim().toLowerCase()] || raw,
+      }
+    }
+    if (type === ATTR_SENIOR_LINE) {
+      return {
+        label: this._(type),
+        value: raw.trim().replace(SENIOR_LINE_CODE, 'Ngành $1 - Chi $2'),
+      }
+    }
+    return {label: this._(type), value: raw}
+  }
+
   row(obj, i) {
+    const {label, value} = this._describe(obj)
+    const shown = value.length > 200 ? `${value.slice(0, 200)}…` : value
+    // Tên thuộc tính trước, giá trị sau ("Căn cứ nối cha: phả ghi rõ cha"),
+    // vì "cao / Độ tin cậy" đọc ngược không ra câu.
     return html`
       <md-list-item
         type="${this.edit ? 'button' : 'text'}"
@@ -46,17 +113,7 @@ export class GrampsjsAttributes extends GrampsjsEditableList {
           }
         }}"
       >
-        ${this.edit
-          ? obj.value.length > 200
-            ? `${obj.value.slice(0, 200)}…`
-            : obj.value
-          : linkUrls(
-              obj.value.length > 200
-                ? `${obj.value.slice(0, 200)}…`
-                : obj.value,
-              false
-            )}
-        <span slot="supporting-text">${this._(obj.type)}</span>
+        ${label}: ${this.edit ? shown : linkUrls(shown, false)}
         <grampsjs-icon
           slot="start"
           path="${mdiInformation}"

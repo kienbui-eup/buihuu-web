@@ -89,6 +89,15 @@ export function applyColors(
       '--md-sys-color-surface-container-highest',
       '#eee6d8'
     )
+    // Đường kẻ và nền chọn dùng chung sắc vàng trầm của nhà thờ tổ, để bảng,
+    // nút tonal, chip lọc và mục đang chọn cùng một ngữ pháp với trang chủ.
+    root.style.setProperty('--md-sys-color-outline-variant', '#d6cbb9')
+    root.style.setProperty('--md-sys-color-secondary-container', '#efe4cb')
+    root.style.setProperty('--md-sys-color-on-secondary-container', '#3d2d1c')
+  } else {
+    root.style.setProperty('--md-sys-color-outline-variant', '#64513d')
+    root.style.setProperty('--md-sys-color-secondary-container', '#4a3a26')
+    root.style.setProperty('--md-sys-color-on-secondary-container', '#f0e2c6')
   }
 
   // Action color for edit/add/delete buttons: clamp tone to a readable range

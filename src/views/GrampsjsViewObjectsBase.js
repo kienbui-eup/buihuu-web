@@ -25,6 +25,20 @@ import {GrampsjsStaleDataMixin} from '../mixins/GrampsjsStaleDataMixin.js'
 
 import {fireEvent} from '../util.js'
 
+// Đầu trang của từng danh sách: tiêu đề và đơn vị đếm, cùng nhịp với trang
+// chủ. "Người trong họ" là chữ dùng trên điều hướng chính, không dịch lại.
+const LIST_META = {
+  people: {title: 'Người trong họ', literal: true, unit: 'người'},
+  families: {title: 'Families', unit: 'gia đình'},
+  events: {title: 'Events', unit: 'sự kiện'},
+  places: {title: 'Places', unit: 'địa danh'},
+  sources: {title: 'Sources', unit: 'nguồn'},
+  citations: {title: 'Citations', unit: 'trích dẫn'},
+  repositories: {title: 'Repositories', unit: 'kho tư liệu'},
+  notes: {title: 'Notes', unit: 'ghi chú'},
+  media: {title: 'Media', unit: 'tư liệu'},
+}
+
 export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
   GrampsjsView
 ) {
@@ -33,7 +47,31 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
       super.styles,
       css`
         grampsjs-table {
-          margin-top: 20px;
+          margin-top: 16px;
+        }
+
+        /* Bộ lọc bên trái, nút đổi kiểu xem và chọn cột bên phải, cùng một hàng. */
+        .list-toolbar {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 8px 16px;
+        }
+
+        /* Ngưỡng 200px đủ để ở khổ 320px bộ lọc và bánh răng vẫn chung một hàng. */
+        .list-toolbar grampsjs-filters {
+          flex: 1 1 200px;
+          min-width: 0;
+        }
+
+        .list-tools {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          flex: 0 0 auto;
+          min-height: 40px;
+          margin-left: auto;
         }
 
         md-fab {
@@ -50,10 +88,6 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
 
         .hidden {
           display: none;
-        }
-
-        .viewbtn {
-          float: right;
         }
 
         .batch-toolbar {
@@ -176,9 +210,25 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
     return this._data.map(row => this._visibleColumns.map(col => row[col.key]))
   }
 
+  _renderHeading() {
+    const meta = LIST_META[this._objectsName]
+    if (!meta) return ''
+    // API trả tổng số ở dạng chuỗi, ép về số để có dấu ngăn nghìn.
+    const count = Number(this._totalCount)
+    return html`<header class="page-heading">
+      <p class="section-label">Tra cứu gia phả</p>
+      <h2>${meta.literal ? meta.title : this._(meta.title)}</h2>
+      ${Number.isFinite(count) && count >= 0
+        ? html`<p class="lead">
+            ${count.toLocaleString('vi-VN')} ${meta.unit}
+          </p>`
+        : ''}
+    </header>`
+  }
+
   renderContent() {
     return html`
-      ${this._renderFilter()}
+      ${this._renderHeading()} ${this._renderFilter()}
       ${this._selectionMode ? this._renderBatchToolbar() : ''}
       ${this.altView
         ? this.renderAltView()
@@ -222,52 +272,54 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
 
   _renderFilter() {
     return html`
-      <grampsjs-filters
-        @filters:changed="${this._handleFiltersChanged}"
-        .appState="${this.appState}"
-        objectType="${this._objectsName}"
-        ?errorGql="${this.error}"
-      >
-        ${this.appState.permissions.canEdit
-          ? this._selectionMode
-            ? html`<md-filled-button
-                slot="leading"
-                @click="${this._toggleSelectionMode}"
-              >
-                <grampsjs-icon
-                  slot="icon"
-                  .path="${mdiCheckboxMultipleOutline}"
-                  height="20"
-                  color="var(--md-filled-button-label-text-color, var(--mdc-theme-on-primary))"
-                ></grampsjs-icon>
-                ${this._('Select')}
-              </md-filled-button>`
-            : html`<md-outlined-button
-                slot="leading"
-                @click="${this._toggleSelectionMode}"
-              >
-                <grampsjs-icon
-                  slot="icon"
-                  .path="${mdiCheckboxMultipleOutline}"
-                  height="20"
-                  color="var(--mdc-theme-primary)"
-                ></grampsjs-icon>
-                ${this._('Select')}
-              </md-outlined-button>`
-          : ''}
-        ${this.renderFilters()}
-      </grampsjs-filters>
-      <div class="viewbtn">
-        ${this._renderViewButton()}
-        <md-icon-button
-          title="${this._('Columns')}"
-          aria-label="${this._('Columns')}"
-          @click="${() => {
-            this._showColumnPicker = true
-          }}"
+      <div class="list-toolbar">
+        <grampsjs-filters
+          @filters:changed="${this._handleFiltersChanged}"
+          .appState="${this.appState}"
+          objectType="${this._objectsName}"
+          ?errorGql="${this.error}"
         >
-          <grampsjs-icon .path="${mdiCog}" height="22"></grampsjs-icon>
-        </md-icon-button>
+          ${this.appState.permissions.canEdit
+            ? this._selectionMode
+              ? html`<md-filled-button
+                  slot="leading"
+                  @click="${this._toggleSelectionMode}"
+                >
+                  <grampsjs-icon
+                    slot="icon"
+                    .path="${mdiCheckboxMultipleOutline}"
+                    height="20"
+                    color="var(--md-filled-button-label-text-color, var(--mdc-theme-on-primary))"
+                  ></grampsjs-icon>
+                  ${this._('Select')}
+                </md-filled-button>`
+              : html`<md-outlined-button
+                  slot="leading"
+                  @click="${this._toggleSelectionMode}"
+                >
+                  <grampsjs-icon
+                    slot="icon"
+                    .path="${mdiCheckboxMultipleOutline}"
+                    height="20"
+                    color="var(--mdc-theme-primary)"
+                  ></grampsjs-icon>
+                  ${this._('Select')}
+                </md-outlined-button>`
+            : ''}
+          ${this.renderFilters()}
+        </grampsjs-filters>
+        <div class="list-tools">
+          ${this._renderViewButton()}
+          <md-icon-button
+            title="${this._('Columns')}"
+            aria-label="${this._('Columns')}"
+            @click="${() => {
+              this._showColumnPicker = true
+            }}"
+          >
+            <grampsjs-icon .path="${mdiCog}" height="22"></grampsjs-icon>
+          </md-icon-button>
+        </div>
       </div>
 
       <div

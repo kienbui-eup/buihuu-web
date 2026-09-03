@@ -8,6 +8,7 @@ import '@material/web/list/list-item.js'
 import '@material/web/divider/divider.js'
 
 import {objectDescription, fireEvent, objectDetail} from '../util.js'
+import {getLineage, getLifeSpan} from '../charts/util.js'
 import {renderIcon} from '../objectRender.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import './GrampsjsImg.js'
@@ -171,6 +172,19 @@ export class GrampsjsSearchResultList extends GrampsjsAppStateMixin(
         timestamp="${obj.object.change}"
         locale="${this.appState.i18n.lang}"
       ></grampsjs-timedelta>`
+    }
+    // Với người trong họ, dòng phụ là đời, ngành chi và ngày giỗ như trên ô
+    // cây; mã Gramps ("I0001") chỉ có nghĩa với người biên tập.
+    if (obj.object_type === 'person') {
+      const lineage = [
+        getLineage(obj.object),
+        getLifeSpan(obj.object, obj.object?.profile),
+      ]
+        .filter(Boolean)
+        .join(' · ')
+      if (lineage) {
+        return lineage
+      }
     }
     const detail = objectDetail(
       obj.object_type,

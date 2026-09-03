@@ -16,15 +16,27 @@ import '../components/GrampsjsFilterPrivate.js'
 export class GrampsjsViewFamilies extends GrampsjsViewObjectsBase {
   constructor() {
     super()
+    // Mã Gramps và mốc sửa là dữ liệu của người biên tập, tắt sẵn; số con là
+    // thứ người trong họ hay hỏi nên bật thay vào đó.
     this._columns = [
-      {name: 'Gramps ID', key: 'grampsId', sortKey: 'gramps_id'},
+      {
+        name: 'Gramps ID',
+        key: 'grampsId',
+        sortKey: 'gramps_id',
+        defaultVisible: false,
+      },
       {name: 'Father', key: 'father', sortKey: 'surname'},
       {name: 'Mother', key: 'mother'},
       {name: 'Relationship type:', key: 'relationship', defaultVisible: false},
       {name: 'Marriage Date', key: 'marriageDate'},
       {name: 'Marriage place', key: 'marriagePlace', defaultVisible: false},
-      {name: 'Number of Children', key: 'children', defaultVisible: false},
-      {name: 'Last changed', key: 'change', sortKey: 'change'},
+      {name: 'Number of Children', key: 'children'},
+      {
+        name: 'Last changed',
+        key: 'change',
+        sortKey: 'change',
+        defaultVisible: false,
+      },
     ]
     this._objectsName = 'families'
   }

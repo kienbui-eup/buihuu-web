@@ -47,7 +47,9 @@ export class GrampsjsFilters extends GrampsjsAppStateMixin(LitElement) {
             --grampsjs-mono-font-family
           );
           --md-outlined-text-field-input-text-size: 15px;
-          --md-outlined-text-field-container-shape: 8px;
+          --md-outlined-text-field-container-shape: var(
+            --grampsjs-frame-radius
+          );
           --md-outlined-text-field-top-space: 9px;
           --md-outlined-text-field-bottom-space: 9px;
           flex: 1;
@@ -61,7 +63,7 @@ export class GrampsjsFilters extends GrampsjsAppStateMixin(LitElement) {
         }
 
         #input-gql-container md-filled-button {
-          --md-filled-button-container-shape: 8px;
+          --md-filled-button-container-shape: var(--grampsjs-frame-radius);
         }
 
         .hidden {

@@ -7,13 +7,22 @@ export class GrampsjsObjectToc extends GrampsjsAppStateMixin(LitElement) {
     return [
       sharedStyles,
       css`
+        :host {
+          display: block;
+        }
+
+        /* Cột mục lục bên phải hồ sơ: cùng khung giấy và nhãn mục với các khối
+           khác; trong hộp thoại (không có tiêu đề) thì không đóng khung. */
+        .toc-frame {
+          padding: 16px 8px 8px;
+        }
+
         md-list.toc-list {
+          background: transparent;
           --md-list-item-label-text-weight: 400;
           --md-list-item-label-text-size: 14px;
-          --md-list-item-label-text-color: var(
-            --md-sys-color-on-surface-variant
-          );
-          --md-list-item-hover-state-layer-color: var(--md-sys-color-surface);
+          --md-list-item-label-text-color: var(--md-sys-color-on-surface);
+          --md-list-item-hover-state-layer-color: var(--heritage-gold);
           --md-list-item-top-space: 0px;
           --md-list-item-bottom-space: 0px;
           --md-list-item-one-line-container-height: 40px;
@@ -21,15 +30,16 @@ export class GrampsjsObjectToc extends GrampsjsAppStateMixin(LitElement) {
 
         md-list-item.active {
           --md-list-item-label-text-weight: 600;
+          --md-list-item-label-text-color: var(--md-sys-color-primary);
+          box-shadow: inset 3px 0 var(--heritage-gold);
         }
 
         h3 {
-          margin-left: 14px;
-          margin-bottom: 12px;
-          margin-top: 0;
-          font-size: 16px;
-          font-weight: 420;
-          opacity: 0.55;
+          margin: 0 16px 6px;
+          font: 500 11px/1.6 var(--grampsjs-body-font-family);
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: var(--md-sys-color-primary);
         }
       `,
     ]
@@ -57,21 +67,26 @@ export class GrampsjsObjectToc extends GrampsjsAppStateMixin(LitElement) {
     }
 
     return html`
-      ${this.heading ? html`<h3>${this._('Table Of Contents')}</h3>` : ''}
-      <md-list class="toc-list">
-        ${tabKeys.map(
-          key => html`
-            <md-list-item
-              type="button"
-              id="toc-item-${key}"
-              class="${key === this.activeSection ? 'active' : ''}"
-              @click="${e => this._handleItemClick(e, key)}"
-            >
-              ${this._(this.tabs[key].title)}
-            </md-list-item>
-          `
-        )}
-      </md-list>
+      <nav
+        class="${this.heading ? 'toc-frame heritage-frame' : ''}"
+        aria-label="${this._('Table Of Contents')}"
+      >
+        ${this.heading ? html`<h3>${this._('Table Of Contents')}</h3>` : ''}
+        <md-list class="toc-list">
+          ${tabKeys.map(
+            key => html`
+              <md-list-item
+                type="button"
+                id="toc-item-${key}"
+                class="${key === this.activeSection ? 'active' : ''}"
+                @click="${e => this._handleItemClick(e, key)}"
+              >
+                ${this._(this.tabs[key].title)}
+              </md-list-item>
+            `
+          )}
+        </md-list>
+      </nav>
     `
   }
 

@@ -142,7 +142,8 @@ export class GrampsjsRelationships extends GrampsjsAppStateMixin(LitElement) {
                   )}
                 </div>
               `
-            : ''
+            : '',
+          true
         )
       )}
       ${this.edit ? this._renderAddParentFamilyButtons() : ''}
@@ -392,11 +393,14 @@ export class GrampsjsRelationships extends GrampsjsAppStateMixin(LitElement) {
     })
   }
 
+  // excludeSelf: gia đình cha mẹ của người đang xem, danh sách con là "Anh chị
+  // em" nên bỏ chính người đó ra.
   _renderFamily(
     familyProfile,
     parentTitle,
     childrenTitle,
-    reorderButtons = ''
+    reorderButtons = '',
+    excludeSelf = false
   ) {
     if (Object.keys(familyProfile).length === 0) {
       return html``
@@ -412,7 +416,7 @@ export class GrampsjsRelationships extends GrampsjsAppStateMixin(LitElement) {
         highlightId="${this.grampsId}"
         .appState="${this.appState}"
       ></grampsjs-connected-parents>
-      ${this._renderChildren(familyProfile, childrenTitle)}
+      ${this._renderChildren(familyProfile, childrenTitle, excludeSelf)}
     `
   }
 
@@ -442,17 +446,30 @@ export class GrampsjsRelationships extends GrampsjsAppStateMixin(LitElement) {
     )
   }
 
-  _renderChildren(profile, childrenTitle) {
+  _renderChildren(profile, childrenTitle, excludeSelf = false) {
     const allFamilies = [...this.familyList, ...this.parentFamilyList]
     const [family] = allFamilies.filter(obj => obj.handle === profile.handle)
+    let children = profile?.children || []
+    let childRefs = family?.child_ref_list || []
+    if (excludeSelf) {
+      // Con của gia đình cha mẹ gồm cả người đang xem; in vào mục "Anh chị em"
+      // thì người đọc tưởng có hai người trùng tên. Lọc cả hai danh sách (hồ
+      // sơ và tham chiếu) theo cùng một người để chúng vẫn khớp chỉ số.
+      children = children.filter(
+        child =>
+          child.gramps_id !== this.grampsId &&
+          child.handle !== this.personHandle
+      )
+      childRefs = childRefs.filter(ref => ref.ref !== this.personHandle)
+    }
     return html`
-      ${profile?.children?.length
+      ${children.length
         ? html`
             <h4>${childrenTitle}</h4>
             <grampsjs-connected-children
               familyGrampsId="${profile.gramps_id}"
-              .profile=${profile?.children || []}
-              .data=${family.child_ref_list}
+              .profile=${children}
+              .data=${childRefs}
               .appState="${this.appState}"
               highlightId="${this.grampsId}"
             ></grampsjs-connected-children>

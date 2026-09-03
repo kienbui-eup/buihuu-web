@@ -45,17 +45,22 @@ export class GrampsjsViewBookmarks extends GrampsjsView {
   }
 
   render() {
-    return html` <h2>${this._('_Bookmarks')}</h2>
+    return html`<header class="page-heading">
+        <p class="section-label">${this._('Tools')}</p>
+        <h2>${this._('_Bookmarks')}</h2>
+      </header>
       ${this._data.length === 0
         ? html` <p>${this._('None')}.</p> `
         : html`
-            <grampsjs-search-result-list
-              .data="${this._searchResult.slice().reverse()}"
-              .appState="${this.appState}"
-              large
-              noSep
-              linked
-            ></grampsjs-search-result-list>
+            <div class="heritage-frame list-frame">
+              <grampsjs-search-result-list
+                .data="${this._searchResult.slice().reverse()}"
+                .appState="${this.appState}"
+                large
+                noSep
+                linked
+              ></grampsjs-search-result-list>
+            </div>
           `}`
   }
 

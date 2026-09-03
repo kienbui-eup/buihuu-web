@@ -1,7 +1,11 @@
 import {css, html} from 'lit'
 import {GrampsjsConnectedComponent} from './GrampsjsConnectedComponent.js'
+import {fireEvent} from '../util.js'
 import './GrampsjsHeritageMark.js'
 import './GrampsjsConnectedNote.js'
+
+const EXCERPT_LIMIT = 320
+const SENTENCE_ENDS = ['. ', '… ', '! ', '? ']
 
 export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
   static get properties() {
@@ -141,6 +145,19 @@ export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
           outline: 2px solid var(--md-sys-color-primary);
           outline-offset: 4px;
         }
+        .colophon {
+          max-width: 38rem;
+          margin: 10px auto 0;
+          font: 400 15px/1.55 var(--grampsjs-body-font-family);
+          color: var(--md-sys-color-on-surface-variant);
+          text-align: center;
+          overflow-wrap: anywhere;
+        }
+        .colophon a {
+          color: var(--md-sys-color-primary);
+          text-underline-offset: 3px;
+          white-space: nowrap;
+        }
         #preface-content {
           max-width: 38rem;
           margin-inline: auto;
@@ -149,6 +166,8 @@ export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
           --grampsjs-note-font-size: 23px;
           --grampsjs-note-line-height: 1.75em;
           --grampsjs-note-color: var(--preface-ink);
+          /* Khung đã có tiêu đề "Lời tựa", ẩn dòng "PHẢ HỆ HỌ BÙI HỮU" của bản chép. */
+          --grampsjs-manuscript-title-display: none;
         }
         @media (max-width: 768px) {
           .manuscript-page {
@@ -215,13 +234,36 @@ export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
     // Bỏ qua các dòng tiêu đề, địa danh ngắn để trích đoạn văn mở đầu.
     const opening = paragraphs.find(paragraph => paragraph.length > 160)
     const text = opening || paragraphs.join(' ')
-    if (text.length <= 260) return text
-    return `${text.slice(0, 260).replace(/\s+\S*$/, '')}…`
+    if (text.length <= EXCERPT_LIMIT) return text
+    // Cắt ở ranh giới câu cuối cùng trước giới hạn, không cắt giữa câu.
+    const head = text.slice(0, EXCERPT_LIMIT + 1)
+    const boundary = Math.max(
+      ...SENTENCE_ENDS.map(mark => head.lastIndexOf(mark))
+    )
+    if (boundary >= EXCERPT_LIMIT / 3) return text.slice(0, boundary + 1)
+    return `${text.slice(0, EXCERPT_LIMIT).replace(/\s+\S*$/, '')}…`
+  }
+
+  expand() {
+    this._expanded = true
+  }
+
+  _openBlogPost(event) {
+    if (
+      event.button ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return
+    event.preventDefault()
+    fireEvent(this, 'nav', {path: 'blog/S0001'})
   }
 
   _renderHeader() {
     return html`<header>
-      <p class="eyebrow">Bùi Hữu gia phả</p>
+      <p class="eyebrow">Bản chép năm Canh Tý (2020)</p>
       <div class="title-line">
         <h2>Lời tựa</h2>
         <grampsjs-heritage-mark></grampsjs-heritage-mark>
@@ -269,6 +311,14 @@ export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
           ${this._expanded ? 'Thu gọn lời tựa' : 'Đọc toàn bộ lời tựa'}
         </button>
       </div>
+      <p class="colophon">
+        Bản chép của cụ Bùi Hữu Đặng, tháng Giêng năm Canh Tý (2020). Địa danh
+        ghi theo thời điểm chép; từ 7/2025 xã Thụy Trường thuộc xã Đông Thụy
+        Anh, tỉnh Hưng Yên.
+        <a href="/blog/S0001" @click=${this._openBlogPost}
+          >Đọc tại trang Bài viết</a
+        >
+      </p>
       <div id="preface-content" ?hidden=${!this._expanded}>
         ${this._expanded
           ? html`<grampsjs-connected-note
