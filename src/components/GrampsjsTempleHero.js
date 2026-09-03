@@ -9,12 +9,16 @@ class GrampsjsTempleHero extends LitElement {
     welcome: {type: Boolean, reflect: true},
     // Số người trong gia phả, trang chủ truyền từ dbInfo; 0 là chưa biết.
     people: {type: Number},
+    // Trích đoạn mở đầu lời tựa, trang chủ truyền từ grampsjs-home-preface;
+    // rỗng khi chưa tải thì không hiện khối trích.
+    prefaceExcerpt: {type: String},
   }
 
   constructor() {
     super()
     this.welcome = false
     this.people = 0
+    this.prefaceExcerpt = ''
   }
 
   static styles = [
@@ -62,6 +66,29 @@ class GrampsjsTempleHero extends LitElement {
         line-height: 1.85;
         margin: 0;
       }
+      /* Lời tựa gộp vào phần giới thiệu: một trích đoạn mở đầu, chữ có chân
+         nghiêng như bản chép, tối đa bốn dòng; toàn văn mở bằng nút bên dưới. */
+      .preface {
+        max-width: 34em;
+        margin: 22px 0 0;
+        padding: 2px 0 2px 18px;
+        border-left: 2px solid #a58b62;
+      }
+      .preface p {
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin: 0;
+        font: italic 400 17px/1.7 'EB Garamond x', 'Noto Serif', serif;
+        color: #f1e6cf;
+      }
+      .preface footer {
+        margin-top: 8px;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: #e2c891;
+      }
       .actions {
         display: flex;
         flex-wrap: wrap;
@@ -93,9 +120,13 @@ class GrampsjsTempleHero extends LitElement {
       button {
         background: transparent;
         color: #fff9e9;
-        border: 0;
-        border-bottom: 1px solid #a58b62;
-        padding: 4px 0;
+        border: 1px solid #a58b62;
+        border-radius: 3px;
+        padding: 12px 20px;
+      }
+      button:hover {
+        border-color: #e2c891;
+        background: rgba(226, 200, 145, 0.12);
       }
       a:focus-visible,
       button:focus-visible {
@@ -183,6 +214,15 @@ class GrampsjsTempleHero extends LitElement {
           font-size: 14px;
           line-height: 1.75;
         }
+        .preface {
+          margin-top: 18px;
+          padding-left: 14px;
+        }
+        .preface p {
+          -webkit-line-clamp: 3;
+          font-size: 16px;
+          line-height: 1.65;
+        }
         .actions {
           margin-top: 20px;
         }
@@ -220,6 +260,12 @@ class GrampsjsTempleHero extends LitElement {
               để con cháu tra được một người thuộc chi nào, đời mấy, con ai, giỗ
               ngày nào.`}
         </p>
+        ${this.welcome || !this.prefaceExcerpt
+          ? ''
+          : html`<blockquote class="preface">
+              <p>${this.prefaceExcerpt}</p>
+              <footer>Trích lời tựa gia phả</footer>
+            </blockquote>`}
         ${this.welcome
           ? ''
           : html`<div class="actions">
@@ -233,10 +279,10 @@ class GrampsjsTempleHero extends LitElement {
       <figure>
         <picture
           ><img
-            src="images/nha-tho-to-1600.jpg?v=a19b7c8f"
+            src="images/nha-tho-to-1600.jpg?v=3afc632e"
             srcset="
-              images/nha-tho-to-800.jpg?v=a19b7c8f   800w,
-              images/nha-tho-to-1600.jpg?v=a19b7c8f 1600w
+              images/nha-tho-to-800.jpg?v=3afc632e   800w,
+              images/nha-tho-to-1600.jpg?v=3afc632e 1600w
             "
             sizes="(max-width: 760px) 100vw, 65vw"
             width="1672"

@@ -35,6 +35,8 @@ export class GrampsjsViewDashboard extends GrampsjsView {
       dbInfo: {type: Object},
       homePersonDetails: {type: Object},
       homePersonGrampsId: {type: String},
+      // Trích đoạn lời tựa do grampsjs-home-preface tải, đưa lên phần giới thiệu.
+      _prefaceExcerpt: {state: true},
     }
   }
 
@@ -43,6 +45,7 @@ export class GrampsjsViewDashboard extends GrampsjsView {
     this.dbInfo = {}
     this.homePersonDetails = {}
     this.homePersonGrampsId = ''
+    this._prefaceExcerpt = ''
   }
 
   static get styles() {
@@ -57,15 +60,10 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         .dashboard-content {
           padding: 0 var(--heritage-gutter) 40px;
         }
+        /* Lời tựa đã gộp vào phần giới thiệu phía trên (toàn văn mở bằng hộp
+           thoại), nên hàng này chỉ còn khối số liệu, trải hết chiều ngang. */
         .opening-grid {
-          display: grid;
-          grid-template-columns: minmax(0, 1.65fr) minmax(240px, 0.85fr);
-          gap: 32px;
-          margin: 40px 0 48px;
-          align-items: start;
-        }
-        #loi-tua {
-          scroll-margin-top: 88px;
+          margin: 32px 0 40px;
         }
         .family-ledger {
           border-top: 3px solid var(--heritage-gold);
@@ -82,22 +80,22 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           color: var(--heritage-ink);
         }
         .family-ledger > p:not(.section-label) {
+          max-width: 42em;
           font-size: 14px;
           line-height: 1.85;
           color: var(--md-sys-color-on-surface-variant);
         }
+        /* Bốn số liệu xếp thành một hàng trên màn hình rộng, hai cột trên
+           điện thoại; mỗi ô có đường kẻ trên như dòng sổ. Kiểu chung của trang
+           cho "dl div" trôi trái (float) nên phải tắt để lưới hoạt động. */
         .family-ledger dl {
-          margin: 24px 0;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+          gap: 0 32px;
+          margin: 22px 0 8px;
         }
-        /* Kiểu chung của trang cho "dl div" trôi trái (float) để xếp các cặp
-           nhãn/giá trị cạnh nhau; ở đây mỗi số liệu là một dòng kẻ trọn chiều
-           ngang, không trôi thì hai liên kết bên dưới mới không chen lên cạnh. */
         .family-ledger dl > div {
           float: none;
-          display: flex;
-          justify-content: space-between;
-          align-items: baseline;
-          gap: 16px;
           margin-right: 0;
           border-top: 1px solid var(--heritage-rule);
           padding: 14px 0;
@@ -390,9 +388,14 @@ export class GrampsjsViewDashboard extends GrampsjsView {
             padding-block: 18px;
           }
           .opening-grid {
-            grid-template-columns: minmax(0, 1fr);
-            gap: 24px;
-            margin: 24px 0 32px;
+            margin: 20px 0 28px;
+          }
+          .family-ledger {
+            padding: 22px 18px;
+          }
+          .family-ledger dl {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0 20px;
           }
           .dashboard-grid {
             grid-template-columns: minmax(0, 1fr);
@@ -453,13 +456,21 @@ export class GrampsjsViewDashboard extends GrampsjsView {
     return html`
       <grampsjs-temple-hero
         .people=${this.appState.dbInfo?.object_counts?.people ?? 0}
+        .prefaceExcerpt=${this._prefaceExcerpt}
         @preface:open=${() => {
-          const preface = this.renderRoot.querySelector('#loi-tua')
-          // Mở sẵn toàn văn để người bấm "Đọc lời tựa" không phải bấm lần nữa.
-          preface?.expand?.()
-          preface?.scrollIntoView({behavior: 'smooth', block: 'start'})
+          // Toàn văn lời tựa mở thành hộp thoại kiểu tờ sớ, không rời trang chủ.
+          this.renderRoot.querySelector('#loi-tua')?.open()
         }}
       ></grampsjs-temple-hero>
+      <grampsjs-home-preface
+        id="loi-tua"
+        .appState=${this.appState}
+        .noteHandle=${this.appState.treeConfig?.[TREE_CONFIG_HOME_PAGE_NOTE] ??
+        ''}
+        @preface:loaded=${event => {
+          this._prefaceExcerpt = event.detail?.excerpt ?? ''
+        }}
+      ></grampsjs-home-preface>
       <div class="dashboard-content">
         <div class="dashboard-actions">
           <form class="search" role="search" @submit="${this._searchPeople}">
@@ -510,13 +521,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           </p>
         </div>
         <div class="opening-grid">
-          <grampsjs-home-preface
-            id="loi-tua"
-            .appState=${this.appState}
-            .noteHandle=${this.appState.treeConfig?.[
-              TREE_CONFIG_HOME_PAGE_NOTE
-            ] ?? ''}
-          ></grampsjs-home-preface>
           <aside class="family-ledger" aria-label="Số liệu bản phả">
             <p class="section-label">Bản số hóa</p>
             <h2>Số liệu bản phả</h2>

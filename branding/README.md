@@ -28,14 +28,18 @@ con dấu vuông có chi tiết gần viền.
 bằng ImageGen tích hợp, được người dùng chọn thay vào website. Bản này đã
 chỉnh mái ngói, bàn thờ, mặt sân và bậc thềm, thêm cổng vòm hồi trái với
 bậc xuống khu chuẩn bị lễ, cất giữ và rửa đồ có mái che riêng ở bên hông,
-đồng bộ tường khu phụ; thêm cổng bên phải và biển tên tiếng Việt. Khu chuẩn
-bị lễ không đặt trên hiên nhà thờ. Hai khu bên dựng theo mô tả; chữ Hán
+đồng bộ tường khu phụ; giữ nguyên cặp cột trụ lớn theo ảnh chuẩn người dùng cung
+cấp. Hai tường hông chạy thẳng từ cột đá về phía sau; tam cấp cửa vòm nằm trong
+hành lang sau cột trái, không nối vòng vào bậc mặt tiền. Cổng phải rộng 4,5 m,
+cao 4 m nằm trong tuyến tường song song với lưng nhà thờ và cách nhà khoảng
+1,2 m, thông với sân qua lối bên hông. Khu chuẩn bị lễ không đặt trên
+hiên nhà thờ. Hai khu bên dựng theo mô tả; chữ Hán
 trên mái là bản đọc tạm từ ảnh bị che, chưa phải bản chép văn tự đã xác minh.
 
 Giữ nguyên bản được chọn, chỉ thu nhỏ và nén bằng
 `pwsh -File branding/export-temple.ps1` thành JPEG 800/1600 px trong `images/`
-(khoảng 87/293 KiB). Trình duyệt chọn kích thước bằng `srcset`. Đường dẫn ảnh
-trong `GrampsjsTempleHero.js` và metadata chia sẻ kèm `v=a19b7c8f` (tám ký tự
+(khoảng 79/284 KiB). Trình duyệt chọn kích thước bằng `srcset`. Đường dẫn ảnh
+trong `GrampsjsTempleHero.js` và metadata chia sẻ kèm `v=3afc632e` (tám ký tự
 đầu SHA-256 ảnh nguồn) để trình duyệt tải lại ảnh mới. Khi thay ảnh, cập nhật
 cùng phiên bản tại các vị trí này. Ảnh nguồn không đưa vào bản build.
 Prompt hiệu chỉnh khu phụ lưu tại [nha-tho-to-prompt.md](nha-tho-to-prompt.md).
