@@ -2,7 +2,9 @@
 People list view
 */
 
-import {html} from 'lit'
+import {html, css} from 'lit'
+import {mdiMagnify, mdiClose} from '@mdi/js'
+import '@material/web/iconbutton/icon-button.js'
 import {GrampsjsViewObjectsBase} from './GrampsjsViewObjectsBase.js'
 import {
   prettyTimeDiffTimestamp,
@@ -10,8 +12,12 @@ import {
   filterCounts,
   personProfileDisplayName,
   getAttributeValue,
+  debounce,
 } from '../util.js'
 import {ATTR_GENERATION, ATTR_DEATH_ANNIVERSARY} from '../branding.js'
+import {nameSearchRules, NAME_SEARCH_SLOT} from '../nameSearch.js'
+import '../components/GrampsjsIcon.js'
+import '../components/GrampsjsFilterTagMenu.js'
 import '../components/GrampsjsFilterYears.js'
 import '../components/GrampsjsFilterProperties.js'
 import '../components/GrampsjsFilterTags.js'
@@ -20,6 +26,11 @@ import '../components/GrampsjsFilterPrivate.js'
 // Nhãn ngành chi nhập từ nguồn có dạng "Ngành 2 - Chi 1", "Ngành 1"; các nhãn
 // khác (Đời, Dòng trưởng, Cần soát lại) không phải ngành chi.
 const BRANCH_TAG = /^(ngành|chi)\b/iu
+// Thẻ đời do pipeline gắn: "Đời 1" … "Đời 17".
+const GENERATION_TAG = /^Đời\s+(\d+)$/u
+// Khoá của hai ô lọc nhanh, để chip lọc không lặp lại và nút xoá gom được.
+const GENERATION_SLOT = 'quick:doi'
+const BRANCH_SLOT = 'quick:nganh'
 
 function _ageAtDeath(birthDate, deathDate) {
   if (!birthDate || !deathDate) return null
@@ -31,8 +42,85 @@ function _ageAtDeath(birthDate, deathDate) {
 }
 
 export class GrampsjsViewPeople extends GrampsjsViewObjectsBase {
+  static get styles() {
+    return [
+      super.styles,
+      css`
+        /* Ô tìm tên: cùng kiểu với ô tìm trên trang chủ, chữ 16px để iOS
+           không tự phóng to khi chạm vào. */
+        .name-search {
+          display: flex;
+          align-items: center;
+          flex: 1 1 auto;
+          gap: 8px;
+          box-sizing: border-box;
+          /* Không có min-width: 0 thì ở khổ 320px ô lấy bề rộng mặc định của
+             input và tràn đè lên nút bánh răng bên cạnh. */
+          min-width: 0;
+          max-width: 560px;
+          min-height: 48px;
+          padding: 0 4px 0 14px;
+          border: 1px solid var(--md-sys-color-outline);
+          border-radius: var(--grampsjs-frame-radius);
+          background: var(--grampsjs-frame-paper);
+        }
+
+        .name-search:focus-within {
+          border-color: var(--md-sys-color-primary);
+          outline: 2px solid var(--md-sys-color-primary);
+          outline-offset: -2px;
+        }
+
+        .name-search > grampsjs-icon {
+          flex-shrink: 0;
+        }
+
+        .name-search input {
+          flex: 1;
+          min-width: 0;
+          border: 0;
+          background: transparent;
+          color: var(--md-sys-color-on-surface);
+          font: inherit;
+          font-size: 16px;
+          outline: none;
+          text-overflow: ellipsis;
+        }
+
+        .name-search input::placeholder {
+          color: var(--md-sys-color-on-surface-variant);
+        }
+
+        .name-search input::-webkit-search-cancel-button {
+          -webkit-appearance: none;
+          appearance: none;
+        }
+
+        .name-search md-icon-button {
+          --md-icon-button-icon-size: 20px;
+          flex-shrink: 0;
+        }
+      `,
+    ]
+  }
+
+  static get properties() {
+    return {
+      _searchText: {type: String},
+      _tagNames: {type: Object},
+    }
+  }
+
   constructor() {
     super()
+    this._searchText = ''
+    this._appliedSearch = ''
+    this._tagNames = null
+    // Chờ người gõ ngừng tay rồi mới hỏi máy chủ; Enter thì hỏi ngay.
+    this._applySearchDebounced = debounce(() => this._applySearch(), 350)
+    // 40 người một trang: mỗi thẻ trên điện thoại chỉ hai dòng, cuộn một
+    // trang nhanh hơn bấm sang trang.
+    this._pageSize = 40
     // Họ và tên đi chung một cột: tiếng Việt đọc liền "Bùi Đức Anh", và trên
     // điện thoại mỗi cột tách ra là thêm một khối chiếm chỗ. Đời đứng ngay sau
     // tên vì đó là thứ người trong họ tra trước tiên. Gramps ID và mốc thay đổi
@@ -125,6 +213,100 @@ export class GrampsjsViewPeople extends GrampsjsViewObjectsBase {
     return [...new Set(names)].join(', ')
   }
 
+  get _allTagNames() {
+    return [...(this._tagNames?.values() ?? [])].map(name =>
+      name.normalize('NFC').trim()
+    )
+  }
+
+  // "Đời 1" … "Đời 17" theo số, không theo chữ (kẻo Đời 10 đứng sau Đời 1).
+  get _generationTags() {
+    return this._allTagNames
+      .filter(name => GENERATION_TAG.test(name))
+      .sort(
+        (a, b) =>
+          Number(a.match(GENERATION_TAG)[1]) -
+          Number(b.match(GENERATION_TAG)[1])
+      )
+  }
+
+  get _branchTags() {
+    return this._allTagNames
+      .filter(name => BRANCH_TAG.test(name))
+      .sort((a, b) => a.localeCompare(b, 'vi', {numeric: true}))
+  }
+
+  _renderQuickSearch() {
+    return html`
+      <div class="name-search">
+        <grampsjs-icon
+          .path="${mdiMagnify}"
+          height="22"
+          color="var(--md-sys-color-on-surface-variant)"
+        ></grampsjs-icon>
+        <input
+          id="people-search"
+          type="search"
+          autocomplete="off"
+          spellcheck="false"
+          enterkeyhint="search"
+          aria-label="${this._('Search by name')}"
+          placeholder="${this._('Type a name, accents optional')}"
+          .value="${this._searchText}"
+          @input="${this._handleSearchInput}"
+          @keydown="${this._handleSearchKey}"
+        />
+        ${this._searchText
+          ? html`<md-icon-button
+              aria-label="${this._('Clear search')}"
+              @click="${this._clearSearch}"
+            >
+              <grampsjs-icon .path="${mdiClose}" height="20"></grampsjs-icon>
+            </md-icon-button>`
+          : ''}
+      </div>
+    `
+  }
+
+  _handleSearchInput(e) {
+    this._searchText = e.target.value
+    this._applySearchDebounced()
+  }
+
+  _handleSearchKey(e) {
+    if (e.key === 'Enter') {
+      this._applySearch()
+    } else if (e.key === 'Escape') {
+      this._clearSearch()
+    }
+  }
+
+  _clearSearch() {
+    this._searchText = ''
+    this._applySearch()
+    this.renderRoot.querySelector('#people-search')?.focus()
+  }
+
+  _applySearch() {
+    const text = this._searchText.trim()
+    if (text === this._appliedSearch) {
+      return
+    }
+    this._appliedSearch = text
+    this._filters?.setRules(nameSearchRules(text), NAME_SEARCH_SLOT)
+  }
+
+  // Nút "Xóa tất cả bộ lọc" hay chuyển sang GQL bỏ quy tắc tìm tên mà không
+  // qua ô tìm, nên ô phải tự trống theo.
+  _handleFiltersChanged(e) {
+    const rules = e.detail?.filters ?? []
+    if (!rules.some(rule => rule._slot === NAME_SEARCH_SLOT)) {
+      this._searchText = ''
+      this._appliedSearch = ''
+    }
+    super._handleFiltersChanged(e)
+  }
+
   // eslint-disable-next-line class-methods-use-this
   _getItemPath(item) {
     return `person/${item.grampsId}`
@@ -157,6 +339,21 @@ export class GrampsjsViewPeople extends GrampsjsViewObjectsBase {
 
   renderFilters() {
     return html`
+      <grampsjs-filter-tag-menu
+        slot="leading"
+        label="${this._('Generation')}"
+        slotKey="${GENERATION_SLOT}"
+        .options="${this._generationTags}"
+        .appState="${this.appState}"
+      ></grampsjs-filter-tag-menu>
+      <grampsjs-filter-tag-menu
+        slot="leading"
+        label="${this._('Lineage branch')}"
+        slotKey="${BRANCH_SLOT}"
+        .options="${this._branchTags}"
+        .appState="${this.appState}"
+      ></grampsjs-filter-tag-menu>
+
       <grampsjs-filter-years
         .appState="${this.appState}"
         label="Birth year"

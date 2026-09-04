@@ -36,6 +36,12 @@ export class GrampsjsFilters extends GrampsjsAppStateMixin(LitElement) {
           --md-icon-button-icon-size: 20px;
         }
 
+        /* Nút xoá bộ lọc chỉ hiện khi có gì để xoá; lúc chưa lọc nó là một
+           biểu tượng xám chiếm chỗ trên hàng vốn đã chật ở điện thoại. */
+        #filteroff[disabled] {
+          display: none;
+        }
+
         #input-gql-container {
           align-items: center;
           margin: 20px 0 30px 0;
@@ -103,68 +109,69 @@ export class GrampsjsFilters extends GrampsjsAppStateMixin(LitElement) {
   }
 
   render() {
+    // Lắng nghe filter:changed ở lớp bọc ngoài để cả ô lọc đặt trong khe
+    // "leading" (các nút lọc nhanh) lẫn khe mặc định (bảng lọc mở rộng) đều
+    // tới được đây.
     return html`
-      <div class="filtermenu">
-        <slot name="leading"></slot>
-        ${this.open
-          ? html`
-              <md-filled-button @click="${this._handleFilterButton}">
-                <grampsjs-icon
-                  slot="icon"
-                  path="${mdiFilter}"
-                  color="var(--md-filled-button-label-text-color, var(--mdc-theme-on-primary))"
-                ></grampsjs-icon>
-                ${this._('filter')}
-              </md-filled-button>
-            `
-          : html`
-              <md-outlined-button @click="${this._handleFilterButton}">
-                <grampsjs-icon
-                  slot="icon"
-                  path="${mdiFilter}"
-                  color="var(--mdc-theme-primary)"
-                ></grampsjs-icon>
-                ${this._('filter')}
-              </md-outlined-button>
-            `}
-        <md-icon-button
-          id="filteroff"
-          aria-label="${this._('Clear all filters')}"
-          ?disabled="${this.filters.length === 0 && this.query === ''}"
-          @click="${this._handleFilterOff}"
-        >
-          <grampsjs-icon path="${mdiFilterOff}"></grampsjs-icon>
-        </md-icon-button>
-        <grampsjs-tooltip for="filteroff" .appState="${this.appState}"
-          >${this._('Clear all filters')}</grampsjs-tooltip
-        >
-        ${this._renderFilterChips()}
-      </div>
-      <div
-        id="filter-container"
-        class="${classMap({hidden: !this.open})}"
-        @filter:changed="${this._handleFilterChanged}"
-      >
-        <grampsjs-pill-toggle
-          .options="${[
-            {label: this._('simple'), value: false},
-            {label: 'GQL', value: true},
-          ]}"
-          .selected="${this.useGql}"
-          .appState="${this.appState}"
-          .ariaLabel="${this._('Filter mode')}"
-          @pill-toggle:change="${this._handleGqlClick}"
-        ></grampsjs-pill-toggle>
-
-        <div
-          class="${classMap({hidden: !this.useGql, flex: this.useGql})}"
-          id="input-gql-container"
-        >
-          ${this._renderGql()}
+      <div @filter:changed="${this._handleFilterChanged}">
+        <div class="filtermenu">
+          <slot name="leading"></slot>
+          ${this.open
+            ? html`
+                <md-filled-button @click="${this._handleFilterButton}">
+                  <grampsjs-icon
+                    slot="icon"
+                    path="${mdiFilter}"
+                    color="var(--md-filled-button-label-text-color, var(--mdc-theme-on-primary))"
+                  ></grampsjs-icon>
+                  ${this._('filter')}
+                </md-filled-button>
+              `
+            : html`
+                <md-outlined-button @click="${this._handleFilterButton}">
+                  <grampsjs-icon
+                    slot="icon"
+                    path="${mdiFilter}"
+                    color="var(--mdc-theme-primary)"
+                  ></grampsjs-icon>
+                  ${this._('filter')}
+                </md-outlined-button>
+              `}
+          <md-icon-button
+            id="filteroff"
+            aria-label="${this._('Clear all filters')}"
+            ?disabled="${this.filters.length === 0 && this.query === ''}"
+            @click="${this._handleFilterOff}"
+          >
+            <grampsjs-icon path="${mdiFilterOff}"></grampsjs-icon>
+          </md-icon-button>
+          <grampsjs-tooltip for="filteroff" .appState="${this.appState}"
+            >${this._('Clear all filters')}</grampsjs-tooltip
+          >
+          ${this._renderFilterChips()}
         </div>
+        <div id="filter-container" class="${classMap({hidden: !this.open})}">
+          <grampsjs-pill-toggle
+            .options="${[
+              {label: this._('simple'), value: false},
+              {label: 'GQL', value: true},
+            ]}"
+            .selected="${this.useGql}"
+            .appState="${this.appState}"
+            .ariaLabel="${this._('Filter mode')}"
+            @pill-toggle:change="${this._handleGqlClick}"
+          ></grampsjs-pill-toggle>
 
-        <div class="${classMap({hidden: this.useGql})}">
-          <slot></slot>
+          <div
+            class="${classMap({hidden: !this.useGql, flex: this.useGql})}"
+            id="input-gql-container"
+          >
+            ${this._renderGql()}
+          </div>
+
+          <div class="${classMap({hidden: this.useGql})}">
+            <slot></slot>
+          </div>
         </div>
       </div>
     `
@@ -180,14 +187,19 @@ export class GrampsjsFilters extends GrampsjsAppStateMixin(LitElement) {
         ></grampsjs-filter-chip>
       `
     }
-    return this.filters.map(
-      (rule, i) => html`
-        <grampsjs-filter-chip
-          label="${this.ruleToLabel(rule)}"
-          @filter-chip:clear="${() => this._clearFilter(i)}"
-        ></grampsjs-filter-chip>
-      `
-    )
+    // Quy tắc của các ô lọc nhanh (khoá bắt đầu bằng "quick:") tự hiện trạng
+    // thái trên ô của chúng, không lặp lại thành chip.
+    return this.filters
+      .map((rule, i) => ({rule, i}))
+      .filter(({rule}) => !String(rule._slot ?? '').startsWith('quick:'))
+      .map(
+        ({rule, i}) => html`
+          <grampsjs-filter-chip
+            label="${this.ruleToLabel(rule)}"
+            @filter-chip:clear="${() => this._clearFilter(i)}"
+          ></grampsjs-filter-chip>
+        `
+      )
   }
 
   _renderGql() {
@@ -276,13 +288,13 @@ export class GrampsjsFilters extends GrampsjsAppStateMixin(LitElement) {
     }
   }
 
+  // Gom con của mọi khe: khe "leading" đứng trước khe mặc định trong cây, nên
+  // querySelector('slot') trước đây chỉ thấy khe "leading" và các ô lọc trong
+  // bảng mở rộng không bao giờ nhận trạng thái mới (xoá bộ lọc rồi vẫn tích).
   get _slottedChildren() {
-    const slot = this.shadowRoot.querySelector('slot')
-    if (!slot) {
-      return []
-    }
-
-    return slot.assignedElements({flatten: true})
+    return [...this.shadowRoot.querySelectorAll('slot')].flatMap(slot =>
+      slot.assignedElements({flatten: true})
+    )
   }
 
   broadcastToChildren() {
@@ -311,14 +323,19 @@ export class GrampsjsFilters extends GrampsjsAppStateMixin(LitElement) {
     e.preventDefault()
     e.stopPropagation()
     const rules = e.detail?.filters?.rules
-    const replace = e.detail?.replace
+    if (rules) {
+      this.setRules(rules, e.detail?.replace)
+    }
+  }
+
+  // Thay các quy tắc mang khoá `replace` (hoặc cùng tên quy tắc, nếu không có
+  // khoá) bằng `rules`. View gọi thẳng khi ô lọc không nằm trong khe nào.
+  setRules(rules, replace) {
     const oldFilters = replace
       ? this.filters.filter(f => (f._slot ?? f.name) !== replace)
       : this.filters
-    if (rules) {
-      this.filters = [...oldFilters, ...rules]
-      this._fireFiltersChanged()
-    }
+    this.filters = [...oldFilters, ...rules]
+    this._fireFiltersChanged()
   }
 
   ruleToLabel(rule) {

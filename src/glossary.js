@@ -78,6 +78,7 @@ export const VI_GLOSSARY = {
   Burial: 'An táng',
   Cremation: 'Hỏa táng',
   'Cause Of Death': 'Nguyên nhân mất',
+  'Death year': 'Năm mất',
   Marriage: 'Kết hôn',
   'Alternate Marriage': 'Kết hôn lần khác',
   'Number of Marriages': 'Số lần kết hôn',

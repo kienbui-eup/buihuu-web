@@ -74,6 +74,28 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
           margin-left: auto;
         }
 
+        /* View có ô tìm nhanh: ô tìm đứng cùng hàng với nút công cụ, hàng bộ
+           lọc xuống dưới. */
+        .list-search {
+          display: flex;
+          flex: 1 1 200px;
+          min-width: 0;
+        }
+
+        .list-filters {
+          margin-top: 12px;
+        }
+
+        .empty-note {
+          margin: 24px 0 0;
+          padding: 20px 16px;
+          text-align: center;
+          font-size: 15px;
+          color: var(--md-sys-color-on-surface-variant);
+          border: 1px dashed var(--heritage-rule);
+          border-radius: var(--grampsjs-frame-radius);
+        }
+
         md-fab {
           position: fixed;
           bottom: 32px;
@@ -150,6 +172,7 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
       _showDeleteDialog: {type: Boolean},
       _showActionError: {type: Boolean},
       _currentAction: {type: String},
+      _filtered: {type: Boolean},
     }
   }
 
@@ -174,6 +197,7 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
     this._showDeleteDialog = false
     this._showActionError = false
     this._currentAction = ''
+    this._filtered = false
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -220,7 +244,8 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
       <h2>${meta.literal ? meta.title : this._(meta.title)}</h2>
       ${Number.isFinite(count) && count >= 0
         ? html`<p class="lead">
-            ${count.toLocaleString('vi-VN')} ${meta.unit}
+            ${this._filtered ? 'Tìm thấy ' : ''}${count.toLocaleString('vi-VN')}
+            ${meta.unit}
           </p>`
         : ''}
     </header>`
@@ -250,6 +275,9 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
               @selection:changed="${this._handleSelectionChanged}"
             ></grampsjs-table>
           `}
+      ${!this.loading && Number(this._totalCount) === 0
+        ? html`<p class="empty-note">${this._('No matching results')}</p>`
+        : ''}
       <grampsjs-pagination
         page="${this._page}"
         pages="${this._pages}"
@@ -270,44 +298,56 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
     return ''
   }
 
+  // View con trả về ô tìm nhanh để đặt lên hàng công cụ; mặc định không có.
+  // eslint-disable-next-line class-methods-use-this
+  _renderQuickSearch() {
+    return ''
+  }
+
   _renderFilter() {
+    const quickSearch = this._renderQuickSearch()
+    const filters = html`
+      <grampsjs-filters
+        @filters:changed="${this._handleFiltersChanged}"
+        .appState="${this.appState}"
+        objectType="${this._objectsName}"
+        ?errorGql="${this.error}"
+      >
+        ${this.appState.permissions.canEdit
+          ? this._selectionMode
+            ? html`<md-filled-button
+                slot="leading"
+                @click="${this._toggleSelectionMode}"
+              >
+                <grampsjs-icon
+                  slot="icon"
+                  .path="${mdiCheckboxMultipleOutline}"
+                  height="20"
+                  color="var(--md-filled-button-label-text-color, var(--mdc-theme-on-primary))"
+                ></grampsjs-icon>
+                ${this._('Select')}
+              </md-filled-button>`
+            : html`<md-outlined-button
+                slot="leading"
+                @click="${this._toggleSelectionMode}"
+              >
+                <grampsjs-icon
+                  slot="icon"
+                  .path="${mdiCheckboxMultipleOutline}"
+                  height="20"
+                  color="var(--mdc-theme-primary)"
+                ></grampsjs-icon>
+                ${this._('Select')}
+              </md-outlined-button>`
+          : ''}
+        ${this.renderFilters()}
+      </grampsjs-filters>
+    `
     return html`
       <div class="list-toolbar">
-        <grampsjs-filters
-          @filters:changed="${this._handleFiltersChanged}"
-          .appState="${this.appState}"
-          objectType="${this._objectsName}"
-          ?errorGql="${this.error}"
-        >
-          ${this.appState.permissions.canEdit
-            ? this._selectionMode
-              ? html`<md-filled-button
-                  slot="leading"
-                  @click="${this._toggleSelectionMode}"
-                >
-                  <grampsjs-icon
-                    slot="icon"
-                    .path="${mdiCheckboxMultipleOutline}"
-                    height="20"
-                    color="var(--md-filled-button-label-text-color, var(--mdc-theme-on-primary))"
-                  ></grampsjs-icon>
-                  ${this._('Select')}
-                </md-filled-button>`
-              : html`<md-outlined-button
-                  slot="leading"
-                  @click="${this._toggleSelectionMode}"
-                >
-                  <grampsjs-icon
-                    slot="icon"
-                    .path="${mdiCheckboxMultipleOutline}"
-                    height="20"
-                    color="var(--mdc-theme-primary)"
-                  ></grampsjs-icon>
-                  ${this._('Select')}
-                </md-outlined-button>`
-            : ''}
-          ${this.renderFilters()}
-        </grampsjs-filters>
+        ${quickSearch
+          ? html`<div class="list-search">${quickSearch}</div>`
+          : filters}
         <div class="list-tools">
           ${this._renderViewButton()}
           <md-icon-button
@@ -321,6 +361,7 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
           </md-icon-button>
         </div>
       </div>
+      ${quickSearch ? html`<div class="list-filters">${filters}</div>` : ''}
 
       <div
         class="${this.filterOpen ? '' : 'hidden'}"
@@ -709,6 +750,9 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
     this.loading = true
     const url = this._fullUrl
     this._oldUrl = url
+    this._filtered = Boolean(
+      this._filters?.filters?.length || this._filters?.query
+    )
     this.appState.apiGet(url).then(data => {
       this.loading = false
       if ('data' in data) {
