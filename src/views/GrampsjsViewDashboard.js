@@ -1,10 +1,5 @@
 import {html, css} from 'lit'
-import {mdiMagnify} from '@mdi/js'
-import {
-  fireEvent,
-  getAttributeValue,
-  personProfileDisplayName,
-} from '../util.js'
+import {getAttributeValue, personProfileDisplayName} from '../util.js'
 import {heritageFrameStyles} from '../HeritageStyles.js'
 import '../components/GrampsjsHomePreface.js'
 import '../components/GrampsjsTempleHero.js'
@@ -17,7 +12,6 @@ import {GrampsjsView} from './GrampsjsView.js'
 import './GrampsjsViewRecentlyChanged.js'
 import './GrampsjsViewRecentBlogPosts.js'
 import './GrampsjsViewDeathAnniversaries.js'
-import '../components/GrampsjsHomePerson.js'
 import '../components/GrampsjsImg.js'
 import {
   TREE_CONFIG_HOME_PAGE_NOTE,
@@ -142,13 +136,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           font: 400 12px/1.5 var(--grampsjs-body-font-family);
           color: var(--md-sys-color-on-surface-variant);
         }
-        .search-hint {
-          flex-basis: 100%;
-          margin: 0;
-          font-size: 13px;
-          line-height: 1.6;
-          color: var(--md-sys-color-on-surface-variant);
-        }
         .starter h3 {
           margin: 0 0 8px;
           font-size: 24px;
@@ -179,109 +166,14 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           color: var(--md-sys-color-on-surface-variant);
         }
         .section-heading {
-          border-top: 1px solid var(--heritage-rule);
-          padding-top: 28px;
+          border-top: 0;
+          padding-top: 36px;
           margin: 0 0 24px;
         }
         .section-heading h2 {
           font-size: 30px;
           margin: 0;
           color: var(--heritage-ink);
-        }
-        .dashboard-actions {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          gap: 12px 16px;
-          margin: 0;
-          padding: 24px 0;
-          border-bottom: 1px solid var(--heritage-rule);
-          container: home-actions / inline-size;
-        }
-        .search {
-          display: flex;
-          max-width: 720px;
-          flex: 1 1 360px;
-          min-width: 0;
-          gap: 12px;
-          align-items: center;
-          padding: 6px 6px 6px 18px;
-          margin: 0;
-          border: 1px solid var(--md-sys-color-outline);
-          border-radius: 4px;
-          background: var(--md-sys-color-surface);
-        }
-        .search:focus-within {
-          border-color: var(--md-sys-color-primary);
-          outline: 2px solid var(--md-sys-color-primary);
-          outline-offset: -2px;
-        }
-        .search input {
-          flex: 1;
-          min-width: 0;
-          border: 0;
-          background: transparent;
-          color: var(--md-sys-color-on-surface);
-          font: inherit;
-          font-size: 16px;
-          outline: none;
-          text-overflow: ellipsis;
-        }
-        .search > grampsjs-icon {
-          flex-shrink: 0;
-        }
-        .search input::placeholder {
-          color: var(--md-sys-color-on-surface-variant);
-        }
-        .search button {
-          display: grid;
-          place-items: center;
-          flex-shrink: 0;
-          min-height: 44px;
-          padding: 0 20px;
-          background: var(--md-sys-color-primary);
-          color: var(--md-sys-color-on-primary);
-          border: 0;
-          border-radius: 2px;
-          font: inherit;
-          font-size: 14px;
-          cursor: pointer;
-        }
-        .submit-icon {
-          display: none;
-        }
-        .search button:focus-visible {
-          outline: 2px solid var(--md-sys-color-primary);
-          outline-offset: 3px;
-        }
-        @container home-actions (max-width: 880px) {
-          .search {
-            flex: 1;
-            gap: 4px;
-            padding: 4px;
-          }
-          .search > grampsjs-icon,
-          .submit-label {
-            display: none;
-          }
-          .search input {
-            padding: 0 6px;
-          }
-          .search button {
-            width: 44px;
-            padding: 0;
-          }
-          .submit-icon {
-            display: block;
-          }
-        }
-        /* Khổ 320 px: ô nhập chỉ còn chừng 60 px nếu chen cùng hàng với ba lối
-           tắt, chữ gợi ý bị cắt còn "Gõ tê…". Cho ô tìm nguyên một hàng, ba lối
-           tắt xuống hàng dưới. Đặt sau khối 880 px để thắng quy tắc flex: 1. */
-        @container home-actions (max-width: 340px) {
-          .search {
-            flex: 1 1 100%;
-          }
         }
         .dashboard-grid {
           display: grid;
@@ -301,10 +193,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           border-top: 1px solid var(--md-sys-color-outline-variant);
           margin-top: 24px;
           padding-top: 12px;
-        }
-        .editor-tools grampsjs-home-person {
-          display: block;
-          margin: 8px 0 20px;
         }
         summary {
           cursor: pointer;
@@ -328,11 +216,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         }
 
         @media screen and (max-width: 768px) {
-          .dashboard-actions {
-            margin: 0;
-            gap: 8px;
-            padding-block: 18px;
-          }
           .opening-grid {
             margin: 28px 0 0;
           }
@@ -370,13 +253,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         ></grampsjs-img>
       </div>
     `
-  }
-
-  _searchPeople(event) {
-    event.preventDefault()
-    const query = this.renderRoot.querySelector('#home-search').value.trim()
-    if (query)
-      fireEvent(this, 'nav', {path: `search/${encodeURIComponent(query)}`})
   }
 
   // Người gốc đưa lên hero: mặc định là thủy tổ (DEFAULT_HOME_PERSON), ai đặt
@@ -418,34 +294,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         }}
       ></grampsjs-home-preface>
       <div class="dashboard-content">
-        <div class="dashboard-actions">
-          <form class="search" role="search" @submit="${this._searchPeople}">
-            <grampsjs-icon
-              path="${mdiMagnify}"
-              color="var(--md-sys-color-primary)"
-            ></grampsjs-icon>
-            <input
-              id="home-search"
-              type="search"
-              aria-label="Tìm người trong họ"
-              placeholder="Gõ tên người cần tìm"
-              enterkeyhint="search"
-              required
-            />
-            <button type="submit" aria-label="Tìm người trong họ" title="Tìm">
-              <span class="submit-label">Tìm</span>
-              <grampsjs-icon
-                class="submit-icon"
-                path="${mdiMagnify}"
-                color="currentColor"
-              ></grampsjs-icon>
-            </button>
-          </form>
-          <p class="search-hint">
-            Gõ một phần tên, có dấu hay không dấu đều được. Trùng tên thì xem
-            thêm Đời và ngành chi ghi cạnh tên.
-          </p>
-        </div>
         <div class="section-heading">
           <p class="section-label">Hôm nay trong họ</p>
           <h2>Giỗ sắp tới, thủy tổ và bài viết mới</h2>
@@ -541,13 +389,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           ? html`
               <details class="editor-tools">
                 <summary>Công cụ biên soạn gia phả</summary>
-                <grampsjs-home-person
-                  id="homeperson"
-                  .appState="${this.appState}"
-                  .homePersonDetails=${this.homePersonDetails}
-                  .homePersonGrampsId=${this.homePersonGrampsId}
-                >
-                </grampsjs-home-person>
                 <grampsjs-view-recently-changed
                   id="recently-changed"
                   .appState="${this.appState}"
