@@ -3,6 +3,7 @@ import {GrampsjsTreeChart} from './GrampsjsTreeChart.js'
 import {TreeChart} from '../charts/TreeChart.js'
 import {LineageIndex} from '../charts/lineage.js'
 import {fireEvent} from '../util.js'
+import {clampViewBox, overviewMinScale, svgUserCenter} from '../charts/util.js'
 
 export class GrampsjsLineageChart extends GrampsjsTreeChart {
   static get properties() {
@@ -14,13 +15,21 @@ export class GrampsjsLineageChart extends GrampsjsTreeChart {
       super.styles,
       css`
         .tree-selected .person-card {
-          stroke: #d32f2f;
+          stroke: var(--heritage-gold);
           stroke-width: 3px;
-          fill: color-mix(in srgb, #d32f2f 8%, var(--md-sys-color-surface));
           vector-effect: non-scaling-stroke;
+          filter: drop-shadow(0 5px 8px var(--grampsjs-body-font-color-30));
+        }
+        .tree-selected.person-living .person-card {
+          stroke: transparent;
+          filter: none;
+        }
+        .tree-selected.person-living .nameplate-body {
+          stroke: var(--heritage-gold);
+          stroke-width: 2.5px;
         }
         svg a:focus-visible .person-card {
-          stroke: #d32f2f;
+          stroke: var(--md-sys-color-primary);
           stroke-width: 3px;
         }
       `,
@@ -86,19 +95,37 @@ export class GrampsjsLineageChart extends GrampsjsTreeChart {
     if (!content || this.containerWidth <= 0 || this.containerHeight <= 0)
       return
     const box = content.getBBox()
-    const scale = Math.min(
+    const fit = Math.min(
       1,
       (this.containerWidth - 32) / box.width,
       (this.containerHeight - 32) / box.height
     )
+    // Vừa khung nhưng không thu quá tỷ lệ tối thiểu: cây 17 đời ép hết vào
+    // một màn hình thì chữ chỉ còn vài px. Khi phải cắt bớt, giữ người đang
+    // chọn (hoặc người gốc) trong khung.
+    const scale = Math.max(overviewMinScale(this.containerWidth), fit)
     const width = this.containerWidth / scale
     const height = this.containerHeight / scale
-    svg.setAttribute(
-      'viewBox',
-      `${box.x + box.width / 2 - width / 2} ${
-        box.y - 16 / scale
-      } ${width} ${height}`
-    )
+    let x = box.x + box.width / 2 - width / 2
+    let y = box.y - 16 / scale
+    if (scale > fit) {
+      const center = svgUserCenter(
+        svg,
+        svg.querySelector('.tree-selected .person-card') ||
+          svg.querySelector('.tree-root .person-card')
+      )
+      if (center) {
+        ;({x, y} = clampViewBox(
+          center.x - width / 2,
+          center.y - height / 2,
+          width,
+          height,
+          box,
+          16 / scale
+        ))
+      }
+    }
+    svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`)
     this._overview = false
     this._focused = true
   }

@@ -7,6 +7,7 @@ import '@material/mwc-list/mwc-list-item'
 import {TreeChart} from '../charts/TreeChart.js'
 import {GrampsjsChartBase} from './GrampsjsChartBase.js'
 import {
+  chartTopInset,
   getDescendantTree,
   getPersonByGrampsId,
   getTree,
@@ -24,15 +25,199 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
           text-decoration: none !important;
         }
 
-        .tree-root .person-card {
+        /* Nút "Xem hậu duệ" ở góc trên phải thẻ người có con cháu. */
+        svg .card-action-bg {
           fill: color-mix(
             in srgb,
-            var(--md-sys-color-primary) 6%,
+            var(--heritage-gold) 8%,
+            var(--md-sys-color-surface)
+          );
+          stroke: var(--heritage-gold);
+          stroke-width: 1.5px;
+          vector-effect: non-scaling-stroke;
+          filter: drop-shadow(0 1px 2px var(--grampsjs-body-font-color-30));
+          transition: fill 140ms;
+        }
+
+        svg .card-action-icon {
+          fill: var(--md-sys-color-primary);
+        }
+
+        svg .card-action:hover .card-action-bg {
+          fill: color-mix(
+            in srgb,
+            var(--heritage-gold) 30%,
+            var(--md-sys-color-surface)
+          );
+        }
+
+        svg .person-card {
+          stroke: var(--heritage-rule);
+          stroke-width: 1.25px;
+          vector-effect: non-scaling-stroke;
+          filter: drop-shadow(0 2px 2px var(--grampsjs-body-font-color-20));
+          transition: fill 140ms, stroke 140ms, filter 140ms;
+        }
+
+        svg .tree-link {
+          stroke: color-mix(
+            in srgb,
+            var(--heritage-gold) 58%,
+            var(--heritage-wood)
+          );
+          stroke-opacity: 0.72;
+        }
+
+        svg .person-living .person-card {
+          fill: transparent;
+          stroke: transparent;
+          filter: none;
+        }
+
+        svg .person-deceased {
+          --person-card-text: #fff8e9;
+          --person-card-muted-text: #e2cda7;
+        }
+
+        svg .person-deceased .person-card {
+          fill: color-mix(in srgb, var(--heritage-wood) 88%, #6d2d22);
+          stroke: var(--heritage-gold);
+          stroke-width: 1.5px;
+          filter: drop-shadow(0 4px 5px var(--grampsjs-body-font-color-30));
+        }
+
+        svg a:hover .person-card,
+        svg a:focus-visible .person-card {
+          stroke: var(--md-sys-color-primary);
+          filter: drop-shadow(0 4px 5px var(--grampsjs-body-font-color-30));
+        }
+
+        svg a.person-living:hover .person-card,
+        svg a.person-living:focus-visible .person-card {
+          fill: transparent;
+          stroke: transparent;
+          filter: none;
+        }
+
+        svg a.person-living:hover .nameplate-body,
+        svg a.person-living:focus-visible .nameplate-body {
+          fill: color-mix(
+            in srgb,
+            var(--heritage-gold) 20%,
             var(--md-sys-color-surface)
           );
           stroke: var(--md-sys-color-primary);
+        }
+
+        svg a.person-deceased:hover .person-card,
+        svg a.person-deceased:focus-visible .person-card {
+          fill: color-mix(in srgb, var(--heritage-wood) 76%, #8a4833);
+        }
+
+        svg .tree-link,
+        svg .memorial-inset,
+        svg .memorial-base,
+        svg .memorial-crest,
+        svg .nameplate-body,
+        svg .living-avatar-halo,
+        svg .living-avatar-icon,
+        svg .memorial-portrait * {
+          vector-effect: non-scaling-stroke;
+        }
+
+        svg .nameplate-body {
+          fill: color-mix(
+            in srgb,
+            var(--heritage-gold) 13%,
+            var(--md-sys-color-surface)
+          );
+          stroke: color-mix(
+            in srgb,
+            var(--heritage-gold) 58%,
+            var(--heritage-rule)
+          );
+          stroke-width: 1px;
+          filter: drop-shadow(0 2px 3px var(--grampsjs-body-font-color-15));
+          transition: fill 140ms, stroke 140ms;
+        }
+
+        svg .living-avatar-halo {
+          fill: color-mix(
+            in srgb,
+            var(--heritage-gold) 26%,
+            var(--md-sys-color-surface)
+          );
+          stroke: var(--heritage-gold);
+          stroke-width: 1.25px;
+          filter: drop-shadow(0 2px 3px var(--grampsjs-body-font-color-15));
+        }
+
+        svg .living-avatar-icon {
+          fill: var(--heritage-ink);
+          opacity: 0.78;
+        }
+
+        svg .living-avatar-photo {
+          stroke: color-mix(
+            in srgb,
+            var(--md-sys-color-surface) 88%,
+            var(--heritage-gold)
+          );
           stroke-width: 2px;
           vector-effect: non-scaling-stroke;
+          filter: drop-shadow(0 2px 3px var(--grampsjs-body-font-color-15));
+        }
+
+        svg .memorial-inset {
+          fill: none;
+          stroke: color-mix(in srgb, var(--heritage-gold) 72%, transparent);
+          stroke-width: 1px;
+        }
+
+        svg .memorial-base {
+          fill: none;
+          stroke: var(--heritage-gold);
+          stroke-width: 1.5px;
+        }
+
+        svg .memorial-crest {
+          fill: none;
+          stroke: color-mix(in srgb, var(--heritage-gold) 76%, transparent);
+          stroke-width: 1px;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+        }
+
+        svg .memorial-portrait-bg {
+          fill: color-mix(
+            in srgb,
+            var(--heritage-gold) 16%,
+            var(--heritage-wood)
+          );
+          stroke: var(--heritage-gold);
+          stroke-width: 1.25px;
+        }
+
+        svg .memorial-portrait-icon {
+          fill: #f1dfbd;
+          opacity: 0.96;
+        }
+
+        .tree-root .person-card {
+          stroke: var(--heritage-gold);
+          stroke-width: 2.5px;
+          vector-effect: non-scaling-stroke;
+          filter: drop-shadow(0 4px 6px var(--grampsjs-body-font-color-30));
+        }
+
+        .tree-root.person-living .person-card {
+          stroke: transparent;
+          filter: none;
+        }
+
+        .tree-root.person-living .nameplate-body {
+          stroke: var(--heritage-gold);
+          stroke-width: 2px;
         }
 
         mwc-menu {
@@ -189,7 +374,8 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
     if (fit < minScale) {
       const viewWidth = width / minScale
       const viewHeight = height / minScale
-      const rootMargin = 60 / minScale
+      // Chừa thêm chỗ cho ô chọn phạm vi nổi ở góc trên trái trên điện thoại.
+      const rootMargin = (60 + chartTopInset(width)) / minScale
       let y = -viewHeight / 2
       if (!this.ancestors) {
         y = -rootMargin

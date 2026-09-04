@@ -91,13 +91,17 @@ export class GrampsjsViewRelationshipChart extends GrampsjsViewTreeChart {
       this._scopeIndex.ids.get(this.grampsId)
     )
     const name = personProfileDisplayName(person?.profile)
-    let summary = `Hậu duệ của ${name}`
-    if (this.scope === 'all') summary = 'Toàn bộ gia phả'
+    // Chú thích trên biểu đồ đã mở đầu bằng tên phạm vi, nên phần này chỉ nói
+    // thêm số người và người gốc, không nhắc lại "Hậu duệ" hay "Toàn gia phả".
+    let summary = `Từ ${name}`
+    if (this.scope === 'all') summary = `Đang chọn ${name}`
     if (this.scope === 'branch')
       summary = selection.missingBranch
-        ? `Chưa có nhãn chi/ngành. Đang xem nhánh từ ${name}.`
-        : selection.label || 'Toàn nhánh đang xem'
-    return `${selection.people.length} người · ${summary}`
+        ? `Chưa có nhãn chi/ngành, đang xem nhánh từ ${name}`
+        : `${selection.label || 'Nhánh đang xem'} · Đang chọn ${name}`
+    return `${selection.people.length.toLocaleString(
+      'vi-VN'
+    )} người · ${summary}`
   }
 }
 

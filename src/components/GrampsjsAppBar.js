@@ -22,7 +22,6 @@ import '@material/web/button/text-button.js'
 import './GrampsjsAddMenu.js'
 import './GrampsjsSettingsMenu.js'
 import './GrampsjsTooltip.js'
-import './GrampsjsTreeToolbar.js'
 import './GrampsjsHeritageMark.js'
 import './GrampsjsHeaderNav.js'
 import {requestPageSearch, pageSearchLabel} from '../pageSearch.js'
@@ -81,27 +80,6 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
           position: sticky;
           top: 0;
           z-index: 21;
-        }
-        /* Trang Cây dùng đúng thanh đầu trang chung như mọi trang khác; công cụ
-           của cây nằm ở một hàng riêng ngay dưới, cùng màu, để đọc như một header
-           cao hơn chứ không phải một header thứ hai với thứ tự nút khác đi. */
-        .tools-row {
-          display: flex;
-          align-items: center;
-          padding: 4px 8px;
-          background: var(--grampsjs-top-app-bar-background-color);
-          color: var(--grampsjs-top-app-bar-font-color);
-          border-top: 1px solid #65503c;
-        }
-        .tools-row grampsjs-tree-toolbar {
-          flex: 1;
-          min-width: 0;
-          max-width: 760px;
-        }
-        @media (min-width: 992px) {
-          .tools-row {
-            padding: 4px 16px;
-          }
         }
         mwc-top-app-bar {
           --mdc-typography-headline6-font-family: var(
@@ -191,7 +169,6 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
       saving: {type: Boolean},
       saveComplete: {type: Boolean},
       treePage: {type: Boolean, attribute: 'tree-page', reflect: true},
-      _treeTools: {state: true},
     }
   }
 
@@ -205,13 +182,6 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
     this.saving = false
     this.saveComplete = false
     this.treePage = false
-    this._treeTools = null
-    this._boundTreeTools = event => {
-      this._treeTools = event.detail
-    }
-    this._boundTreeToolsClear = event => {
-      if (this._treeTools?.owner === event.detail.owner) this._treeTools = null
-    }
     this._boundEditOn = event => this._enableEditMode(event)
     this._boundEditOff = () => this._disableEditMode()
     this._boundCloseRequest = () => this._handleCloseRequest()
@@ -223,24 +193,7 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
 
   updated(changed) {
     super.updated(changed)
-    if (this.treePage && changed.has('treePage'))
-      fireEvent(window, 'tree:tools-request')
     fireEvent(window, 'page-header:resize')
-  }
-
-  // Hàng công cụ của trang Cây, dưới thanh đầu trang chung. Trạng thái do
-  // GrampsjsViewTreeChartBase đẩy lên qua sự kiện tree:tools.
-  _renderToolsRow() {
-    if (!this.treePage || this.editMode) return ''
-    return html`<div
-      class="tools-row"
-      role="region"
-      aria-label="Công cụ gia phả"
-    >
-      <grampsjs-tree-toolbar
-        .state=${this._treeTools || {view: 'main'}}
-      ></grampsjs-tree-toolbar>
-    </div>`
   }
 
   render() {
@@ -379,7 +332,7 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
               >
             `}
       </mwc-top-app-bar>
-      ${this._renderToolsRow()} ${this.editDialogContent}
+      ${this.editDialogContent}
     `
   }
 
@@ -480,8 +433,6 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
     window.addEventListener('edit-mode:on', this._boundEditOn)
     window.addEventListener('edit-mode:off', this._boundEditOff)
     window.addEventListener('edit-mode:close-request', this._boundCloseRequest)
-    window.addEventListener('tree:tools', this._boundTreeTools)
-    window.addEventListener('tree:tools-clear', this._boundTreeToolsClear)
     this._headerObserver = new ResizeObserver(() =>
       fireEvent(window, 'page-header:resize')
     )
@@ -496,8 +447,6 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
       'edit-mode:close-request',
       this._boundCloseRequest
     )
-    window.removeEventListener('tree:tools', this._boundTreeTools)
-    window.removeEventListener('tree:tools-clear', this._boundTreeToolsClear)
     this._headerObserver?.disconnect()
   }
 }

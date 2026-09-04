@@ -246,20 +246,16 @@ export const shortenMemorialDate = date =>
   (date || '').replace(/^Giỗ ngày\s+/, '')
 
 /*
-Nội dung một ô người trong biểu đồ, viết theo lối gia phả Việt Nam.
+Nội dung một ô người trong biểu đồ được rút gọn cho màn hình điện thoại:
 
-Bản gốc dành hai dòng đầu cho họ và tên riêng tách rời, kiểu "Smith / John".
-Trong một cuốn phả hệ một dòng họ thì dòng "Bùi" lặp lại ở mọi ô mà không nói
-thêm điều gì, còn người Việt vẫn đọc tên liền một mạch. Bốn dòng của ô vì thế
-được dùng lại cho những thứ cuốn phả hệ giấy vẫn ghi:
+    Bùi Hữu Văn            (họ tên đầy đủ, được xuống dòng nếu cần)
+    Đời 7 · Ngành 2 · Chi 1
+    Giỗ 4/3 ÂL             (người đã khuất)
+    Sinh 1982              (người còn sống)
 
-    Bùi Ánh                (họ tên đầy đủ)
-    tự Pháp Độ             (tên tự, húy, hiệu, thụy)
-    Đời 7 · Chi phái 1     (đời tính từ thuỷ tổ, ngành hoặc chi)
-    Giỗ 4/3 ÂL             (ngày giỗ âm lịch, hoặc năm sinh - năm mất)
-
-Dòng nào không có dữ liệu thì bỏ hẳn và các dòng sau dồn lên, vì ô trống trải
-đều khắp cây trông như lỗi hiển thị.
+Tên tự, húy, hiệu, thụy và ngôi vị vẫn có ở trang chi tiết. Chúng không nằm
+trong ô cây để người xem nhận ra đúng người nhanh hơn và không phải đọc dấu ba
+chấm do nội dung bị cắt.
 */
 
 const ATTR_RANK = 'Ngôi vị'
@@ -413,6 +409,21 @@ export const getLineage = (person, tags = person?.extended?.tags) => {
   return parts.join(' · ')
 }
 
+// Trên thẻ cây chỉ giữ thế hệ và nhánh chính thức từ thẻ dữ liệu. Ngôi vị và
+// Dòng trưởng dành cho trang chi tiết vì dễ làm một ô nhỏ thành quá tải.
+export const getCardLineage = (person, tags = person?.extended?.tags) => {
+  const parts = []
+  const generation = getGeneration(person)
+  if (generation) {
+    parts.push(`Đời ${generation}`)
+  }
+  const branch = formatBranch(getBranch(tags))
+  if (branch) {
+    parts.push(branch)
+  }
+  return parts.join(' · ')
+}
+
 const yearOf = date =>
   (date || '').match(/\b(1[5-9]\d{2}|20\d{2})\b/)?.[1] || ''
 
@@ -437,24 +448,98 @@ export const getLifeSpan = (person, profile) => {
   return deathDate ? `Giỗ ${shortenMemorialDate(deathDate)}` : ''
 }
 
+// Sổ thiếu ngày giỗ của nhiều cụ. Bốn đời đầu còn không có mốc tử dù chắc chắn
+// đã khuất; thống kê dự án cũng xác định các đời 1–12 là lớp lịch sử. Từ đời 13
+// trở đi chỉ dùng bài vị khi hồ sơ có mốc tử/ngày giỗ, tránh đoán với người gần.
+export const isDeceased = (person, profile = person?.profile) => {
+  const generation = Number(getGeneration(person))
+  return Boolean(
+    attributeValue(person, 'Ngày giỗ').trim() ||
+      String(profile?.death?.date || '').trim() ||
+      (Number.isInteger(generation) && generation > 0 && generation <= 12)
+  )
+}
+
+export const getCardDate = (person, profile = person?.profile) => {
+  if (isDeceased(person, profile)) {
+    const memorial = attributeValue(person, 'Ngày giỗ').trim()
+    if (memorial) {
+      return `Giỗ ${memorial} ÂL`
+    }
+    const deathDate = String(profile?.death?.date || '').trim()
+    return deathDate ? `Giỗ ${shortenMemorialDate(deathDate)}` : ''
+  }
+  const birth = yearOf(profile?.birth?.date)
+  return birth ? `Sinh ${birth}` : ''
+}
+
 export const personCardLines = (person, profile, fullName) => {
   const lines = []
   if (fullName) {
     lines.push({text: fullName, weight: '600', size: 14, muted: false})
   }
-  const courtesy = getCourtesyName(person)
-  if (courtesy) {
-    lines.push({text: courtesy, weight: '400', size: 12, muted: true})
-  }
-  const lineage = getLineage(person)
+  const lineage = getCardLineage(person)
   if (lineage) {
     lines.push({text: lineage, weight: '400', size: 12, muted: true})
   }
-  const lifespan = getLifeSpan(person, profile)
-  if (lifespan) {
-    lines.push({text: lifespan, weight: '400', size: 12, muted: true})
+  const date = getCardDate(person, profile)
+  if (date) {
+    lines.push({text: date, weight: '400', size: 12, muted: true})
   }
-  return lines.slice(0, 4)
+  return lines
+}
+
+const estimatedTextWidth = (text, size) =>
+  Array.from(text).reduce(
+    (width, character) => width + (character === ' ' ? 0.32 : 0.56) * size,
+    0
+  )
+
+const balancedNameParts = text => {
+  const words = text.trim().split(/\s+/)
+  if (words.length < 2) {
+    return null
+  }
+  let best = null
+  for (let index = 1; index < words.length; index += 1) {
+    const first = words.slice(0, index).join(' ')
+    const second = words.slice(index).join(' ')
+    const difference = Math.abs(first.length - second.length)
+    if (!best || difference < best.difference) {
+      best = {first, second, difference}
+    }
+  }
+  return [best.first, best.second]
+}
+
+// Không cắt nội dung bằng dấu ba chấm. Tên dài được chia thành hai dòng cân
+// đối; từng dòng chỉ co chữ vừa đủ để luôn nằm trọn trong bảng tên.
+export const fitPersonCardLines = (lines, maxWidth, wrapName = true) => {
+  if (!(maxWidth > 0)) {
+    return lines
+  }
+  const fitted = lines.map(line => ({...line}))
+  const name = fitted[0]
+  if (wrapName && name && estimatedTextWidth(name.text, name.size) > maxWidth) {
+    const parts = balancedNameParts(name.text)
+    if (parts) {
+      fitted.splice(
+        0,
+        1,
+        {...name, text: parts[0], size: 13},
+        {...name, text: parts[1], size: 13}
+      )
+    }
+  }
+  return fitted.map(line => {
+    const width = estimatedTextWidth(line.text, line.size)
+    const minimum = line.weight === '600' ? 10.5 : 10
+    const size =
+      width > maxWidth
+        ? Math.max(minimum, (line.size * maxWidth) / width)
+        : line.size
+    return {...line, size}
+  })
 }
 
 /*
@@ -488,4 +573,50 @@ export const rescaleViewBox = (viewBox, oldWidth, oldHeight, width, height) => {
   return `${x + w / 2 - nextWidth / 2} ${
     y + h / 2 - nextHeight / 2
   } ${nextWidth} ${nextHeight}`
+}
+
+// Người có ít nhất một con trong gia đình mình đứng làm cha hoặc mẹ. Dùng để
+// quyết định thẻ nào có nút "Xem hậu duệ".
+export const personHasChildren = person =>
+  (person?.extended?.families || []).some(
+    family =>
+      [family.father_handle, family.mother_handle].includes(person.handle) &&
+      (family.child_ref_list || []).length > 0
+  )
+
+/*
+Tỷ lệ thu nhỏ tối thiểu khi bấm Vừa khung. Cây hơn nghìn người ép hết vào một
+màn hình thì thẻ chỉ còn vài px, không nhìn ra ai; thu tới mức này thì vẫn
+thấy được hình dáng cây và đọc lờ mờ tên, còn xa hơn thì người xem tự chụm.
+*/
+export const overviewMinScale = width => (width <= 600 ? 0.6 : 0.5)
+
+// Trên điện thoại ô chọn phạm vi nổi ở góc trên trái vùng vẽ; khung nhìn ban
+// đầu lùi xuống chừng ấy điểm ảnh để thẻ đầu tiên không nằm dưới ô đó.
+export const chartTopInset = width => (width <= 600 ? 52 : 0)
+
+// Tâm của một phần tử SVG trong hệ toạ độ viewBox của svg cha, tính từ vị trí
+// thật trên màn hình nên đúng bất kể phần tử nằm trong bao nhiêu lớp transform.
+export const svgUserCenter = (svg, element) => {
+  const matrix = svg?.getScreenCTM?.()
+  if (!element || !matrix) {
+    return null
+  }
+  const rect = element.getBoundingClientRect()
+  const point = svg.createSVGPoint()
+  point.x = rect.x + rect.width / 2
+  point.y = rect.y + rect.height / 2
+  const user = point.matrixTransform(matrix.inverse())
+  return {x: user.x, y: user.y}
+}
+
+// Giữ khung nhìn không trôi ra ngoài nội dung: nội dung rộng hơn khung thì kẹp
+// trong biên, hẹp hơn thì căn giữa.
+export const clampViewBox = (x, y, width, height, box, margin = 16) => {
+  const clamp = (value, low, high) =>
+    high < low ? (low + high) / 2 : Math.min(Math.max(value, low), high)
+  return {
+    x: clamp(x, box.x - margin, box.x + box.width + margin - width),
+    y: clamp(y, box.y - margin, box.y + box.height + margin - height),
+  }
 }

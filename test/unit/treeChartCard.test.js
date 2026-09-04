@@ -25,6 +25,7 @@ const buiAnh = {
     {type: 'Ngôi vị', value: 'Chi phái 1'},
     {type: 'Ngày giỗ', value: '4/3'},
   ],
+  extended: {tags: [{name: 'Ngành 2 - Chi 1'}]},
   profile: {
     name_given: 'Ánh',
     name_surname: 'Bùi',
@@ -73,12 +74,23 @@ describe('ô người trong biểu đồ cây', () => {
     expect(texts).not.toContain('Bùi')
   })
 
-  it('hiện tên tự, đời kèm chi, và ngày giỗ âm lịch', () => {
+  it('chỉ hiện đời, ngành/chi và ngày giỗ âm lịch', () => {
     const svg = TreeChart(treeData, null, settings)
     const texts = cardTexts(svg)
-    expect(texts).toContain('tự Pháp Độ')
-    expect(texts).toContain('Đời 7 · Chi phái 1')
+    expect(texts).not.toContain('tự Pháp Độ')
+    expect(texts).not.toContain('Chi phái 1')
+    expect(texts).toContain('Đời 7 · Ngành 2 · Chi 1')
     expect(texts).toContain('Giỗ 4/3 ÂL')
+  })
+
+  it('không cắt nội dung bằng dấu ba chấm', () => {
+    const data = structuredClone(treeData)
+    data.person.profile.name_given = 'Hữu Nguyễn Văn Minh'
+    data.name_given = 'Hữu Nguyễn Văn Minh'
+    const svg = TreeChart(data, null, settings)
+    const texts = cardTexts(svg)
+    expect(texts.join(' ')).toContain('Bùi Hữu Nguyễn Văn Minh')
+    expect(texts.every(text => !text.includes('…'))).toBe(true)
   })
 
   it('không vẽ dòng rỗng cho người thiếu dữ liệu', () => {
@@ -96,5 +108,30 @@ describe('ô người trong biểu đồ cây', () => {
     // Ô cao 90, các dòng phải nằm gọn trong nửa trên và nửa dưới quanh tâm 0.
     expect(Math.min(...ys)).toBeGreaterThan(-45)
     expect(Math.max(...ys)).toBeLessThan(45)
+  })
+
+  it('dùng bài vị có chân dung cho người đã mất và bảng tên cho người sống', () => {
+    const data = structuredClone(treeData)
+    data.person.attribute_list[0].value = '13'
+    data.person.profile.birth = {date: '1960'}
+    const svg = TreeChart(data, null, settings)
+    const living = svg.querySelector('[data-gramps-id="I0016"]')
+    const deceased = svg.querySelector('[data-gramps-id="I0028"]')
+
+    expect(living.classList.contains('person-living')).toBe(true)
+    expect(living.querySelector('.nameplate-decoration')).not.toBeNull()
+    expect(living.querySelector('.nameplate-body')).not.toBeNull()
+    expect(living.querySelector('.living-avatar-halo')).not.toBeNull()
+    expect(living.querySelector('.living-avatar-image')).not.toBeNull()
+    expect(
+      living.querySelector('.living-avatar-image').getAttribute('href')
+    ).toBe('images/heritage/avatar-cu-ong.png')
+    expect(living.querySelector('.memorial-portrait')).toBeNull()
+    expect(cardTexts(svg)).toContain('Sinh 1960')
+    expect(deceased.classList.contains('person-deceased')).toBe(true)
+    expect(deceased.classList.contains('person-male')).toBe(true)
+    expect(deceased.querySelector('.memorial-inset')).not.toBeNull()
+    expect(deceased.querySelector('.memorial-portrait')).not.toBeNull()
+    expect(deceased.querySelector('.memorial-portrait-image')).not.toBeNull()
   })
 })

@@ -6,15 +6,18 @@ import {zoom} from 'd3-zoom'
 import {chartNameDisplayFormat, fireEvent} from '../util.js'
 import {joinName} from '../branding.js'
 import {appendAddPersonButton} from './addPersonButton.js'
-import {personCardLines} from './util.js'
-import {appendHeritageFrame} from './heritageFrame.js'
-
-const genderColor = {
-  0: 'var(--color-girl)',
-  1: 'var(--color-boy)',
-  2: 'var(--color-unknown)',
-  3: 'var(--color-other)',
-}
+import {
+  fitPersonCardLines,
+  isDeceased,
+  personCardLines,
+  personHasChildren,
+} from './util.js'
+import {
+  appendPersonCardDecoration,
+  CARD_AVATAR_X,
+  MEMORIAL_AVATAR_Y,
+} from './heritageFrame.js'
+import {appendDescendantsButton} from './descendantsButton.js'
 
 function TreeChartCore(
   svgParent,
@@ -29,9 +32,8 @@ function TreeChartCore(
     strokeLinejoin, // stroke line join for links
     strokeLinecap, // stroke line cap for links
     curve = curveBumpY, // curve for the link
-    boxWidth = 190,
+    boxWidth = 204,
     boxHeight = 90,
-    imgPadding = 10,
     childrenTriangle = true,
     getImageUrl = null,
     ancestors = false,
@@ -80,6 +82,7 @@ function TreeChartCore(
     .attr('stroke-linecap', strokeLinecap)
     .attr('stroke-linejoin', strokeLinejoin)
     .attr('stroke-width', strokeWidth)
+    .attr('vector-effect', 'non-scaling-stroke')
     .selectAll('path')
     .data(root.links())
     .join('path')
@@ -131,23 +134,6 @@ function TreeChartCore(
     )
     .attr('transform', d => `translate(${d.x},${d.y})`)
 
-  node
-    .append('rect')
-    .filter(d => d.data.person)
-    .attr(
-      'fill',
-      d => genderColor[d.data?.person?.gender] ?? 'var(--color-unknown)'
-    )
-    .attr('width', 24)
-    .attr('height', boxHeight - 1)
-    .attr('rx', 2)
-    .attr('ry', 2)
-    .attr(
-      'transform',
-      `translate(${-boxWidth / 2 - 4},${-boxHeight / 2 + 0.5})`
-    )
-    .attr('id', d => d.data.id) // Unique id for each rect
-
   function clicked(event, d) {
     if (onPersonClick) {
       onPersonClick(d.data.person?.gramps_id)
@@ -170,17 +156,27 @@ function TreeChartCore(
     .attr('class', 'person-card')
     .attr('width', boxWidth)
     .attr('height', boxHeight)
-    .attr('rx', 2)
-    .attr('ry', 2)
+    .attr('rx', 4)
+    .attr('ry', 4)
     .attr('transform', `translate(${-boxWidth / 2},${-boxHeight / 2})`)
     .attr('id', d => d.data.id) // Unique id for each slice
 
-  appendHeritageFrame(
+  appendPersonCardDecoration(
     node.filter(d => d.data.person),
     boxWidth,
     boxHeight,
-    -boxWidth / 2,
-    -boxHeight / 2
+    {
+      x: -boxWidth / 2,
+      y: -boxHeight / 2,
+      deceased: d => isDeceased(d.data.person, d.data.person?.profile),
+      gender: d =>
+        d.data.person?.gender === 0
+          ? 'female'
+          : d.data.person?.gender === 1
+          ? 'male'
+          : 'unknown',
+      hasImage: d => Boolean(getImageUrl(d)),
+    }
   )
 
   function triangleClicked(e) {
@@ -236,33 +232,18 @@ function TreeChartCore(
     })
   }
 
-  const imgRadius = (boxHeight - imgPadding * 2) / 2
-  const textPadding = d =>
-    getImageUrl(d) ? 2 * imgRadius + 2 * imgPadding : 2 * imgPadding
-
-  const clipString = (s, length, fontSize = 13) => {
-    if (!s) {
-      return ''
-    }
-    const nChar = length / (fontSize * 0.6)
-    if (s.length <= nChar) {
-      return s
-    }
-    if (nChar < 2) {
-      return ''
-    }
-    return `${s.slice(0, nChar - 2)}…`
+  const memorialPhotoRadius = 20
+  const textPadding = d => {
+    const deceased = isDeceased(d.data.person, d.data.person?.profile)
+    if (!deceased) return 14
+    return getImageUrl(d) ? 54 : 50
   }
 
-  const textWidth = d =>
-    getImageUrl(d)
-      ? boxWidth - 2 * imgPadding - 2 * imgRadius
-      : boxWidth - 2 * imgPadding
+  // Thẻ của người có con cháu mang nút gài "Xem hậu duệ" nhô trên mép phải.
+  const hasAction = d => !canEdit && personHasChildren(d.data.person)
 
-  // Ô người viết theo lối gia phả Việt: họ tên liền một dòng, rồi tên tự, đời
-  // và ngày giỗ. Xem personCardLines trong ./util.js.
-  const lineHeight = 19
-
+  // Ô chỉ giữ tên, đời/ngành/chi và giỗ hoặc năm sinh. Tên dài xuống hai dòng
+  // thay vì bị cắt bằng dấu ba chấm.
   const fullName = d =>
     nameDisplayFormat === chartNameDisplayFormat.surnameThenGiven
       ? joinName(d.data.name_surname, d.data.name_given)
@@ -271,35 +252,45 @@ function TreeChartCore(
   node
     .filter(d => d.data.name_given || d.data.name_surname)
     .each(function drawCard(d) {
-      const lines = personCardLines(
-        d.data.person,
-        d.data.person?.profile,
-        fullName(d) || '…'
+      const deceased = isDeceased(d.data.person, d.data.person?.profile)
+      const lineHeight = deceased ? 19 : 16
+      const lines = fitPersonCardLines(
+        personCardLines(
+          d.data.person,
+          d.data.person?.profile,
+          fullName(d) || 'Chưa rõ tên'
+        ),
+        boxWidth - textPadding(d) - (deceased ? 10 : 14),
+        deceased
       )
       // Ít dòng thì căn giữa theo chiều cao ô, để ô của người chỉ còn mỗi cái
       // tên không bị dồn lên mép trên.
-      const top =
-        -boxHeight / 2 +
-        (boxHeight - (lines.length - 1) * lineHeight) / 2 +
-        lineHeight / 4
+      const top = deceased
+        ? -boxHeight / 2 +
+          (boxHeight - (lines.length - 1) * lineHeight) / 2 +
+          lineHeight / 4
+        : -boxHeight / 2 +
+          boxHeight -
+          22 -
+          ((lines.length - 1) * lineHeight) / 2
 
       select(this)
         .selectAll('text.card-line')
         .data(lines)
         .join('text')
         .attr('class', 'card-line')
-        .attr('x', -boxWidth / 2 + textPadding(d))
+        .attr('x', deceased ? -boxWidth / 2 + textPadding(d) : 0)
         .attr('y', (line, i) => top + i * lineHeight)
-        .attr('text-anchor', 'start')
+        .attr('text-anchor', deceased ? 'start' : 'middle')
         .attr('font-size', line => line.size)
         .attr('font-weight', line => line.weight)
         .attr('fill', line =>
           line.muted
-            ? 'var(--grampsjs-body-font-color-70)'
-            : 'var(--grampsjs-body-font-color-90)'
+            ? 'var(--person-card-muted-text, var(--grampsjs-body-font-color-70))'
+            : 'var(--person-card-text, var(--grampsjs-body-font-color-90))'
         )
         .attr('paint-order', 'stroke')
-        .text(line => clipString(line.text, textWidth(d), line.size))
+        .text(line => line.text)
     })
 
   if (canEdit) {
@@ -309,14 +300,34 @@ function TreeChartCore(
       -boxHeight / 2 + 14,
       d => d.data.person?.handle
     )
+  } else {
+    appendDescendantsButton(
+      node.filter(hasAction),
+      boxWidth / 2 - 16,
+      -boxHeight / 2 - 4,
+      clicked
+    )
   }
 
   node
     .filter(getImageUrl)
     .append('circle')
-    .attr('r', imgRadius)
-    .attr('cy', -boxHeight / 2 + imgRadius + imgPadding)
-    .attr('cx', -boxWidth / 2 + imgRadius + imgPadding)
+    .attr('class', d =>
+      isDeceased(d.data.person, d.data.person?.profile)
+        ? 'memorial-photo'
+        : 'living-avatar-photo'
+    )
+    .attr('r', d =>
+      isDeceased(d.data.person, d.data.person?.profile)
+        ? memorialPhotoRadius
+        : 22
+    )
+    .attr('cy', d =>
+      isDeceased(d.data.person, d.data.person?.profile)
+        ? -boxHeight / 2 + MEMORIAL_AVATAR_Y
+        : -boxHeight / 2 + 8
+    )
+    .attr('cx', d => -boxWidth / 2 + CARD_AVATAR_X)
     .attr('fill', d => `url(#imgpattern-${d.data.id})`)
 
   const defs = svgParent.append('defs')

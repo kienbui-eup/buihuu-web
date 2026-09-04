@@ -181,12 +181,11 @@ describe('getLifeSpan', () => {
 })
 
 describe('personCardLines', () => {
-  it('dựng đủ bốn dòng theo lối gia phả Việt', () => {
+  it('giữ thẻ gọn với tên, đời và ngày giỗ', () => {
     const lines = personCardLines(buiAnh, buiAnh.profile, 'Bùi Ánh')
     expect(lines.map(line => line.text)).toEqual([
       'Bùi Ánh',
-      'tự Pháp Độ',
-      'Đời 7 · Chi phái 1',
+      'Đời 7',
       'Giỗ 4/3 ÂL',
     ])
   })

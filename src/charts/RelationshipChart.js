@@ -5,8 +5,18 @@ import {Graphviz} from '@hpcc-js/wasm'
 import {chartNameDisplayFormat} from '../util.js'
 import {joinName} from '../branding.js'
 import {appendAddPersonButton} from './addPersonButton.js'
-import {personCardLines} from './util.js'
-import {appendHeritageFrame} from './heritageFrame.js'
+import {
+  fitPersonCardLines,
+  isDeceased,
+  personCardLines,
+  personHasChildren,
+} from './util.js'
+import {
+  appendPersonCardDecoration,
+  CARD_AVATAR_X,
+  MEMORIAL_AVATAR_Y,
+} from './heritageFrame.js'
+import {appendDescendantsButton} from './descendantsButton.js'
 
 const layouts = new WeakMap()
 
@@ -24,13 +34,6 @@ function graphLayout(data, graph, boxWidth, boxHeight) {
     cache.set(key, promise)
   }
   return cache.get(key)
-}
-
-const sexColor = {
-  F: 'var(--color-girl)',
-  M: 'var(--color-boy)',
-  X: 'var(--color-other)',
-  U: 'var(--color-unknown)',
 }
 
 function createGraph(graph) {
@@ -334,20 +337,6 @@ class Relgraph {
   }
 }
 
-const clipString = (s, length, fontSize = 13) => {
-  if (!s) {
-    return ''
-  }
-  const nChar = length / (fontSize * 0.6)
-  if (s.length <= nChar) {
-    return s
-  }
-  if (nChar < 2) {
-    return ''
-  }
-  return `${s.slice(0, nChar - 2)}…`
-}
-
 function clicked(event, d) {
   dispatchEvent(
     new CustomEvent('pedigree:person-selected', {
@@ -363,7 +352,6 @@ function remasterChart(
   graph,
   boxWidth,
   boxHeight,
-  imgPadding,
   getImageUrl,
   maxImages,
   nameDisplayFormat,
@@ -371,10 +359,6 @@ function remasterChart(
 ) {
   const gvchartx = divhidden.select('svg')
   const nodedata = []
-  const imgRadius = (boxHeight - imgPadding * 2) / 2
-  const textPadding = d =>
-    d.imageUrl ? 2 * imgRadius + 2 * imgPadding : 2 * imgPadding
-  const boxWidthTotal = d => boxWidth - textPadding(d)
   gvchartx.selectAll('title').remove()
   // based on graphviz created nodes build array containing node data to be bound to d3 nodes
   let imageCount = 0
@@ -443,17 +427,6 @@ function remasterChart(
 
   nodes
     .filter(d => d.nodetype === 'person')
-    .append('rect')
-    .attr('fill', d => sexColor[d.profile?.sex] ?? 'var(--color-unknown)')
-    .attr('width', 24)
-    .attr('height', boxHeight - 1)
-    .attr('x', -4)
-    .attr('y', 0)
-    .attr('rx', 2)
-    .attr('ry', 2)
-
-  nodes
-    .filter(d => d.nodetype === 'person')
     .append('rect', ':first-child')
     .attr('width', boxWidth)
     .attr('height', boxHeight)
@@ -462,18 +435,35 @@ function remasterChart(
     .attr('stroke', 'var(--md-sys-color-outline-variant)')
     .attr('x', 0)
     .attr('y', 0)
-    .attr('rx', 2)
-    .attr('ry', 2)
+    .attr('rx', 4)
+    .attr('ry', 4)
 
-  appendHeritageFrame(
+  appendPersonCardDecoration(
     nodes.filter(d => d.nodetype === 'person'),
     boxWidth,
-    boxHeight
+    boxHeight,
+    {
+      deceased: d => isDeceased(d.person, d.profile),
+      gender: d =>
+        d.profile?.sex === 'F'
+          ? 'female'
+          : d.profile?.sex === 'M'
+          ? 'male'
+          : 'unknown',
+      hasImage: d => Boolean(d.imageUrl),
+    }
   )
 
-  // Ô người viết theo lối gia phả Việt, giống biểu đồ cây: họ tên liền một
-  // dòng, rồi tên tự, đời và ngày giỗ. Xem personCardLines trong ./util.js.
-  const lineHeight = 19
+  // Ô chỉ giữ tên, đời/ngành/chi và giỗ hoặc năm sinh. Tên dài xuống hai dòng
+  // thay vì bị cắt bằng dấu ba chấm.
+  const textPadding = d => {
+    const deceased = isDeceased(d.person, d.profile)
+    if (!deceased) return 14
+    return d.imageUrl ? 54 : 50
+  }
+  // Thẻ của người có con cháu mang nút gài "Xem hậu duệ" nhô trên mép phải.
+  const hasAction = d =>
+    !canEdit && d.nodetype === 'person' && personHasChildren(d.person)
 
   const fullName = d =>
     nameDisplayFormat === chartNameDisplayFormat.surnameThenGiven
@@ -487,36 +477,46 @@ function remasterChart(
         d.nodetype === 'person'
     )
     .each(function drawCard(d) {
-      const lines = personCardLines(d.person, d.profile, fullName(d) || '…')
-      const top =
-        (boxHeight - (lines.length - 1) * lineHeight) / 2 + lineHeight / 4
+      const deceased = isDeceased(d.person, d.profile)
+      const lineHeight = deceased ? 19 : 16
+      const lines = fitPersonCardLines(
+        personCardLines(d.person, d.profile, fullName(d) || 'Chưa rõ tên'),
+        boxWidth - textPadding(d) - (deceased ? 10 : 14),
+        deceased
+      )
+      const top = deceased
+        ? (boxHeight - (lines.length - 1) * lineHeight) / 2 + lineHeight / 4
+        : boxHeight - 22 - ((lines.length - 1) * lineHeight) / 2
 
       select(this)
         .selectAll('text.card-line')
         .data(lines)
         .join('text')
         .attr('class', 'card-line')
-        .attr('x', textPadding(d))
+        .attr('x', deceased ? textPadding(d) : boxWidth / 2)
         .attr('y', (line, i) => top + i * lineHeight)
-        .attr('text-anchor', 'start')
+        .attr('text-anchor', deceased ? 'start' : 'middle')
         .attr('font-size', line => line.size)
         .attr('font-weight', line => line.weight)
         .attr('fill', line =>
           line.muted
-            ? 'var(--grampsjs-body-font-color-70)'
-            : 'var(--grampsjs-body-font-color-90)'
+            ? 'var(--person-card-muted-text, var(--grampsjs-body-font-color-70))'
+            : 'var(--person-card-text, var(--grampsjs-body-font-color-90))'
         )
         .attr('paint-order', 'stroke')
-        .text(line => clipString(line.text, boxWidthTotal(d), line.size))
+        .text(line => line.text)
     })
 
   // images
   nodes
     .filter(d => d.imageUrl)
     .append('circle')
-    .attr('r', imgRadius)
-    .attr('cy', imgRadius + imgPadding)
-    .attr('cx', imgRadius + imgPadding)
+    .attr('class', d =>
+      isDeceased(d.person, d.profile) ? 'memorial-photo' : 'living-avatar-photo'
+    )
+    .attr('r', d => (isDeceased(d.person, d.profile) ? 20 : 22))
+    .attr('cy', d => (isDeceased(d.person, d.profile) ? MEMORIAL_AVATAR_Y : 8))
+    .attr('cx', CARD_AVATAR_X)
     .attr('fill', d => `url(#imgpattern-${d.handle})`)
 
   const defs = targetsvg.append('defs')
@@ -603,6 +603,8 @@ function remasterChart(
       14,
       d => d.handle
     )
+  } else {
+    appendDescendantsButton(nodes.filter(hasAction), boxWidth - 16, -4, clicked)
   }
 
   const linkGenerator = linkVertical()
@@ -635,6 +637,7 @@ function remasterChart(
       .attr('fill', 'none')
       .attr('stroke', 'var(--grampsjs-body-font-color-40)')
       .attr('stroke-width', 1)
+      .attr('vector-effect', 'non-scaling-stroke')
   })
   // edges.selectAll('path').attr('stroke-opacity', '0.4')
 
@@ -658,9 +661,8 @@ export function RelationshipChart(
   {
     bboxWidth = 300,
     bboxHeight = 150,
-    boxWidth = 190,
+    boxWidth = 204,
     boxHeight = 90,
-    imgPadding = 10,
     getImageUrl = null,
     grampsId = 0,
     maxImages = 50,
@@ -708,7 +710,6 @@ export function RelationshipChart(
         graph,
         boxWidth,
         boxHeight,
-        imgPadding,
         getImageUrl,
         maxImages,
         nameDisplayFormat,

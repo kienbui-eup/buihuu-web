@@ -45,7 +45,7 @@ export class GrampsjsViewTreeChart extends GrampsjsViewTreeChartBase {
     const fetchId = ++this._fetchId
     this.loading = true
     const result = await loadTreePeople(this.appState, force).catch(() => ({
-      error: 'Không tải được cây gia phả. Vui lòng thử lại.',
+      error: 'Không tải được phả đồ. Vui lòng thử lại.',
     }))
     if (fetchId !== this._fetchId) return
     this.loading = false

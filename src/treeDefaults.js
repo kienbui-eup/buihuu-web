@@ -16,6 +16,13 @@ export function normalizeTreeView(view) {
   return DEFAULT_TREE_VIEW
 }
 
+// Nhãn ngắn cho thanh công cụ và chú thích trên biểu đồ. Bản đầy đủ có
+// "(rút gọn)" dành cho trang cài đặt, nơi cần giải thích rõ hơn.
+export function treeViewShortLabel(view) {
+  const normalized = normalizeTreeView(view)
+  return normalized === 'main' ? 'Nhánh chính' : TREE_VIEW_LABELS[normalized]
+}
+
 export function getTreeViewTabIndex(view) {
   const index = TREE_VIEWS.indexOf(normalizeTreeView(view))
   if (index !== -1) {
