@@ -4,7 +4,17 @@ import {
   solarToLunar,
   parseLunarDayMonth,
   nextAnniversary,
+  canChiYear,
 } from '../../src/lunar.js'
+
+describe('canChiYear', () => {
+  it('gọi đúng tên can chi của các năm quen thuộc', () => {
+    expect(canChiYear(1945)).toBe('Ất Dậu')
+    expect(canChiYear(2024)).toBe('Giáp Thìn')
+    expect(canChiYear(2026)).toBe('Bính Ngọ')
+    expect(canChiYear(2027)).toBe('Đinh Mùi')
+  })
+})
 
 describe('lunarToSolar', () => {
   // Ngày Tết là mốc dễ đối chiếu nhất: lịch nào in ra cũng có.

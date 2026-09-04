@@ -2,6 +2,15 @@ import {describe, it, expect} from 'vitest'
 import {
   collectAnniversaries,
   groupByLunarMonth,
+  groupByDay,
+  buildMonthSections,
+  upcomingEntries,
+  matchesQuery,
+  lunarMonthName,
+  formatSolarShort,
+  lunarMonthSpan,
+  formatSolarSpan,
+  lunarToday,
   buildGioIcs,
   foldIcsLine,
   escapeIcsText,
@@ -44,6 +53,108 @@ describe('collectAnniversaries', () => {
     const groups = groupByLunarMonth(collectAnniversaries(people, from))
     expect(groups.map(g => g.month)).toEqual([1, 5])
     expect(groups[0].lunarYear).toBe(2027)
+  })
+})
+
+describe('tra theo tháng âm', () => {
+  // Mốc 4/9/2026 dương là 24 tháng 7 năm Bính Ngọ (âm lịch 2026).
+  const today = new Date(2026, 8, 4)
+  const person = (id, gio, given) => ({
+    gramps_id: id,
+    profile: {name_surname: 'Bùi', name_given: given},
+    attribute_list: [{type: 'Ngày giỗ', value: gio}],
+  })
+  const entries = collectAnniversaries(
+    [
+      person('I9101', '24/7', 'Văn Một'),
+      person('I9102', '25/7', 'Văn Hai'),
+      person('I9103', '25/7', 'Văn Ba'),
+      person('I9104', '3/7', 'Văn Bốn'),
+      person('I9105', '1/1', 'Văn Năm'),
+      person('I9106', '12/12', 'Văn Sáu'),
+    ],
+    today
+  )
+
+  it('biết hôm nay là ngày âm nào và gọi tên tháng Giêng, tháng Chạp', () => {
+    expect(lunarToday(today)).toEqual({day: 24, month: 7, year: 2026})
+    expect(lunarMonthName(1)).toBe('Giêng')
+    expect(lunarMonthName(12)).toBe('Chạp')
+    expect(lunarMonthName(7)).toBe('7')
+  })
+
+  it('ghi thứ và ngày dương', () => {
+    expect(formatSolarShort([4, 9, 2026])).toBe('T6 4/9')
+    expect(formatSolarShort([6, 2, 2027])).toBe('T7 6/2')
+  })
+
+  it('tính khoảng ngày dương của một tháng âm', () => {
+    // Tháng Chạp năm Bính Ngọ kết thúc ngay trước Tết Đinh Mùi 6/2/2027.
+    const chap = lunarMonthSpan(12, 2026)
+    expect(chap.first).toEqual(lunarToSolar(1, 12, 2026))
+    expect(chap.last).toEqual([5, 2, 2027])
+    const gieng = lunarMonthSpan(1, 2026)
+    expect(gieng.first).toEqual([17, 2, 2026])
+    const length =
+      (new Date(2026, gieng.last[1] - 1, gieng.last[0]) -
+        new Date(2026, 1, 17)) /
+        86400000 +
+      1
+    expect([29, 30]).toContain(length)
+    expect(formatSolarSpan([8, 1, 2027], [5, 2, 2027])).toBe('8/1 – 5/2/2027')
+    expect(formatSolarSpan([9, 12, 2026], [7, 1, 2027])).toBe(
+      '9/12/2026 – 7/1/2027'
+    )
+  })
+
+  it('gom người giỗ cùng ngày vào một ô ngày', () => {
+    const days = groupByDay(entries)
+    expect(days[0]).toMatchObject({day: 24, month: 7, daysAway: 0})
+    expect(days[1].entries.map(e => e.person.gramps_id)).toEqual([
+      'I9103',
+      'I9102',
+    ])
+  })
+
+  it('chia mười hai tháng, tháng đang đứng để giỗ đã qua xuống dưới vạch năm sau', () => {
+    const sections = buildMonthSections(entries, today)
+    expect(sections).toHaveLength(12)
+    expect(sections.map(s => s.entries.length)).toEqual([
+      1, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 1,
+    ])
+    const thang7 = sections[6]
+    expect(thang7.current).toBe(true)
+    expect(thang7.lunarYear).toBe(2026)
+    expect(thang7.yearName).toBe('Bính Ngọ')
+    expect(thang7.days.map(d => d.day)).toEqual([24, 25, 3])
+    expect(thang7.nextYearFrom).toBe(2)
+    // Tháng Giêng chỉ còn trong năm âm sau; tháng Chạp vẫn thuộc năm nay.
+    expect(sections[0].lunarYear).toBe(2027)
+    expect(sections[0].nextYearFrom).toBe(-1)
+    expect(sections[11].lunarYear).toBe(2026)
+    // Tháng trống vẫn biết mình thuộc năm nào.
+    expect(sections[1].lunarYear).toBe(2027)
+    expect(sections[8].lunarYear).toBe(2026)
+  })
+
+  it('lọc giỗ trong ba mươi ngày tới', () => {
+    expect(upcomingEntries(entries, 30).map(e => e.person.gramps_id)).toEqual([
+      'I9101',
+      'I9103',
+      'I9102',
+    ])
+  })
+
+  it('khớp theo tên bỏ dấu hoặc theo ngày âm', () => {
+    const [mot] = entries
+    expect(matchesQuery(mot, 'van mot')).toBe(true)
+    expect(matchesQuery(mot, 'MỘT')).toBe(true)
+    expect(matchesQuery(mot, '24/7')).toBe(true)
+    expect(matchesQuery(mot, '24/')).toBe(true)
+    expect(matchesQuery(mot, '24')).toBe(true)
+    expect(matchesQuery(mot, '4/7')).toBe(false)
+    expect(matchesQuery(mot, '24/8')).toBe(false)
+    expect(matchesQuery(mot, '')).toBe(true)
   })
 })
 

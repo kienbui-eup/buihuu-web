@@ -236,6 +236,43 @@ export function lunarToSolar(
   return jdToDate(monthStart + lunarDay - 1)
 }
 
+const CAN = [
+  'Giáp',
+  'Ất',
+  'Bính',
+  'Đinh',
+  'Mậu',
+  'Kỷ',
+  'Canh',
+  'Tân',
+  'Nhâm',
+  'Quý',
+]
+const CHI = [
+  'Tý',
+  'Sửu',
+  'Dần',
+  'Mão',
+  'Thìn',
+  'Tỵ',
+  'Ngọ',
+  'Mùi',
+  'Thân',
+  'Dậu',
+  'Tuất',
+  'Hợi',
+]
+
+/*
+Tên can chi của một năm âm lịch: 2026 là Bính Ngọ, 2027 là Đinh Mùi.
+
+Người trong họ gọi năm bằng can chi nhiều hơn bằng số, nhất là khi nói về giỗ
+chạp; lịch in nào cũng ghi kèm nên hiện cả hai.
+*/
+export function canChiYear(year) {
+  return `${CAN[(year + 6) % 10]} ${CHI[(year + 8) % 12]}`
+}
+
 /*
 Đọc chuỗi ngày giỗ dạng "21/5" hoặc "21/5 nhuận".
 
