@@ -449,12 +449,15 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
       )
   }
 
-  // Công cụ nổi trên vùng vẽ: ô chọn phạm vi góc trên trái, cột nút bên phải.
+  // Công cụ nổi thành một cột bên phải, gồm cả nút chọn nhánh.
   renderToolbar() {
     if (!this.treeView || this._editMode) return ''
     return html`<grampsjs-chart-toolbar
       .state=${{
         view: this.treeView,
+        appState: this.appState,
+        grampsId: this.grampsId,
+        homePerson: this.settings?.homePerson ?? '',
         disableBack: this.disableBack,
         disableHome: this.disableHome,
         onAction: this._boundTreeAction,

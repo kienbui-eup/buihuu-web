@@ -5,7 +5,6 @@ import {GrampsjsView} from './GrampsjsView.js'
 import './GrampsjsViewTreeChart.js'
 
 import './GrampsjsViewRelationshipChart.js'
-import '../components/GrampsjsTreeBranchBar.js'
 import {fireEvent} from '../util.js'
 import {DEFAULT_TREE_VIEW, normalizeTreeView} from '../treeDefaults.js'
 import {TreeNavigationHistory} from '../treeNavigation.js'
@@ -19,7 +18,7 @@ export class GrampsjsViewTree extends GrampsjsView {
           margin: 0;
         }
 
-        /* Khung để dải nút nhánh nổi lên trên vùng vẽ của view con. */
+        /* Khung chung cho vùng vẽ và cột công cụ nổi. */
         .stage {
           position: relative;
         }
@@ -48,7 +47,6 @@ export class GrampsjsViewTree extends GrampsjsView {
     return {
       grampsId: {type: String},
       view: {type: String},
-      _editMode: {state: true},
     }
   }
 
@@ -58,15 +56,7 @@ export class GrampsjsViewTree extends GrampsjsView {
     this.view = DEFAULT_TREE_VIEW
     this._navigation = new TreeNavigationHistory()
     this._appliedTreeDefaultView = null
-    this._editMode = false
     this._boundSelectPerson = this._selectPerson.bind(this)
-    // Đang sửa cây thì công cụ nổi ẩn hết, dải nút nhánh ẩn theo.
-    this._boundEditOn = () => {
-      this._editMode = true
-    }
-    this._boundEditOff = () => {
-      this._editMode = false
-    }
   }
 
   shouldUpdate(changed) {
@@ -108,15 +98,6 @@ export class GrampsjsViewTree extends GrampsjsView {
       ${this.view === 'main'
         ? this._renderPedigree()
         : this._renderRelationshipChart()}
-      ${this._editMode
-        ? ''
-        : html`<grampsjs-tree-branch-bar
-            .appState=${this.appState}
-            view=${this.view}
-            grampsId=${this.grampsId}
-            homePerson=${this.settings?.homePerson ?? ''}
-            @tree:scope=${this._handleScope}
-          ></grampsjs-tree-branch-bar>`}
     </div>`
   }
 
@@ -152,6 +133,7 @@ export class GrampsjsViewTree extends GrampsjsView {
       <grampsjs-view-relationship-chart
         scope=${this.view}
         treeView=${this.view}
+        @tree:scope=${this._handleScope}
         @tree:view=${this._handleViewChange}
         @tree:back="${this._prevPerson}"
         @tree:person="${this._goToPerson}"
@@ -172,6 +154,7 @@ export class GrampsjsViewTree extends GrampsjsView {
     return html`
       <grampsjs-view-tree-chart
         treeView=${this.view}
+        @tree:scope=${this._handleScope}
         @tree:view=${this._handleViewChange}
         @tree:show-branch=${this._openBranch}
         @tree:back="${this._prevPerson}"
@@ -207,8 +190,6 @@ export class GrampsjsViewTree extends GrampsjsView {
   connectedCallback() {
     super.connectedCallback()
     window.addEventListener('pedigree:person-selected', this._boundSelectPerson)
-    window.addEventListener('edit-mode:on', this._boundEditOn)
-    window.addEventListener('edit-mode:off', this._boundEditOff)
   }
 
   disconnectedCallback() {
@@ -217,8 +198,6 @@ export class GrampsjsViewTree extends GrampsjsView {
       'pedigree:person-selected',
       this._boundSelectPerson
     )
-    window.removeEventListener('edit-mode:on', this._boundEditOn)
-    window.removeEventListener('edit-mode:off', this._boundEditOff)
   }
 
   update(changed) {

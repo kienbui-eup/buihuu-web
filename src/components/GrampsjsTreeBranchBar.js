@@ -1,15 +1,20 @@
 import {LitElement, html, css} from 'lit'
 import {classMap} from 'lit/directives/class-map.js'
+import '@material/web/iconbutton/icon-button.js'
+import '@material/web/menu/menu.js'
+import '@material/web/menu/menu-item.js'
+import {mdiFamilyTree} from '@mdi/js'
 
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import {loadTreePeople} from '../charts/treeData.js'
 import {getBranch, formatBranch, getGeneration} from '../charts/util.js'
 import {fireEvent} from '../util.js'
+import './GrampsjsIcon.js'
 
 /*
-Dải xem nhanh chỉ giữ hai phạm vi cần dùng thường xuyên trên mặt phả đồ:
-"Nhánh chính" và chi của người đang xem. Danh sách các chi cùng toàn gia phả
-nằm trong bảng chọn mở khi cần, tránh phủ một hàng nút dài lên sơ đồ.
+Bộ chọn nhánh nằm trong cột công cụ nhanh bên phải. Một nút biểu tượng mở menu
+gồm nhánh chính, từng ngành chi và toàn gia phả, để vùng vẽ không bị một dãy nút
+ngang che khuất nhưng người xem vẫn chọn được đúng chi nhà mình.
 */
 
 const GENDER_MALE = 1
@@ -102,164 +107,62 @@ export class GrampsjsTreeBranchBar extends GrampsjsAppStateMixin(LitElement) {
     return [
       css`
         :host {
-          position: absolute;
-          top: 14px;
-          left: 14px;
-          right: 74px;
-          z-index: 4;
-          pointer-events: none;
+          position: relative;
+          display: block;
         }
-        nav {
-          display: flex;
-          max-width: 100%;
-          pointer-events: auto;
-        }
-        .quick {
-          display: flex;
-          gap: 5px;
-          min-width: 0;
-          padding: 3px;
+        md-icon-button {
+          width: 44px;
+          height: 44px;
+          color: var(--md-sys-color-primary);
+          --grampsjs-icon-button-color: currentColor;
+          --md-icon-button-state-layer-width: 44px;
+          --md-icon-button-state-layer-height: 44px;
+          --md-icon-button-hover-state-layer-color: var(--heritage-gold);
+          --md-icon-button-pressed-state-layer-color: var(--heritage-gold);
+          --md-icon-button-hover-state-layer-opacity: 0.18;
+          --md-icon-button-pressed-state-layer-opacity: 0.28;
           background: color-mix(
             in srgb,
-            var(--md-sys-color-surface) 92%,
-            transparent
+            var(--heritage-gold) 8%,
+            var(--md-sys-color-surface)
           );
           border: 1px solid var(--heritage-rule);
-          border-radius: 22px;
-          box-shadow: 0 3px 14px var(--grampsjs-body-font-color-10);
-          backdrop-filter: blur(8px);
+          border-radius: 6px;
+          box-shadow: 0 2px 10px var(--grampsjs-body-font-color-10);
         }
-        button,
-        summary {
-          box-sizing: border-box;
-          height: 36px;
-          font: 500 13px/1.2 var(--grampsjs-body-font-family, inherit);
-          color: var(--heritage-ink);
-          background: transparent;
-          border: 0;
-          border-radius: 18px;
-          cursor: pointer;
-        }
-        .scope {
-          min-width: 0;
-          padding: 0 13px;
-          white-space: nowrap;
-        }
-        .scope.current {
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        button:hover,
-        summary:hover {
-          background: color-mix(in srgb, var(--heritage-gold) 15%, transparent);
-        }
-        button:focus-visible,
-        summary:focus-visible {
-          outline: 2px solid var(--heritage-gold);
-          outline-offset: 1px;
-        }
-        button.active {
+        md-icon-button.active {
           color: var(--md-sys-color-on-primary);
+          --grampsjs-icon-button-color: currentColor;
           background: var(--md-sys-color-primary);
+          border-color: var(--md-sys-color-primary);
         }
-        button small {
-          margin-left: 4px;
-          font-size: 11px;
-          font-weight: 400;
-          opacity: 0.78;
+        md-menu {
+          z-index: 8;
+          min-width: 260px;
+          max-width: min(340px, calc(100vw - 76px));
+          max-height: min(68vh, 480px);
+          color: var(--md-sys-color-on-surface);
+          --md-menu-container-color: var(--md-sys-color-surface-container);
+          --md-menu-item-one-line-container-height: 46px;
+          --md-menu-item-selected-container-color: var(
+            --md-sys-color-secondary-container
+          );
         }
-        details {
-          position: relative;
-          flex: 0 0 auto;
+        md-menu-item {
+          --md-menu-item-label-text-size: 14px;
+          --md-menu-item-hover-state-layer-color: var(--heritage-gold);
         }
-        summary {
-          display: grid;
-          place-items: center;
-          min-width: 36px;
-          padding: 0 10px;
-          list-style: none;
-        }
-        summary::-webkit-details-marker {
-          display: none;
-        }
-        summary::after {
-          content: '';
-          width: 7px;
-          height: 7px;
-          border-right: 1.5px solid currentColor;
-          border-bottom: 1.5px solid currentColor;
-          rotate: 45deg;
-          translate: 0 -2px;
-        }
-        details[open] summary {
-          color: var(--md-sys-color-primary);
-          background: color-mix(in srgb, var(--heritage-gold) 18%, transparent);
-        }
-        .menu {
-          position: absolute;
-          top: calc(100% + 9px);
-          left: 0;
-          width: min(300px, calc(100vw - 24px));
-          max-height: min(62vh, 460px);
-          overflow-y: auto;
-          padding: 8px;
-          background: var(--md-sys-color-surface);
-          border: 1px solid var(--heritage-rule);
-          border-radius: var(--grampsjs-frame-radius, 6px);
-          box-shadow: 0 12px 32px var(--grampsjs-body-font-color-20);
-        }
-        .menu-label {
-          margin: 4px 8px 7px;
-          color: var(--grampsjs-body-font-color-60);
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-        }
-        .menu button {
+        .item-line {
           display: flex;
-          align-items: center;
+          align-items: baseline;
           justify-content: space-between;
-          gap: 16px;
+          gap: 18px;
           width: 100%;
-          height: 42px;
-          padding: 0 10px;
-          border-radius: 4px;
-          text-align: left;
         }
-        .menu button span {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-        .menu button small {
+        .item-line small {
           flex: 0 0 auto;
-          margin: 0;
-        }
-        .menu .all {
-          margin-top: 6px;
-          border-top: 1px solid var(--heritage-rule);
-          border-radius: 0 0 4px 4px;
-        }
-        @media (max-width: 991px) {
-          :host {
-            top: 10px;
-            left: 10px;
-            right: 60px;
-          }
-          .quick {
-            max-width: 100%;
-          }
-          .scope {
-            padding: 0 11px;
-          }
-          .scope.current {
-            flex: 1 1 auto;
-            max-width: min(42vw, 168px);
-          }
-          button small {
-            display: none;
-          }
+          color: var(--md-sys-color-on-surface-variant);
+          font-size: 11px;
         }
       `,
     ]
@@ -307,76 +210,74 @@ export class GrampsjsTreeBranchBar extends GrampsjsAppStateMixin(LitElement) {
   }
 
   _pick(view, grampsId = '') {
-    this.renderRoot.querySelector('details')?.removeAttribute('open')
     fireEvent(this, 'tree:scope', {view, grampsId})
   }
 
-  _pickCurrentBranch(root) {
-    this._pick('branch', this.grampsId || root.grampsId)
+  _toggleMenu() {
+    const menu = this.renderRoot.querySelector('#branch-menu')
+    if (menu) menu.open = !menu.open
+  }
+
+  get _activeLabel() {
+    if (this.view === 'main') return 'Nhánh chính'
+    if (this.view === 'all') return 'Toàn gia phả'
+    return this._currentRoot()?.label ?? 'Nhánh đang xem'
   }
 
   render() {
     const currentRoot = this._currentRoot()
     const isCurrentBranch = root =>
       this.view === 'branch' && currentRoot === root
-    return html`<nav aria-label="Xem nhanh phả đồ">
-      <div class="quick">
-        <button
-          type="button"
-          class=${classMap({scope: true, active: this.view === 'main'})}
-          title="Dòng trưởng từ thủy tổ, cách xem mặc định"
-          aria-pressed=${this.view === 'main'}
+    const label = `Chọn nhánh gia phả · Đang xem ${this._activeLabel}`
+    return html`<md-icon-button
+        id="branch-button"
+        class=${classMap({active: this.view !== 'main'})}
+        title=${label}
+        aria-label=${label}
+        aria-haspopup="menu"
+        @click=${this._toggleMenu}
+      >
+        <grampsjs-icon
+          path=${mdiFamilyTree}
+          color="currentColor"
+        ></grampsjs-icon>
+      </md-icon-button>
+      <md-menu
+        id="branch-menu"
+        anchor="branch-button"
+        positioning="popover"
+        anchor-corner="start-start"
+        menu-corner="start-end"
+        aria-label="Xem nhanh theo nhánh"
+      >
+        <md-menu-item
+          ?selected=${this.view === 'main'}
           @click=${() => this._pick('main', this.homePerson)}
         >
-          Nhánh chính<small>mặc định</small>
-        </button>
-        ${currentRoot
-          ? html`<button
-              type="button"
-              class=${classMap({
-                scope: true,
-                current: true,
-                active: isCurrentBranch(currentRoot),
-              })}
-              title="Xem trọn ${currentRoot.label}"
-              aria-pressed=${isCurrentBranch(currentRoot)}
-              @click=${() => this._pickCurrentBranch(currentRoot)}
-            >
-              ${currentRoot.label}
-            </button>`
-          : ''}
-        <details>
-          <summary
-            title="Chọn chi hoặc xem toàn gia phả"
-            aria-label="Chọn chi"
-          ></summary>
-          <div class="menu" role="menu">
-            <p class="menu-label">Chọn chi để xem</p>
-            ${this._roots.map(
-              root => html`<button
-                type="button"
-                role="menuitem"
-                class=${classMap({active: isCurrentBranch(root)})}
-                title="${root.label}: ${root.count.toLocaleString(
-                  'vi-VN'
-                )} người đã gắn thẻ"
-                @click=${() => this._pick('branch', root.grampsId)}
-              >
-                <span>${root.label}</span><small>${root.count}</small>
-              </button>`
-            )}
-            <button
-              type="button"
-              role="menuitem"
-              class=${classMap({all: true, active: this.view === 'all'})}
-              @click=${() => this._pick('all')}
-            >
-              <span>Toàn gia phả</span>
-            </button>
+          <div slot="headline" class="item-line">
+            <span>Nhánh chính</span><small>Mặc định</small>
           </div>
-        </details>
-      </div>
-    </nav>`
+        </md-menu-item>
+        ${this._roots.map(
+          root => html`<md-menu-item
+            ?selected=${isCurrentBranch(root)}
+            @click=${() => this._pick('branch', root.grampsId)}
+          >
+            <div slot="headline" class="item-line">
+              <span>${root.label}</span
+              ><small>${root.count.toLocaleString('vi-VN')} người</small>
+            </div>
+          </md-menu-item>`
+        )}
+        <md-menu-item
+          ?selected=${this.view === 'all'}
+          @click=${() => this._pick('all')}
+        >
+          <div slot="headline" class="item-line">
+            <span>Toàn gia phả</span><small>Tất cả các nhánh</small>
+          </div>
+        </md-menu-item>
+      </md-menu>`
   }
 }
 

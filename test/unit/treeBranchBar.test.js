@@ -1,8 +1,17 @@
-import {describe, expect, it} from 'vitest'
+import {afterEach, describe, expect, it, vi} from 'vitest'
 import {
   branchForPerson,
   branchRoots,
 } from '../../src/components/GrampsjsTreeBranchBar.js'
+import '../../src/components/GrampsjsChartToolbar.js'
+
+if (!HTMLElement.prototype.attachInternals) {
+  Object.defineProperty(HTMLElement.prototype, 'attachInternals', {
+    value: () => ({}),
+  })
+}
+
+afterEach(() => document.body.replaceChildren())
 
 // Dữ liệu giả: không dùng tên hay ngày thật của người trong họ.
 const person = (grampsId, handle, tags, {father, gender = 1, doi} = {}) => ({
@@ -65,5 +74,40 @@ describe('người đầu chi cho dải nút nhánh', () => {
       person('I0002', 'h2', [], {father: 'h1'}),
     ]
     expect(branchForPerson(people, 'I0002')).toEqual({branch: 2, sub: 1})
+  })
+
+  it('thu gọn các nhánh vào một nút biểu tượng và phát lựa chọn từ menu', async () => {
+    const bar = document.createElement('grampsjs-tree-branch-bar')
+    bar.homePerson = 'HOME'
+    bar.view = 'main'
+    document.body.append(bar)
+    await bar.updateComplete
+    bar._roots = [{label: 'Ngành 2 · Chi 1', grampsId: 'I0003', count: 3}]
+    await bar.updateComplete
+
+    expect(bar.renderRoot.querySelectorAll('md-icon-button')).toHaveLength(1)
+    expect(bar.renderRoot.querySelectorAll('md-menu-item')).toHaveLength(3)
+    expect(bar.renderRoot.textContent).toContain('Nhánh chính')
+    expect(bar.renderRoot.textContent).toContain('Toàn gia phả')
+
+    const onScope = vi.fn()
+    bar.addEventListener('tree:scope', onScope)
+    bar.renderRoot.querySelectorAll('md-menu-item')[1].click()
+
+    expect(onScope.mock.calls[0][0].detail).toEqual({
+      view: 'branch',
+      grampsId: 'I0003',
+    })
+  })
+
+  it('đặt bộ chọn nhánh đầu cột công cụ nhanh', async () => {
+    const toolbar = document.createElement('grampsjs-chart-toolbar')
+    toolbar.state = {view: 'main', appState: {}}
+    document.body.append(toolbar)
+    await toolbar.updateComplete
+
+    const stack = toolbar.renderRoot.querySelector('.stack')
+    expect(stack.firstElementChild.localName).toBe('grampsjs-tree-branch-bar')
+    expect(toolbar.renderRoot.querySelector('#btn-overview')).not.toBeNull()
   })
 })

@@ -11,15 +11,16 @@ import {
   mdiMagnify,
 } from '@mdi/js'
 import './GrampsjsIcon.js'
+import './GrampsjsTreeBranchBar.js'
 import {iconButtonColorStyles} from '../SharedStyles.js'
 
 /*
 Công cụ của trang Cây nổi ngay trên vùng vẽ, không chiếm một hàng riêng dưới
 thanh đầu trang. Các nút xếp thành một cột bên phải, chia hai nhóm: xem (vừa
 khung, tuỳ chọn) và đi lại (về người gốc, người trước, hồ sơ, thu gọn hay tìm
-người đang xem). Chọn phạm vi (nhánh chính, ngành chi, toàn gia phả) nằm ở dải
-nút góc trên trái do GrampsjsTreeBranchBar đảm nhiệm. Lớp phủ này không nhận
-sự kiện chuột, chỉ cột nút nhận, nên kéo hay chụm cây vẫn bình thường.
+người đang xem). Chọn phạm vi (nhánh chính, ngành chi, toàn gia phả) là nút đầu
+cột do GrampsjsTreeBranchBar đảm nhiệm. Lớp phủ này không nhận sự kiện chuột,
+chỉ cột nút nhận, nên kéo hay chụm cây vẫn bình thường.
 */
 class GrampsjsChartToolbar extends LitElement {
   static properties = {state: {attribute: false}}
@@ -134,6 +135,12 @@ class GrampsjsChartToolbar extends LitElement {
       role="group"
       aria-label="Công cụ cho phạm vi đang xem"
     >
+      <grampsjs-tree-branch-bar
+        .appState=${state.appState}
+        view=${state.view ?? 'main'}
+        grampsId=${state.grampsId ?? ''}
+        homePerson=${state.homePerson ?? ''}
+      ></grampsjs-tree-branch-bar>
       ${this._button('btn-search', 'Tìm theo tên', mdiMagnify, 'search')}
       ${this._button(
         'btn-overview',
