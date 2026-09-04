@@ -13,6 +13,9 @@ class GrampsjsTempleHero extends LitElement {
     // Trích đoạn mở đầu lời tựa, trang chủ truyền từ grampsjs-home-preface;
     // rỗng khi chưa tải thì không hiện khối trích.
     prefaceExcerpt: {type: String},
+    // Người gốc đưa lên hero (mặc định là thủy tổ): {label, name, generation,
+    // href}; null khi trang chủ chưa tải xong hồ sơ.
+    founder: {type: Object},
   }
 
   constructor() {
@@ -20,6 +23,7 @@ class GrampsjsTempleHero extends LitElement {
     this.welcome = false
     this.people = 0
     this.prefaceExcerpt = ''
+    this.founder = null
   }
 
   static styles = [
@@ -153,6 +157,54 @@ class GrampsjsTempleHero extends LitElement {
         line-height: 1.5;
         color: #fff9e9;
         white-space: nowrap;
+      }
+      /* Thẻ người gốc (thủy tổ) đứng cạnh nút mở cây: liên kết viền mảnh tới
+         hồ sơ, không dùng nền vàng của nút chính. */
+      .founder:link,
+      .founder:visited {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 44px;
+        padding: 6px 16px 6px 8px;
+        background: transparent;
+        color: #fff9e9;
+        border: 1px solid #a58b62;
+        border-radius: 3px;
+        text-decoration: none;
+        text-align: left;
+      }
+      .founder:hover {
+        border-color: #e2c891;
+        background: rgba(226, 200, 145, 0.12);
+      }
+      .founder-mark {
+        flex: 0 0 36px;
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: rgba(226, 200, 145, 0.18);
+        color: #e2c891;
+        font: 600 15px/1 var(--grampsjs-heading-font-family);
+      }
+      .founder-copy {
+        display: grid;
+        line-height: 1.35;
+      }
+      .founder-copy small {
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #e2c891;
+      }
+      .founder-copy strong {
+        font: 600 15px/1.35 var(--grampsjs-heading-font-family);
+      }
+      .founder-copy span {
+        font-size: 12px;
+        color: #e5d9c9;
       }
       .actions {
         display: flex;
@@ -306,6 +358,11 @@ class GrampsjsTempleHero extends LitElement {
         .actions {
           margin-top: 20px;
         }
+        .founder:link,
+        .founder:visited {
+          width: 100%;
+          justify-content: flex-start;
+        }
         figcaption {
           right: 10px;
           bottom: 10px;
@@ -320,6 +377,23 @@ class GrampsjsTempleHero extends LitElement {
       }
     `,
   ]
+
+  _renderFounder() {
+    const founder = this.founder
+    if (!founder?.name) return ''
+    const initial = founder.name.trim().split(/\s+/).pop()?.[0] ?? ''
+    return html`<a class="founder" href=${founder.href}>
+      <span class="founder-mark" aria-hidden="true">${initial}</span>
+      <span class="founder-copy">
+        <small>${founder.label}</small>
+        <strong>${founder.name}</strong>
+        <span
+          >${founder.generation ? `Đời ${founder.generation} · ` : ''}Xem hồ
+          sơ</span
+        >
+      </span>
+    </a>`
+  }
 
   render() {
     return html`<section class="hero" aria-label="Nhà thờ tổ họ Bùi Hữu">
@@ -363,6 +437,7 @@ class GrampsjsTempleHero extends LitElement {
               <a href="/tree"
                 >Mở cây gia phả <span aria-hidden="true">&nbsp;→</span></a
               ><span class="action-note">17 đời · 3 ngành · 5 chi</span>
+              ${this._renderFounder()}
             </div>`}
       </div>
       <figure>

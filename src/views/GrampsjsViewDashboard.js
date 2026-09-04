@@ -1,6 +1,10 @@
 import {html, css} from 'lit'
 import {mdiMagnify} from '@mdi/js'
-import {fireEvent} from '../util.js'
+import {
+  fireEvent,
+  getAttributeValue,
+  personProfileDisplayName,
+} from '../util.js'
 import {heritageFrameStyles} from '../HeritageStyles.js'
 import '../components/GrampsjsHomePreface.js'
 import '../components/GrampsjsTempleHero.js'
@@ -19,7 +23,12 @@ import {
   TREE_CONFIG_HOME_PAGE_NOTE,
   TREE_CONFIG_HOME_PAGE_IMAGE,
 } from '../api.js'
-import {GENERATIONS, BRANCHES_LABEL} from '../branding.js'
+import {
+  GENERATIONS,
+  BRANCHES_LABEL,
+  DEFAULT_HOME_PERSON,
+  ATTR_GENERATION,
+} from '../branding.js'
 import {
   ARTICLE_GIOI_THIEU,
   ARTICLE_HUONG_DAN,
@@ -293,6 +302,10 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           margin-top: 24px;
           padding-top: 12px;
         }
+        .editor-tools grampsjs-home-person {
+          display: block;
+          margin: 8px 0 20px;
+        }
         summary {
           cursor: pointer;
           min-height: 44px;
@@ -366,12 +379,29 @@ export class GrampsjsViewDashboard extends GrampsjsView {
       fireEvent(this, 'nav', {path: `search/${encodeURIComponent(query)}`})
   }
 
+  // Người gốc đưa lên hero: mặc định là thủy tổ (DEFAULT_HOME_PERSON), ai đặt
+  // người gốc riêng thì hiện người đó. Chưa tải xong hồ sơ thì hero chưa hiện.
+  _founder() {
+    const details = this.homePersonDetails
+    if (!this.homePersonGrampsId || !details?.gramps_id) return null
+    return {
+      label:
+        this.homePersonGrampsId === DEFAULT_HOME_PERSON
+          ? 'Thủy tổ'
+          : this._('Home Person'),
+      name: personProfileDisplayName(details.profile),
+      generation: getAttributeValue(details, ATTR_GENERATION),
+      href: `/person/${details.gramps_id}`,
+    }
+  }
+
   renderContent() {
     const hasPeople = Boolean(this.appState.dbInfo?.object_counts?.people)
     const {canEdit} = this.appState.permissions
     return html`
       <grampsjs-temple-hero
         .people=${this.appState.dbInfo?.object_counts?.people ?? 0}
+        .founder=${this._founder()}
         .prefaceExcerpt=${this._prefaceExcerpt}
         @preface:open=${() => {
           // Toàn văn lời tựa mở thành hộp thoại kiểu tờ sớ, không rời trang chủ.
@@ -498,20 +528,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           </div>
           <div>
             ${this._renderHomePageImage()}
-            ${hasPeople || this.homePersonGrampsId
-              ? html`
-                  <div class="panel heritage-frame">
-                    <p class="section-label">Cội nguồn</p>
-                    <grampsjs-home-person
-                      id="homeperson"
-                      .appState="${this.appState}"
-                      .homePersonDetails=${this.homePersonDetails}
-                      .homePersonGrampsId=${this.homePersonGrampsId}
-                    >
-                    </grampsjs-home-person>
-                  </div>
-                `
-              : ''}
             <div class="panel heritage-frame">
               <p class="section-label">Chuyện dòng họ</p>
               <grampsjs-view-recent-blog-posts
@@ -525,6 +541,13 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           ? html`
               <details class="editor-tools">
                 <summary>Công cụ biên soạn gia phả</summary>
+                <grampsjs-home-person
+                  id="homeperson"
+                  .appState="${this.appState}"
+                  .homePersonDetails=${this.homePersonDetails}
+                  .homePersonGrampsId=${this.homePersonGrampsId}
+                >
+                </grampsjs-home-person>
                 <grampsjs-view-recently-changed
                   id="recently-changed"
                   .appState="${this.appState}"
