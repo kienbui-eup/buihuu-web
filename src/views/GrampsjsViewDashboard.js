@@ -1,5 +1,5 @@
 import {html, css} from 'lit'
-import {mdiFamilyTree, mdiAccountGroup, mdiCandle, mdiMagnify} from '@mdi/js'
+import {mdiMagnify} from '@mdi/js'
 import {fireEvent} from '../util.js'
 import {heritageFrameStyles} from '../HeritageStyles.js'
 import '../components/GrampsjsHomePreface.js'
@@ -60,10 +60,9 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         .dashboard-content {
           padding: 0 var(--heritage-gutter) 40px;
         }
-        /* Lời tựa đã gộp vào phần giới thiệu phía trên (toàn văn mở bằng hộp
-           thoại), nên hàng này chỉ còn khối số liệu, trải hết chiều ngang. */
+        /* Số liệu bản phả là dải thống kê cuối trang chủ, ngay trên footer. */
         .opening-grid {
-          margin: 32px 0 40px;
+          margin: 40px 0 0;
         }
         .family-ledger {
           border-top: 3px solid var(--heritage-gold);
@@ -192,6 +191,7 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         }
         .search {
           display: flex;
+          max-width: 720px;
           flex: 1 1 360px;
           min-width: 0;
           gap: 12px;
@@ -218,8 +218,7 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           outline: none;
           text-overflow: ellipsis;
         }
-        .search > grampsjs-icon,
-        .quick-link > grampsjs-icon {
+        .search > grampsjs-icon {
           flex-shrink: 0;
         }
         .search input::placeholder {
@@ -242,53 +241,9 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         .submit-icon {
           display: none;
         }
-        .search button:focus-visible,
-        .quick-link:focus-visible {
+        .search button:focus-visible {
           outline: 2px solid var(--md-sys-color-primary);
           outline-offset: 3px;
-        }
-        .quick-links {
-          display: grid;
-          flex: 1.4 1 600px;
-          min-width: 0;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 0;
-          border-top: 0;
-          border-bottom: 0;
-          margin: 0;
-        }
-        .quick-link,
-        .quick-link:link,
-        .quick-link:visited {
-          display: flex;
-          align-items: center;
-          min-width: 0;
-          gap: 10px;
-          padding: 10px 12px;
-          color: var(--md-sys-color-on-surface);
-          background: transparent;
-          border-right: 1px solid var(--md-sys-color-outline-variant);
-          text-decoration: none;
-        }
-        .quick-link:hover {
-          background: var(--md-sys-color-surface-container);
-        }
-        .quick-link:last-child {
-          border-right: 0;
-        }
-        .quick-link strong {
-          display: block;
-          font: 600 16px/1.6 var(--grampsjs-heading-font-family);
-          white-space: nowrap;
-        }
-        .quick-link small {
-          display: block;
-          font-size: 12px;
-          margin-top: 2px;
-          color: var(--md-sys-color-on-surface-variant);
-        }
-        .quick-link small {
-          white-space: nowrap;
         }
         @container home-actions (max-width: 880px) {
           .search {
@@ -297,8 +252,7 @@ export class GrampsjsViewDashboard extends GrampsjsView {
             padding: 4px;
           }
           .search > grampsjs-icon,
-          .submit-label,
-          .quick-link-label {
+          .submit-label {
             display: none;
           }
           .search input {
@@ -311,23 +265,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           .submit-icon {
             display: block;
           }
-          .quick-links {
-            flex: 0 0 auto;
-            gap: 4px;
-            border: 0;
-          }
-          .quick-link {
-            box-sizing: border-box;
-            justify-content: center;
-            width: 44px;
-            height: 54px;
-            padding: 0;
-            border: 1px solid var(--md-sys-color-outline-variant);
-            border-radius: 3px;
-          }
-          .quick-link:last-child {
-            border-right: 1px solid var(--md-sys-color-outline-variant);
-          }
         }
         /* Khổ 320 px: ô nhập chỉ còn chừng 60 px nếu chen cùng hàng với ba lối
            tắt, chữ gợi ý bị cắt còn "Gõ tê…". Cho ô tìm nguyên một hàng, ba lối
@@ -335,10 +272,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         @container home-actions (max-width: 340px) {
           .search {
             flex: 1 1 100%;
-          }
-          .quick-links {
-            flex: 1 1 100%;
-            justify-content: flex-start;
           }
         }
         .dashboard-grid {
@@ -388,7 +321,7 @@ export class GrampsjsViewDashboard extends GrampsjsView {
             padding-block: 18px;
           }
           .opening-grid {
-            margin: 20px 0 28px;
+            margin: 28px 0 0;
           }
           .family-ledger {
             padding: 22px 18px;
@@ -431,23 +364,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
     const query = this.renderRoot.querySelector('#home-search').value.trim()
     if (query)
       fireEvent(this, 'nav', {path: `search/${encodeURIComponent(query)}`})
-  }
-
-  _quickLink(href, icon, title, description) {
-    return html`<a
-      class="quick-link"
-      href="${href}"
-      aria-label="${title}"
-      title="${title}"
-    >
-      <grampsjs-icon
-        path="${icon}"
-        color="var(--md-sys-color-primary)"
-      ></grampsjs-icon>
-      <span class="quick-link-label"
-        ><strong>${title}</strong><small>${description}</small></span
-      >
-    </a>`
   }
 
   renderContent() {
@@ -495,74 +411,10 @@ export class GrampsjsViewDashboard extends GrampsjsView {
               ></grampsjs-icon>
             </button>
           </form>
-          <nav class="quick-links" aria-label="Tra cứu gia phả">
-            ${this._quickLink(
-              '/tree',
-              mdiFamilyTree,
-              'Cây gia phả',
-              'Lần theo từng thế hệ'
-            )}
-            ${this._quickLink(
-              '/people',
-              mdiAccountGroup,
-              'Người trong họ',
-              'Tìm theo tên, đời, ngành chi'
-            )}
-            ${this._quickLink(
-              '/lich-gio',
-              mdiCandle,
-              'Lịch giỗ',
-              'Giỗ cả năm, đã đổi sang dương lịch'
-            )}
-          </nav>
           <p class="search-hint">
             Gõ một phần tên, có dấu hay không dấu đều được. Trùng tên thì xem
             thêm Đời và ngành chi ghi cạnh tên.
           </p>
-        </div>
-        <div class="opening-grid">
-          <aside class="family-ledger" aria-label="Số liệu bản phả">
-            <p class="section-label">Bản số hóa</p>
-            <h2>Số liệu bản phả</h2>
-            <p>
-              Tính trên phần gia phả đã nhập từ các sổ chi, chưa phải điều tra
-              dân số hay xác nhận huyết thống.
-            </p>
-            <dl>
-              <div>
-                <dt>Đời</dt>
-                <dd>${GENERATIONS}</dd>
-              </div>
-              <div>
-                <dt>Ngành, chi</dt>
-                <dd class="text">${BRANCHES_LABEL}</dd>
-              </div>
-              <div>
-                <dt>Người ghi trong phả</dt>
-                <dd>
-                  ${this.appState.dbInfo?.object_counts?.people?.toLocaleString(
-                    'vi-VN'
-                  ) ?? '—'}
-                  <small>nhiều người mới có tên, chưa có dòng riêng</small>
-                </dd>
-              </div>
-              <div>
-                <dt>Cặp vợ chồng</dt>
-                <dd>
-                  ${this.appState.dbInfo?.object_counts?.families?.toLocaleString(
-                    'vi-VN'
-                  ) ?? '—'}
-                </dd>
-              </div>
-            </dl>
-            <p class="ledger-links">
-              <a href="${ARTICLE_GIOI_THIEU}"
-                >Giới thiệu dòng họ <span aria-hidden="true">&nbsp;→</span></a
-              ><a href="${ARTICLE_CACH_DOC}"
-                >Cách đọc gia phả <span aria-hidden="true">&nbsp;→</span></a
-              >
-            </p>
-          </aside>
         </div>
         <div class="section-heading">
           <p class="section-label">Hôm nay trong họ</p>
@@ -681,6 +533,50 @@ export class GrampsjsViewDashboard extends GrampsjsView {
               </details>
             `
           : ''}
+        <div class="opening-grid">
+          <aside class="family-ledger" aria-label="Số liệu bản phả">
+            <p class="section-label">Bản số hóa</p>
+            <h2>Số liệu bản phả</h2>
+            <p>
+              Tính trên phần gia phả đã nhập từ các sổ chi, chưa phải điều tra
+              dân số hay xác nhận huyết thống.
+            </p>
+            <dl>
+              <div>
+                <dt>Đời</dt>
+                <dd>${GENERATIONS}</dd>
+              </div>
+              <div>
+                <dt>Ngành, chi</dt>
+                <dd class="text">${BRANCHES_LABEL}</dd>
+              </div>
+              <div>
+                <dt>Người ghi trong phả</dt>
+                <dd>
+                  ${this.appState.dbInfo?.object_counts?.people?.toLocaleString(
+                    'vi-VN'
+                  ) ?? '—'}
+                  <small>nhiều người mới có tên, chưa có dòng riêng</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Cặp vợ chồng</dt>
+                <dd>
+                  ${this.appState.dbInfo?.object_counts?.families?.toLocaleString(
+                    'vi-VN'
+                  ) ?? '—'}
+                </dd>
+              </div>
+            </dl>
+            <p class="ledger-links">
+              <a href="${ARTICLE_GIOI_THIEU}"
+                >Giới thiệu dòng họ <span aria-hidden="true">&nbsp;→</span></a
+              ><a href="${ARTICLE_CACH_DOC}"
+                >Cách đọc gia phả <span aria-hidden="true">&nbsp;→</span></a
+              >
+            </p>
+          </aside>
+        </div>
       </div>
     `
   }
