@@ -55,7 +55,7 @@ const PEOPLE_PAGES = [
 export function mainLinks(host) {
   return [
     {key: 'home', href: '/', label: 'Trang chủ', icon: mdiHome},
-    {key: 'tree', href: '/tree', label: 'Cây gia phả', icon: mdiFamilyTree},
+    {key: 'tree', href: '/tree', label: 'Phả đồ', icon: mdiFamilyTree},
     {
       key: 'people',
       href: '/people',
@@ -63,9 +63,8 @@ export function mainLinks(host) {
       icon: mdiAccountGroup,
     },
     {key: 'lich-gio', href: '/lich-gio', label: 'Lịch giỗ', icon: mdiCandle},
-    {key: 'blog', href: '/blog', label: 'Bài viết', icon: mdiRss},
+    {key: 'blog', href: '/blog', label: 'Kho sử', icon: mdiRss},
     {key: 'map', href: '/map', label: host._('Map'), icon: mdiMap},
-    {key: 'search', href: '/search', label: host._('Search'), icon: mdiMagnify},
   ]
 }
 
@@ -108,6 +107,15 @@ export function researchLinks(host) {
       href: '/reports',
       label: host._('_Reports'),
       icon: mdiFileDocumentOutline,
+    },
+    // Trang tìm kiếm mọi loại hồ sơ của bản gốc: con cháu tra người bằng ô
+    // tìm tên ở trang Người trong họ (mọi nút tìm kiếm dẫn về đó), trang này
+    // để người biên soạn tìm sự kiện, địa danh, ghi chú.
+    {
+      key: 'search',
+      href: '/search',
+      label: 'Tìm kiếm nâng cao',
+      icon: mdiMagnify,
     },
   ]
 }

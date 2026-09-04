@@ -16,6 +16,7 @@ import {
 } from '../util.js'
 import {ATTR_GENERATION, ATTR_DEATH_ANNIVERSARY} from '../branding.js'
 import {nameSearchRules, NAME_SEARCH_SLOT} from '../nameSearch.js'
+import {takePendingPeopleSearch} from '../pageSearch.js'
 import '../components/GrampsjsIcon.js'
 import '../components/GrampsjsFilterTagMenu.js'
 import '../components/GrampsjsFilterYears.js'
@@ -169,10 +170,55 @@ export class GrampsjsViewPeople extends GrampsjsViewObjectsBase {
     // Không viết "+gramps_id": dấu + ghép thẳng vào URL bị máy chủ đọc thành
     // khoảng trắng (mã hoá %2B thì trả 422); không dấu là tăng dần.
     this._sort = 'gramps_id'
+    this._boundPeopleSearch = () => this.requestUpdate()
   }
 
   get _supportsMerge() {
     return true
+  }
+
+  // Danh sách người vẽ kiểu danh bạ: một dòng mỗi người, nhiều cột trên màn
+  // hình rộng, thay cho bảng bốn cột thưa.
+  // eslint-disable-next-line class-methods-use-this
+  get _tableRoster() {
+    return true
+  }
+
+  connectedCallback() {
+    super.connectedCallback()
+    // Nút kính lúp ở header, thanh dưới, phím tắt hay ô tìm trên trang chủ
+    // đều dẫn về ô tìm tên ở đây (xem pageSearch.js).
+    window.addEventListener('people:search', this._boundPeopleSearch)
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback()
+    window.removeEventListener('people:search', this._boundPeopleSearch)
+  }
+
+  updated(changed) {
+    super.updated(changed)
+    if (!this.active) return
+    const pending = takePendingPeopleSearch()
+    if (pending) this.openSearch(pending.query)
+  }
+
+  // GrampsjsPages gọi khi đang ở trang này mà người dùng bấm tìm kiếm; các
+  // trang khác gửi yêu cầu qua pageSearch.js rồi updated() nhận ở trên.
+  openSearch(query = '') {
+    if (query) {
+      this._searchText = query
+      this._applySearch()
+    }
+    this._focusSearch()
+  }
+
+  async _focusSearch() {
+    await this.updateComplete
+    const input = this.renderRoot.querySelector('#people-search')
+    if (!input) return
+    input.focus()
+    input.select()
   }
 
   get _fetchUrl() {

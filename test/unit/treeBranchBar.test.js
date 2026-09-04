@@ -1,9 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest'
-import {
-  branchForPerson,
-  branchRoots,
-} from '../../src/components/GrampsjsTreeBranchBar.js'
-import '../../src/components/GrampsjsChartToolbar.js'
+import {branchRoots} from '../../src/components/GrampsjsTreeBranchBar.js'
 
 if (!HTMLElement.prototype.attachInternals) {
   Object.defineProperty(HTMLElement.prototype, 'attachInternals', {
@@ -68,14 +64,6 @@ describe('người đầu chi cho dải nút nhánh', () => {
     ])
   })
 
-  it('nhận ra chi hiện tại qua cha khi người con chưa có thẻ', () => {
-    const people = [
-      person('I0001', 'h1', ['Ngành 2 - Chi 1']),
-      person('I0002', 'h2', [], {father: 'h1'}),
-    ]
-    expect(branchForPerson(people, 'I0002')).toEqual({branch: 2, sub: 1})
-  })
-
   it('thu gọn các nhánh vào một nút biểu tượng và phát lựa chọn từ menu', async () => {
     const bar = document.createElement('grampsjs-tree-branch-bar')
     bar.homePerson = 'HOME'
@@ -95,19 +83,8 @@ describe('người đầu chi cho dải nút nhánh', () => {
     bar.renderRoot.querySelectorAll('md-menu-item')[1].click()
 
     expect(onScope.mock.calls[0][0].detail).toEqual({
-      view: 'branch',
+      view: 'descendants',
       grampsId: 'I0003',
     })
-  })
-
-  it('đặt bộ chọn nhánh đầu cột công cụ nhanh', async () => {
-    const toolbar = document.createElement('grampsjs-chart-toolbar')
-    toolbar.state = {view: 'main', appState: {}}
-    document.body.append(toolbar)
-    await toolbar.updateComplete
-
-    const stack = toolbar.renderRoot.querySelector('.stack')
-    expect(stack.firstElementChild.localName).toBe('grampsjs-tree-branch-bar')
-    expect(toolbar.renderRoot.querySelector('#btn-overview')).not.toBeNull()
   })
 })

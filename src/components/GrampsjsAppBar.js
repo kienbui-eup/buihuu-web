@@ -81,6 +81,8 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
           top: 0;
           z-index: 21;
         }
+        /* Trang Cây dùng đúng thanh đầu trang chung như mọi trang khác; công cụ
+           của cây nổi ngay trên vùng vẽ (GrampsjsTreeToolbar trong view). */
         mwc-top-app-bar {
           --mdc-typography-headline6-font-family: var(
             --grampsjs-heading-font-family

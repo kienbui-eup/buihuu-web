@@ -135,7 +135,7 @@ export const TAG_HINTS = {
 }
 
 /*
-Hai bài hướng dẫn trong mục Bài viết: cách đọc các chữ trên hồ sơ (đời, ngành
+Hai bài hướng dẫn trong mục Kho sử: cách đọc các chữ trên hồ sơ (đời, ngành
 chi, thẻ, căn cứ nối cha) và cách đọc lịch giỗ âm lịch, cách gửi bổ sung.
 */
 export const READING_GUIDE_PATH = '/blog/SBHNC15'

@@ -13,7 +13,7 @@ import '../components/GrampsjsObjectPickerDialog.js'
 import {GrampsjsView} from './GrampsjsView.js'
 import {GrampsjsStaleDataMixin} from '../mixins/GrampsjsStaleDataMixin.js'
 import '../components/GrampsjsTooltip.js'
-import '../components/GrampsjsChartToolbar.js'
+import '../components/GrampsjsTreeToolbar.js'
 
 import {chartNameDisplayFormat, fireEvent} from '../util.js'
 import {iconButtonColorStyles} from '../SharedStyles.js'
@@ -49,11 +49,11 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
             ),
             linear-gradient(
               90deg,
-              color-mix(in srgb, var(--heritage-rule) 20%, transparent) 1px,
+              color-mix(in srgb, var(--heritage-rule) 8%, transparent) 1px,
               transparent 1px
             ),
             linear-gradient(
-              color-mix(in srgb, var(--heritage-rule) 20%, transparent) 1px,
+              color-mix(in srgb, var(--heritage-rule) 8%, transparent) 1px,
               transparent 1px
             );
           background-size: auto, 64px 64px, 64px 64px;
@@ -100,7 +100,7 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
           aspect-ratio: 1;
           translate: -50% -48%;
           color: var(--heritage-gold);
-          opacity: 0.12;
+          opacity: 0.08;
         }
 
         .ancestral-watermark .ring,
@@ -140,7 +140,7 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
           width: clamp(58px, 6vw, 86px);
           aspect-ratio: 1;
           background: var(--heritage-roof);
-          opacity: 0.86;
+          opacity: 0.58;
           -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 72'%3E%3Cpath d='M4 52V4h48v4H9v44H4Zm8-11V14h27c0 8-6 14-14 14-5 0-8-3-8-7 0-3 2-6 6-6 3 0 5 2 5 5 0 2-1 3-3 4 5 0 9-4 9-9H16v26h-4Zm7-4c6 0 10 4 10 10 0 4-3 8-8 8-4 0-7-3-7-6 0-3 2-5 5-5 2 0 4 2 4 4 0 1 0 2-1 3 2-1 3-2 3-5 0-3-3-6-6-6v-3ZM37 12c10 0 18 8 18 18h-4c0-8-6-14-14-14v-4Z'/%3E%3C/svg%3E")
             center/contain no-repeat;
           mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 72'%3E%3Cpath d='M4 52V4h48v4H9v44H4Zm8-11V14h27c0 8-6 14-14 14-5 0-8-3-8-7 0-3 2-6 6-6 3 0 5 2 5 5 0 2-1 3-3 4 5 0 9-4 9-9H16v26h-4Zm7-4c6 0 10 4 10 10 0 4-3 8-8 8-4 0-7-3-7-6 0-3 2-5 5-5 2 0 4 2 4 4 0 1 0 2-1 3 2-1 3-2 3-5 0-3-3-6-6-6v-3ZM37 12c10 0 18 8 18 18h-4c0-8-6-14-14-14v-4Z'/%3E%3C/svg%3E")
@@ -279,11 +279,11 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
           }
           .ancestral-watermark {
             min-width: 430px;
-            opacity: 0.08;
+            opacity: 0.055;
           }
           .corner-ornament {
             width: 46px;
-            opacity: 0.74;
+            opacity: 0.46;
           }
           .corner-ornament.nw,
           .corner-ornament.ne {
@@ -452,7 +452,7 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
   // Công cụ nổi thành một cột bên phải, gồm cả nút chọn nhánh.
   renderToolbar() {
     if (!this.treeView || this._editMode) return ''
-    return html`<grampsjs-chart-toolbar
+    return html`<grampsjs-tree-toolbar
       .state=${{
         view: this.treeView,
         appState: this.appState,
@@ -462,7 +462,7 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
         disableHome: this.disableHome,
         onAction: this._boundTreeAction,
       }}
-    ></grampsjs-chart-toolbar>`
+    ></grampsjs-tree-toolbar>`
   }
 
   _handleTreeAction(action, value) {
@@ -743,12 +743,11 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
             >
               ${map(
                 Object.values(chartNameDisplayFormat),
-                i =>
-                  html` <mwc-list-item
-                    value="${i}"
-                    ?selected="${i === this.nameDisplayFormat}"
-                    >${this._(i)}</mwc-list-item
-                  >`
+                i => html` <mwc-list-item
+                  value="${i}"
+                  ?selected="${i === this.nameDisplayFormat}"
+                  >${this._(i)}</mwc-list-item
+                >`
               )}
             </mwc-select>
           </div>

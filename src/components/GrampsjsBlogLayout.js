@@ -329,7 +329,7 @@ export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
       .sort(comparePosts)
     return html`
       <div class="layout">
-        <aside aria-label="Xem nhanh danh sách bài viết">
+        <aside aria-label="Xem nhanh danh mục kho sử">
           <slot name="contents" @slotchange=${this._syncContents}></slot>
           <details
             class="heritage-frame"
@@ -338,14 +338,14 @@ export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
           >
             <summary>
               <grampsjs-icon .path=${mdiBookOpenPageVariant}></grampsjs-icon>
-              <span class="title">Danh mục bài viết</span>
+              <span class="title">Danh mục kho sử</span>
               <grampsjs-icon
                 class="chevron"
                 .path=${mdiChevronDown}
               ></grampsjs-icon>
             </summary>
             <div class="filters">
-              <label for="article-search">Tìm bài viết</label>
+              <label for="article-search">Tìm trong kho sử</label>
               <input
                 id="article-search"
                 type="search"

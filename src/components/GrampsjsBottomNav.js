@@ -130,9 +130,8 @@ class GrampsjsBottomNav extends GrampsjsAppStateMixin(LitElement) {
       },
       {
         href: '/tree',
-        // Năm ô chia 320 px thì mỗi ô 64 px; "Cây gia phả" của menu chính không
-        // vừa, bị cắt còn "Cây gia…". Thanh dưới dùng chữ ngắn.
-        label: 'Gia phả',
+        // Năm ô chia 320 px thì mỗi ô 64 px, "Phả đồ" vừa một dòng.
+        label: 'Phả đồ',
         icon: mdiFamilyTree,
         active: page === 'tree',
       },

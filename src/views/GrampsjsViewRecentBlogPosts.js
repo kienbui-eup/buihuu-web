@@ -2,8 +2,9 @@ import {html, css} from 'lit'
 
 import {GrampsjsConnectedComponent} from '../components/GrampsjsConnectedComponent.js'
 import '../components/GrampsjsSearchResultList.js'
-import {fireEvent} from '../util.js'
 
+// Hai văn bản của dòng họ được ghim tại mục chính trên trang chủ để con cháu
+// có thể mở lại sau khi chúng không còn nằm trong nhóm bài mới nhất.
 const FEATURED_POSTS = [
   {
     id: 'SBHNC22',
@@ -17,17 +18,16 @@ const FEATURED_POSTS = [
   },
 ]
 
+// Ngoài hai văn bản ghim, hiện thêm một bài vừa cập nhật để khối Kho sử vẫn
+// phản ánh nội dung mới mà không kéo dài cột bên phải trên trang chủ.
+const MAX_RECENT_SHOWN = 1
+const MAX_REQUESTED = MAX_RECENT_SHOWN + FEATURED_POSTS.length
+
 export class GrampsjsViewRecentBlogPosts extends GrampsjsConnectedComponent {
   static get styles() {
     return [
       super.styles,
       css`
-        .change {
-          font-size: 0.8em;
-          color: var(--grampsjs-body-font-color-50);
-          margin-top: 0.3em;
-        }
-
         h3 {
           margin: 0 0 12px;
           font-size: 24px;
@@ -65,6 +65,9 @@ export class GrampsjsViewRecentBlogPosts extends GrampsjsConnectedComponent {
           font: 400 13px/1.6 var(--grampsjs-body-font-family);
           color: var(--md-sys-color-on-surface-variant);
         }
+        ul.featured li:first-child {
+          border-top: 0;
+        }
         p.more {
           margin: 12px 0 0;
           font-size: 0.95em;
@@ -75,13 +78,13 @@ export class GrampsjsViewRecentBlogPosts extends GrampsjsConnectedComponent {
 
   renderContent() {
     const featuredIds = new Set(FEATURED_POSTS.map(post => post.id))
-    const recentPost = this._data?.data?.find(
-      post => !featuredIds.has(post.gramps_id)
-    )
+    const recentPosts = (this._data?.data ?? [])
+      .filter(post => !featuredIds.has(post.gramps_id))
+      .slice(0, MAX_RECENT_SHOWN)
 
     return html`
       <h3>Tư liệu năm Bính Ngọ</h3>
-      <ul>
+      <ul class="featured">
         ${FEATURED_POSTS.map(
           post => html`<li>
             <a class="post" href="/blog/${post.id}"
@@ -90,27 +93,30 @@ export class GrampsjsViewRecentBlogPosts extends GrampsjsConnectedComponent {
           </li>`
         )}
       </ul>
-      ${recentPost
+      ${recentPosts.length
         ? html`<h4>Mới cập nhật</h4>
-            <grampsjs-search-result-list
-              large
-              selectable
-              @search-result:clicked="${this._handleClick}"
-              .data="${[{object: recentPost, object_type: 'source'}]}"
-              .appState="${this.appState}"
-              date
-              noSep
-            >
-            </grampsjs-search-result-list>`
+            <ul>
+              ${recentPosts.map(
+                post => html`<li>
+                  <a class="post" href="/blog/${post.gramps_id}"
+                    >${post.title}${post.author
+                      ? html`<small>${post.author}</small>`
+                      : ''}</a
+                  >
+                </li>`
+              )}
+            </ul>`
         : ''}
-      <p class="more"><a href="/blog">Mở kho sử</a></p>
+      <p class="more">
+        <a href="/blog" class="link">Mở kho sử</a>
+      </p>
     `
   }
 
   renderLoading() {
     return html`
       <h3>Tư liệu năm Bính Ngọ</h3>
-      <ul>
+      <ul class="featured">
         ${FEATURED_POSTS.map(
           post => html`<li>
             <a class="post" href="/blog/${post.id}"
@@ -119,15 +125,8 @@ export class GrampsjsViewRecentBlogPosts extends GrampsjsConnectedComponent {
           </li>`
         )}
       </ul>
-      <p class="more"><a href="/blog">Mở kho sử</a></p>
+      <p class="more"><a href="/blog" class="link">Mở kho sử</a></p>
     `
-  }
-
-  _handleClick(event) {
-    const grampsId = event?.detail?.object?.gramps_id
-    if (grampsId) {
-      fireEvent(this, 'nav', {path: `blog/${grampsId}`})
-    }
   }
 
   getUrl() {
@@ -141,9 +140,7 @@ export class GrampsjsViewRecentBlogPosts extends GrampsjsConnectedComponent {
     }
     return `/api/sources/?rules=${encodeURIComponent(
       JSON.stringify(rules)
-    )}&pagesize=3&sort=-change&locale=${
-      this.appState.i18n.lang || 'en'
-    }&profile=all&extend=all`
+    )}&pagesize=${MAX_REQUESTED}&page=1&sort=-change&keys=gramps_id,title,author`
   }
 }
 

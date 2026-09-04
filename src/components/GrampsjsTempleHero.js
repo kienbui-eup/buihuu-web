@@ -298,7 +298,18 @@ class GrampsjsTempleHero extends LitElement {
       :host([welcome]) h2 {
         font-size: clamp(32px, 3.5vw, 48px);
       }
-      @media (max-width: 760px) {
+      /* Từ 1024 đến 1199 px (laptop nhỏ, tablet ngang) cột chữ 0.8fr chỉ còn
+         hơn 300 px, thẻ trích lời tựa bẻ thành bốn dòng ba chữ; chia đôi hai
+         cột để chữ có chừng 430 px. */
+      @media (max-width: 1199px) {
+        .hero {
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        }
+      }
+      /* Dưới 1024 px (tablet dọc và điện thoại) cột chữ chỉ còn chừng 300 px
+         nếu vẫn chia hai cột: chữ bẻ dòng dày, nút xếp dọc, ảnh bị ép. Xếp
+         ảnh lên trên, phần giới thiệu bên dưới như trên điện thoại. */
+      @media (max-width: 1023px) {
         .hero {
           grid-template-columns: 1fr;
         }
@@ -311,6 +322,8 @@ class GrampsjsTempleHero extends LitElement {
           aspect-ratio: 16 / 9;
           object-fit: cover;
         }
+      }
+      @media (max-width: 760px) {
         .intro {
           padding: 26px 24px 30px;
         }
@@ -435,7 +448,7 @@ class GrampsjsTempleHero extends LitElement {
           ? ''
           : html`<div class="actions">
               <a href="/tree"
-                >Mở cây gia phả <span aria-hidden="true">&nbsp;→</span></a
+                >Mở phả đồ <span aria-hidden="true">&nbsp;→</span></a
               ><span class="action-note">17 đời · 3 ngành · 5 chi</span>
               ${this._renderFounder()}
             </div>`}
@@ -448,7 +461,7 @@ class GrampsjsTempleHero extends LitElement {
               images/nha-tho-to-800-4737852c.jpg   800w,
               images/nha-tho-to-1600-4737852c.jpg 1600w
             "
-            sizes="(max-width: 760px) 100vw, 65vw"
+            sizes="(max-width: 1023px) 100vw, 65vw"
             width="1672"
             height="941"
             fetchpriority="high"

@@ -6,6 +6,7 @@ import {
   getCourtesyName,
   getLifeSpan,
   getLineage,
+  getPortraitAgeGroup,
   isDeceased,
   personCardLines,
 } from '../../src/charts/util.js'
@@ -184,6 +185,33 @@ describe('getLifeSpan', () => {
   })
 })
 
+describe('getPortraitAgeGroup', () => {
+  it('chia đúng nhóm dưới 18, từ 18 đến 50 và trên 50 tuổi', () => {
+    expect(getPortraitAgeGroup({}, {birth: {date: '2010'}}, 2026)).toBe('child')
+    expect(getPortraitAgeGroup({}, {birth: {date: '1986'}}, 2026)).toBe('adult')
+    expect(getPortraitAgeGroup({}, {birth: {date: '1960'}}, 2026)).toBe('elder')
+  })
+
+  it('tính tuổi tại năm mất khi hồ sơ đã qua đời', () => {
+    expect(
+      getPortraitAgeGroup(
+        {},
+        {birth: {date: '2002'}, death: {date: '2014'}},
+        2026
+      )
+    ).toBe('child')
+  })
+
+  it('chọn cao tuổi cho đời lịch sử và trưởng thành cho đời gần khi thiếu năm sinh', () => {
+    expect(
+      getPortraitAgeGroup({attribute_list: [{type: 'Đời', value: '7'}]}, {})
+    ).toBe('elder')
+    expect(
+      getPortraitAgeGroup({attribute_list: [{type: 'Đời', value: '14'}]}, {})
+    ).toBe('adult')
+  })
+})
+
 describe('isDeceased', () => {
   it('nhận biết người có ngày mất hoặc ngày giỗ', () => {
     expect(isDeceased({}, {death: {date: '2010'}})).toBe(true)
@@ -210,20 +238,21 @@ describe('isDeceased', () => {
 })
 
 describe('personCardLines', () => {
-  it('chỉ giữ tên và đời/ngành/chi', () => {
+  it('chỉ giữ tên, đời/ngành/chi và ngày giỗ', () => {
     const person = {
       ...buiAnh,
       extended: {tags: [{name: 'Ngành 2 - Chi 1'}]},
     }
-    const lines = personCardLines(person, 'Bùi Ánh')
+    const lines = personCardLines(person, person.profile, 'Bùi Ánh')
     expect(lines.map(line => line.text)).toEqual([
       'Bùi Ánh',
       'Đời 7 · Ngành 2 · Chi 1',
+      'Giỗ 4/3 ÂL',
     ])
   })
 
   it('dòng họ tên đậm hơn các dòng còn lại', () => {
-    const [name, ...rest] = personCardLines(buiAnh, 'Bùi Ánh')
+    const [name, ...rest] = personCardLines(buiAnh, buiAnh.profile, 'Bùi Ánh')
     expect(rest.every(line => Number(line.weight) < Number(name.weight))).toBe(
       true
     )
@@ -233,30 +262,36 @@ describe('personCardLines', () => {
 
   it('bỏ hẳn dòng không có dữ liệu thay vì để trống', () => {
     const person = {attribute_list: [{type: 'Đời', value: '15'}]}
-    const lines = personCardLines(person, 'Bùi Hữu Cường')
+    const lines = personCardLines(person, {}, 'Bùi Hữu Cường')
     expect(lines.map(line => line.text)).toEqual(['Bùi Hữu Cường', 'Đời 15'])
   })
 
-  it('ngày sinh vẫn đọc được nhưng không đưa lên bảng tên', () => {
+  it('người còn sống chỉ hiện năm sinh', () => {
     const person = {
       attribute_list: [{type: 'Đời', value: '15'}],
       profile: {birth: {date: '12 tháng 5 năm 1982'}},
     }
     expect(getCardDate(person, person.profile)).toBe('Sinh 1982')
     expect(
-      personCardLines(person, 'Bùi Hữu Cường').map(line => line.text)
-    ).toEqual(['Bùi Hữu Cường', 'Đời 15'])
+      personCardLines(person, person.profile, 'Bùi Hữu Cường').map(
+        line => line.text
+      )
+    ).toEqual(['Bùi Hữu Cường', 'Đời 15', 'Sinh 1982'])
   })
 
   it('không đưa ngôi vị và tên tự vào thẻ cây', () => {
     expect(getCardLineage(buiAnh)).toBe('Đời 7')
-    const lines = personCardLines(buiAnh, 'Bùi Ánh')
-    expect(lines.map(line => line.text)).toEqual(['Bùi Ánh', 'Đời 7'])
+    const lines = personCardLines(buiAnh, buiAnh.profile, 'Bùi Ánh')
+    expect(lines.map(line => line.text)).toEqual([
+      'Bùi Ánh',
+      'Đời 7',
+      'Giỗ 4/3 ÂL',
+    ])
   })
 
   it('xuống dòng tên dài và không thêm dấu ba chấm', () => {
     const lines = fitPersonCardLines(
-      personCardLines({}, 'Bùi Hữu Nguyễn Văn Minh'),
+      personCardLines({}, {}, 'Bùi Hữu Nguyễn Văn Minh'),
       90
     )
     expect(lines.length).toBe(2)

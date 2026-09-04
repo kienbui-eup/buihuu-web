@@ -8,6 +8,7 @@ import {joinName} from '../branding.js'
 import {appendAddPersonButton} from './addPersonButton.js'
 import {
   fitPersonCardLines,
+  getPortraitAgeGroup,
   isDeceased,
   personCardLines,
   personHasChildren,
@@ -15,7 +16,6 @@ import {
 import {
   appendPersonCardDecoration,
   CARD_AVATAR_X,
-  CARD_AVATAR_RADIUS,
   CARD_AVATAR_Y,
 } from './heritageFrame.js'
 import {appendDescendantsButton} from './descendantsButton.js'
@@ -157,8 +157,8 @@ function TreeChartCore(
     .attr('class', 'person-card')
     .attr('width', boxWidth)
     .attr('height', boxHeight)
-    .attr('rx', 4)
-    .attr('ry', 4)
+    .attr('rx', 8)
+    .attr('ry', 8)
     .attr('transform', `translate(${-boxWidth / 2},${-boxHeight / 2})`)
     .attr('id', d => d.data.id) // Unique id for each slice
 
@@ -176,7 +176,9 @@ function TreeChartCore(
           : d.data.person?.gender === 1
           ? 'male'
           : 'unknown',
+      ageGroup: d => getPortraitAgeGroup(d.data.person, d.data.person?.profile),
       hasImage: d => Boolean(getImageUrl(d)),
+      nodeId: d => d.data.id,
     }
   )
 
@@ -233,11 +235,18 @@ function TreeChartCore(
     })
   }
 
+  const memorialPhotoRadius = 20
+  const textPadding = d => {
+    const deceased = isDeceased(d.data.person, d.data.person?.profile)
+    if (!deceased) return 14
+    return getImageUrl(d) ? 60 : 58
+  }
+
   // Thẻ của người có con cháu mang nút gài "Xem hậu duệ" nhô trên mép phải.
   const hasAction = d => !canEdit && personHasChildren(d.data.person)
 
-  // Mọi bảng tên chỉ giữ tên và đời/ngành/chi. Ảnh nằm cùng một vị trí phía
-  // trên phần chữ, không đổi bố cục giữa người còn sống và người đã mất.
+  // Ô chỉ giữ tên, đời/ngành/chi và giỗ hoặc năm sinh. Tên dài xuống hai dòng
+  // thay vì bị cắt bằng dấu ba chấm.
   const fullName = d =>
     nameDisplayFormat === chartNameDisplayFormat.surnameThenGiven
       ? joinName(d.data.name_surname, d.data.name_given)
@@ -246,25 +255,36 @@ function TreeChartCore(
   node
     .filter(d => d.data.name_given || d.data.name_surname)
     .each(function drawCard(d) {
-      const lineHeight = 16
+      const deceased = isDeceased(d.data.person, d.data.person?.profile)
+      const lineHeight = deceased ? 19 : 16
       const lines = fitPersonCardLines(
-        personCardLines(d.data.person, fullName(d) || 'Chưa rõ tên'),
-        boxWidth - 28,
-        true
+        personCardLines(
+          d.data.person,
+          d.data.person?.profile,
+          fullName(d) || 'Chưa rõ tên'
+        ),
+        boxWidth - textPadding(d) - (deceased ? 10 : 14),
+        deceased
       )
       // Ít dòng thì căn giữa theo chiều cao ô, để ô của người chỉ còn mỗi cái
       // tên không bị dồn lên mép trên.
-      const top =
-        -boxHeight / 2 + boxHeight - 22 - ((lines.length - 1) * lineHeight) / 2
+      const top = deceased
+        ? -boxHeight / 2 +
+          (boxHeight - (lines.length - 1) * lineHeight) / 2 +
+          lineHeight / 4
+        : -boxHeight / 2 +
+          boxHeight -
+          22 -
+          ((lines.length - 1) * lineHeight) / 2
 
       select(this)
         .selectAll('text.card-line')
         .data(lines)
         .join('text')
         .attr('class', 'card-line')
-        .attr('x', 0)
+        .attr('x', deceased ? -boxWidth / 2 + textPadding(d) : 0)
         .attr('y', (line, i) => top + i * lineHeight)
-        .attr('text-anchor', 'middle')
+        .attr('text-anchor', deceased ? 'start' : 'middle')
         .attr('font-size', line => line.size)
         .attr('font-weight', line => line.weight)
         .attr('fill', line =>
@@ -295,8 +315,16 @@ function TreeChartCore(
   node
     .filter(getImageUrl)
     .append('circle')
-    .attr('class', 'person-avatar-photo')
-    .attr('r', CARD_AVATAR_RADIUS)
+    .attr('class', d =>
+      isDeceased(d.data.person, d.data.person?.profile)
+        ? 'memorial-photo'
+        : 'living-avatar-photo'
+    )
+    .attr('r', d =>
+      isDeceased(d.data.person, d.data.person?.profile)
+        ? memorialPhotoRadius
+        : 22
+    )
     .attr('cy', -boxHeight / 2 + CARD_AVATAR_Y)
     .attr('cx', d => -boxWidth / 2 + CARD_AVATAR_X)
     .attr('fill', d => `url(#imgpattern-${d.data.id})`)

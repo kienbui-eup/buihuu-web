@@ -78,6 +78,10 @@ class GrampsjsSiteFooter extends LitElement {
         font-size: 11px;
         line-height: 1.6;
       }
+      /* Ba dòng ghi công nối bằng dấu chấm giữa trên màn hình rộng. */
+      .credit + .credit::before {
+        content: ' · ';
+      }
       :host([compact]) .body {
         display: none;
       }
@@ -101,11 +105,25 @@ class GrampsjsSiteFooter extends LitElement {
           flex-wrap: wrap;
           gap: 4px;
         }
+        /* Footer đầy đủ trên điện thoại: tên trang một dòng, rồi mỗi người
+           một dòng ngắn bên trái, để nút thêm hoặc sửa nổi ở góc phải không
+           che tên ai. */
+        :host(:not([compact])) .base {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .credit {
+          display: block;
+        }
+        .credit + .credit::before {
+          content: none;
+        }
         /* Footer gọn trên điện thoại chỉ đủ một dòng ngắn: bỏ tên trang vì
-           header đã có, bỏ phần lời tựa để dòng bản quyền số hóa không bị nút
-           sửa nổi ở góc phải che mất; footer đầy đủ vẫn ghi cả hai tên. */
+           header đã có, bỏ lời tựa và người biên soạn để dòng bản quyền số
+           hóa không bị nút sửa nổi ở góc phải che mất; footer đầy đủ vẫn ghi
+           cả ba tên. */
         :host([compact]) .base span:first-child,
-        :host([compact]) .base .preface-credit {
+        :host([compact]) .base .credit.extra {
           display: none;
         }
         :host([compact]) .base .credits {
@@ -153,8 +171,8 @@ class GrampsjsSiteFooter extends LitElement {
                 của chi mình.
               </p>`
             : html`<nav aria-label="Điều hướng cuối trang">
-                <a href="/tree">Cây gia phả</a><a href="/people">Dòng họ</a
-                ><a href="/lich-gio">Lịch giỗ</a><a href="/blog">Bài viết</a
+                <a href="/tree">Phả đồ</a><a href="/people">Dòng họ</a
+                ><a href="/lich-gio">Lịch giỗ</a><a href="/blog">Kho sử</a
                 ><a href="${ARTICLE_GIOI_THIEU}">Giới thiệu dòng họ</a
                 ><a href="${ARTICLE_HUONG_DAN}">Hướng dẫn tra cứu</a
                 ><a href="${ARTICLE_GOP_Y}">Góp ý, sửa sai</a
@@ -165,8 +183,9 @@ class GrampsjsSiteFooter extends LitElement {
       <div class="base">
         <span>${APP_NAME} · Thôn Chỉ Bồ</span
         ><span class="credits"
-          ><span class="preface-credit">Lời tựa: Bùi Hữu Đặng, 2020 · </span>Số
-          hóa: © 2026 Bùi Hữu Kiên</span
+          ><span class="credit extra">Lời tựa: Bùi Hữu Đặng, 2020</span
+          ><span class="credit extra">Biên soạn đương thời: Bùi Hữu Lương</span
+          ><span class="credit">Số hóa: © 2026 Bùi Hữu Kiên</span></span
         >
       </div>
     </footer>`

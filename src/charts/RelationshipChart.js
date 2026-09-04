@@ -7,6 +7,7 @@ import {joinName} from '../branding.js'
 import {appendAddPersonButton} from './addPersonButton.js'
 import {
   fitPersonCardLines,
+  getPortraitAgeGroup,
   isDeceased,
   personCardLines,
   personHasChildren,
@@ -14,7 +15,6 @@ import {
 import {
   appendPersonCardDecoration,
   CARD_AVATAR_X,
-  CARD_AVATAR_RADIUS,
   CARD_AVATAR_Y,
 } from './heritageFrame.js'
 import {appendDescendantsButton} from './descendantsButton.js'
@@ -436,8 +436,8 @@ function remasterChart(
     .attr('stroke', 'var(--md-sys-color-outline-variant)')
     .attr('x', 0)
     .attr('y', 0)
-    .attr('rx', 4)
-    .attr('ry', 4)
+    .attr('rx', 8)
+    .attr('ry', 8)
 
   appendPersonCardDecoration(
     nodes.filter(d => d.nodetype === 'person'),
@@ -451,11 +451,19 @@ function remasterChart(
           : d.profile?.sex === 'M'
           ? 'male'
           : 'unknown',
+      ageGroup: d => getPortraitAgeGroup(d.person, d.profile),
       hasImage: d => Boolean(d.imageUrl),
+      nodeId: d => d.handle,
     }
   )
 
-  // Mọi bảng tên dùng cùng bố cục ảnh phía trên, tên và đời/ngành/chi phía dưới.
+  // Ô chỉ giữ tên, đời/ngành/chi và giỗ hoặc năm sinh. Tên dài xuống hai dòng
+  // thay vì bị cắt bằng dấu ba chấm.
+  const textPadding = d => {
+    const deceased = isDeceased(d.person, d.profile)
+    if (!deceased) return 14
+    return d.imageUrl ? 60 : 58
+  }
   // Thẻ của người có con cháu mang nút gài "Xem hậu duệ" nhô trên mép phải.
   const hasAction = d =>
     !canEdit && d.nodetype === 'person' && personHasChildren(d.person)
@@ -472,22 +480,25 @@ function remasterChart(
         d.nodetype === 'person'
     )
     .each(function drawCard(d) {
-      const lineHeight = 16
+      const deceased = isDeceased(d.person, d.profile)
+      const lineHeight = deceased ? 19 : 16
       const lines = fitPersonCardLines(
-        personCardLines(d.person, fullName(d) || 'Chưa rõ tên'),
-        boxWidth - 28,
-        true
+        personCardLines(d.person, d.profile, fullName(d) || 'Chưa rõ tên'),
+        boxWidth - textPadding(d) - (deceased ? 10 : 14),
+        deceased
       )
-      const top = boxHeight - 22 - ((lines.length - 1) * lineHeight) / 2
+      const top = deceased
+        ? (boxHeight - (lines.length - 1) * lineHeight) / 2 + lineHeight / 4
+        : boxHeight - 22 - ((lines.length - 1) * lineHeight) / 2
 
       select(this)
         .selectAll('text.card-line')
         .data(lines)
         .join('text')
         .attr('class', 'card-line')
-        .attr('x', boxWidth / 2)
+        .attr('x', deceased ? textPadding(d) : boxWidth / 2)
         .attr('y', (line, i) => top + i * lineHeight)
-        .attr('text-anchor', 'middle')
+        .attr('text-anchor', deceased ? 'start' : 'middle')
         .attr('font-size', line => line.size)
         .attr('font-weight', line => line.weight)
         .attr('fill', line =>
@@ -503,8 +514,10 @@ function remasterChart(
   nodes
     .filter(d => d.imageUrl)
     .append('circle')
-    .attr('class', 'person-avatar-photo')
-    .attr('r', CARD_AVATAR_RADIUS)
+    .attr('class', d =>
+      isDeceased(d.person, d.profile) ? 'memorial-photo' : 'living-avatar-photo'
+    )
+    .attr('r', d => (isDeceased(d.person, d.profile) ? 20 : 22))
     .attr('cy', CARD_AVATAR_Y)
     .attr('cx', CARD_AVATAR_X)
     .attr('fill', d => `url(#imgpattern-${d.handle})`)

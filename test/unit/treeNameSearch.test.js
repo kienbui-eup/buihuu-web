@@ -1,19 +1,52 @@
 import {afterEach, describe, expect, it, vi} from 'vitest'
 
 import '../../src/components/GrampsjsObjectPickerDialog.js'
-import '../../src/components/GrampsjsChartToolbar.js'
+import '../../src/components/GrampsjsTreeToolbar.js'
+
+if (!HTMLElement.prototype.attachInternals) {
+  Object.defineProperty(HTMLElement.prototype, 'attachInternals', {
+    value: () => ({}),
+  })
+}
 
 afterEach(() => document.body.replaceChildren())
 
 describe('tìm theo tên trên phả đồ', () => {
   it('nút tìm gửi đúng thao tác cho phả đồ', () => {
-    const toolbar = document.createElement('grampsjs-chart-toolbar')
+    const toolbar = document.createElement('grampsjs-tree-toolbar')
     const onAction = vi.fn()
     toolbar.state = {view: 'main', onAction}
 
     toolbar._act('search')
 
     expect(onAction).toHaveBeenCalledWith('search', undefined)
+  })
+
+  it('đặt bộ chọn nhánh trong cùng cột công cụ nhanh', async () => {
+    const toolbar = document.createElement('grampsjs-tree-toolbar')
+    toolbar.state = {view: 'main', appState: {}}
+    document.body.append(toolbar)
+    await toolbar.updateComplete
+
+    const stack = toolbar.renderRoot.querySelector('.stack')
+    expect(stack.firstElementChild.localName).toBe('grampsjs-tree-branch-bar')
+    expect(toolbar.renderRoot.querySelector('#btn-search')).not.toBeNull()
+  })
+
+  it('gom điều hướng phụ vào một menu riêng cho điện thoại', async () => {
+    const toolbar = document.createElement('grampsjs-tree-toolbar')
+    const onAction = vi.fn()
+    toolbar.state = {view: 'main', appState: {}, onAction}
+    document.body.append(toolbar)
+    await toolbar.updateComplete
+
+    const menu = toolbar.renderRoot.querySelector('#navigation-menu')
+    const items = menu.querySelectorAll('md-menu-item')
+    expect(toolbar.renderRoot.querySelector('#btn-more')).not.toBeNull()
+    expect(items).toHaveLength(4)
+
+    items[2].click()
+    expect(onAction).toHaveBeenCalledWith('person', undefined)
   })
 
   it('tìm người bằng quy tắc tên và đổi kết quả sang dạng danh sách chọn', async () => {

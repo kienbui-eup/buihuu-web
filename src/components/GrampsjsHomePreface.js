@@ -609,7 +609,7 @@ export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
         ghi theo thời điểm chép; từ 7/2025 xã Thụy Trường thuộc xã Đông Thụy
         Anh, tỉnh Hưng Yên.
         <a href="/${PREFACE_PATH}" @click=${this._openBlogPost}
-          >Đọc tại trang Bài viết</a
+          >Đọc trong Kho sử</a
         >
       </p>
     `

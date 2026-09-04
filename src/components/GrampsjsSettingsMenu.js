@@ -28,7 +28,6 @@ import {
 } from '@mdi/js'
 import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
-import {handleSearchLink} from '../pageSearch.js'
 import {
   mainLinks,
   researchLinks,
@@ -389,7 +388,6 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
       href=${href}
       aria-current=${isCurrentLink(this.appState.path, link) ? 'page' : 'false'}
       @click=${event => {
-        if (href === '/search') handleSearchLink(event, this)
         if (
           !event.ctrlKey &&
           !event.metaKey &&

@@ -7,7 +7,6 @@ import './GrampsjsViewTreeChart.js'
 import './GrampsjsViewRelationshipChart.js'
 import {fireEvent} from '../util.js'
 import {DEFAULT_TREE_VIEW, normalizeTreeView} from '../treeDefaults.js'
-import {TreeNavigationHistory} from '../treeNavigation.js'
 
 export class GrampsjsViewTree extends GrampsjsView {
   static get styles() {
@@ -47,6 +46,7 @@ export class GrampsjsViewTree extends GrampsjsView {
     return {
       grampsId: {type: String},
       view: {type: String},
+      _history: {type: Array},
     }
   }
 
@@ -54,7 +54,7 @@ export class GrampsjsViewTree extends GrampsjsView {
     super()
     this.grampsId = ''
     this.view = DEFAULT_TREE_VIEW
-    this._navigation = new TreeNavigationHistory()
+    this._history = this.grampsId ? [this.grampsId] : []
     this._appliedTreeDefaultView = null
     this._boundSelectPerson = this._selectPerson.bind(this)
   }
@@ -72,13 +72,6 @@ export class GrampsjsViewTree extends GrampsjsView {
     super.updated(changed)
     if (changed.has('view')) {
       fireEvent(this, 'edit-mode:off', {})
-    }
-  }
-
-  willUpdate(changed) {
-    super.willUpdate(changed)
-    if (this.grampsId && (changed.has('grampsId') || changed.has('view'))) {
-      this._navigation.observe(this.grampsId, this.view)
     }
   }
 
@@ -102,22 +95,19 @@ export class GrampsjsViewTree extends GrampsjsView {
   }
 
   _handleViewChange(e) {
-    this._navigate(this.grampsId, e.detail.view)
+    this.view = normalizeTreeView(e.detail.view)
   }
 
-  _navigate(grampsId, view) {
-    this.grampsId = grampsId || this.grampsId
+  // Dải nút nhánh: đổi cả người gốc (đầu chi hay thủy tổ) và cách xem.
+  _handleScope(e) {
+    const {view, grampsId} = e.detail ?? {}
+    if (grampsId && grampsId !== this.grampsId) this.grampsId = grampsId
     this.view = normalizeTreeView(view)
   }
 
-  // Dải xem nhanh đổi cả người được chọn và phạm vi trong cùng một lượt.
-  _handleScope(e) {
-    const {view, grampsId} = e.detail ?? {}
-    this._navigate(grampsId, view)
-  }
-
   _openBranch(event) {
-    this._navigate(event.detail.grampsId, 'descendants')
+    this.grampsId = event.detail.grampsId
+    this.view = 'descendants'
   }
 
   openSearch() {
@@ -142,9 +132,8 @@ export class GrampsjsViewTree extends GrampsjsView {
         ?active=${this.active}
         .appState="${this.appState}"
         .settings=${this.settings}
-        ?disableBack=${!this._navigation.canBack}
-        ?disableHome=${this.grampsId === this.settings.homePerson &&
-        this.view === 'main'}
+        ?disableBack=${this._history.length < 2}
+        ?disableHome=${this.grampsId === this.settings.homePerson}
       >
       </grampsjs-view-relationship-chart>
     `
@@ -164,23 +153,20 @@ export class GrampsjsViewTree extends GrampsjsView {
         ?active=${this.active}
         .appState="${this.appState}"
         .settings=${this.settings}
-        ?disableBack=${!this._navigation.canBack}
-        ?disableHome=${this.grampsId === this.settings.homePerson &&
-        this.view === 'main'}
+        ?disableBack=${this._history.length < 2}
+        ?disableHome=${this.grampsId === this.settings.homePerson}
       >
       </grampsjs-view-tree-chart>
     `
   }
 
   _prevPerson() {
-    const previous = this._navigation.back()
-    if (!previous) return
-    this.grampsId = previous.grampsId
-    this.view = previous.view
+    this._history.pop()
+    this.grampsId = this._history.pop()
   }
 
   _backToHomePerson() {
-    this._navigate(this.settings.homePerson, 'main')
+    this.grampsId = this.settings.homePerson
   }
 
   _goToPerson() {
@@ -202,6 +188,11 @@ export class GrampsjsViewTree extends GrampsjsView {
 
   update(changed) {
     super.update(changed)
+    if (changed.has('grampsId')) {
+      this._history.push(this.grampsId)
+      // limit history to 100 people
+      this._history = this._history.slice(-100)
+    }
     if (this.active && (changed.has('active') || changed.has('settings'))) {
       this._applyPreferredViewIfNeeded()
     }
@@ -214,14 +205,14 @@ export class GrampsjsViewTree extends GrampsjsView {
     }
     this._appliedTreeDefaultView = preferredView
     if (this.view !== preferredView) {
-      this._navigate(this.grampsId, preferredView)
+      this.view = preferredView
     }
   }
 
   async _selectPerson(event) {
     const {grampsId} = event.detail
     if (!this.active || !grampsId) return
-    this._navigate(grampsId, this.view)
+    this.grampsId = grampsId
   }
 }
 

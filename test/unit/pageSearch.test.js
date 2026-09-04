@@ -3,6 +3,8 @@ import {
   requestPageSearch,
   handleSearchLink,
   normalizeSearchText,
+  openPeopleSearch,
+  takePendingPeopleSearch,
 } from '../../src/pageSearch.js'
 import '../../src/views/GrampsjsViewSearch.js'
 
@@ -18,12 +20,27 @@ describe('tìm kiếm theo trang', () => {
     expect(nav).not.toHaveBeenCalled()
   })
 
-  it('mở tìm kiếm chung nếu không có trang nhận yêu cầu', () => {
+  it('dẫn về ô tìm tên trang Người trong họ nếu không có trang nhận yêu cầu', () => {
     const target = new EventTarget()
     const nav = vi.fn()
     target.addEventListener('nav', nav)
+    const notified = vi.fn()
+    window.addEventListener('people:search', notified, {once: true})
     requestPageSearch(target)
-    expect(nav.mock.calls[0][0].detail).toEqual({path: 'search'})
+    expect(nav.mock.calls[0][0].detail).toEqual({path: 'people'})
+    expect(notified).toHaveBeenCalledOnce()
+    // Yêu cầu chờ trang Người nhận một lần rồi hết.
+    expect(takePendingPeopleSearch()).toEqual({query: ''})
+    expect(takePendingPeopleSearch()).toBeNull()
+  })
+
+  it('mang theo chữ đã gõ khi mở từ nơi khác', () => {
+    const target = new EventTarget()
+    const nav = vi.fn()
+    target.addEventListener('nav', nav)
+    openPeopleSearch(target, '  huyền nhân ')
+    expect(nav.mock.calls[0][0].detail).toEqual({path: 'people'})
+    expect(takePendingPeopleSearch()).toEqual({query: 'huyền nhân'})
   })
 
   it('giữ thao tác mở liên kết trong tab mới', () => {

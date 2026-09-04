@@ -17,6 +17,7 @@ import {sharedStyles} from '../SharedStyles.js'
 import {heritageFrameStyles} from '../HeritageStyles.js'
 import {
   apiGetTokens,
+  apiGetFamilyCodeTokens,
   apiResetPassword,
   apiGetOIDCConfig,
   apiOIDCLogin,
@@ -432,12 +433,16 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
   Xem bằng mã dòng họ.
 
   Các trang dòng họ ở Việt Nam đều mở phả đồ bằng một mã chung cả họ biết, không
-  bắt từng người lập tài khoản. Ở đây mã đó là mật khẩu của một tài khoản khách
-  chỉ xem (vai trò Guest), tên tài khoản đặt trong config.js. Không cấu hình thì
-  khối này không hiện.
+  bắt từng người lập tài khoản. Ở đây mã là họ tên đầy đủ của một người trong
+  cây, viết liền, không phân biệt hoa thường; máy chủ so mã với tên trong cây
+  (POST /api/token/family-code/) rồi cấp token cho tài khoản khách chỉ xem, nên
+  trình duyệt không cần biết tài khoản đó. Tắt bằng familyCodeLogin trong
+  config.js thì khối này không hiện. Không nói luật của mã ở trang công khai
+  này: ai trong họ được truyền miệng, người ngoài không đọc được ở đây.
   */
   _renderFamilyCode() {
-    if (!window.grampsjsConfig?.guestUsername) return ''
+    const config = window.grampsjsConfig ?? {}
+    if (!config.familyCodeLogin && !config.guestUsername) return ''
     // Đây là lối vào của đa số người trong họ nên đứng trước form tài khoản.
     return html`
       <form
@@ -456,9 +461,11 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
           <input
             id="family-code"
             name="family-code"
-            type="password"
+            type="text"
             autocomplete="off"
             autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
             placeholder=" "
           />
           <label for="family-code">${this._('Family code')}</label>
@@ -479,12 +486,14 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
 
   async _submitFamilyCode(e) {
     e?.preventDefault?.()
-    const code = this.shadowRoot.getElementById('family-code')?.value
+    const code = this.shadowRoot.getElementById('family-code')?.value?.trim()
     if (!code) return
-    const res = await apiGetTokens(window.grampsjsConfig.guestUsername, code)
+    const res = await apiGetFamilyCodeTokens(code)
     if ('error' in res) {
       this._showError(
-        'Mã dòng họ chưa đúng. Kiểm tra lại hoặc hỏi người giữ gia phả.'
+        res.error === 'Too many attempts'
+          ? 'Thử quá nhiều lần. Đợi một phút rồi nhập lại.'
+          : 'Mã dòng họ chưa đúng. Kiểm tra lại hoặc hỏi người giữ gia phả.'
       )
     } else {
       document.location.href = '/'

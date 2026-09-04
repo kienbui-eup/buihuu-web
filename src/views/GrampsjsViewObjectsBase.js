@@ -230,6 +230,13 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
     return Math.min(960, Math.max(500, this._visibleColumns.length * 160))
   }
 
+  // View con trả true để danh sách vẽ kiểu danh bạ (dòng mảnh, nhiều cột)
+  // thay cho bảng; mặc định là bảng.
+  // eslint-disable-next-line class-methods-use-this
+  get _tableRoster() {
+    return false
+  }
+
   get _tableData() {
     return this._data.map(row => this._visibleColumns.map(col => row[col.key]))
   }
@@ -262,6 +269,7 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
               serverSort
               sortable
               linked
+              ?roster="${this._tableRoster}"
               ?selectable="${this._selectionMode}"
               selectionKey="${this._selectionKey}"
               ?loading="${this.loading}"

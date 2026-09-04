@@ -160,6 +160,71 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
           outline-offset: -2px;
         }
 
+        /* Danh bạ (trang Người trong họ): mỗi người một dòng mảnh, tên rồi
+           đến đời, ngành chi, giỗ nối tiếp trên cùng dòng và chỉ xuống dòng
+           khi không đủ chỗ; trên màn hình rộng chia thành nhiều cột như trang
+           danh bạ thay cho bảng bốn cột thưa. */
+        .table-container.roster {
+          padding: 6px 16px 8px;
+          border: 1px solid var(--heritage-rule);
+          border-radius: var(--grampsjs-frame-radius);
+          background-color: var(--grampsjs-frame-paper);
+          background-image: var(--heritage-panel-background);
+          box-shadow: var(--heritage-panel-shadow),
+            inset 0 3px var(--heritage-gold);
+        }
+
+        table.roster tbody {
+          display: block;
+          columns: 360px;
+          column-gap: 36px;
+        }
+
+        table.roster tbody tr {
+          break-inside: avoid;
+          margin: 0;
+          padding: 9px 6px;
+          gap: 1px 10px;
+          border: 0;
+          border-top: 1px solid var(--heritage-rule);
+          border-radius: 0;
+          background: none;
+          box-shadow: none;
+        }
+
+        table.roster tbody tr:first-child {
+          border-top: 0;
+        }
+
+        table.roster tbody tr:last-child {
+          border-bottom: 0;
+        }
+
+        table.roster tbody td {
+          padding: 0;
+        }
+
+        table.roster tbody td[data-key='name'] {
+          flex: 0 1 auto;
+          font-size: 16px;
+          font-weight: 600;
+        }
+
+        table.roster tbody td.meta,
+        table.roster tbody td.meta::before {
+          margin-top: 0;
+          font-size: 14px;
+        }
+
+        table.roster.linked tbody tr:hover {
+          outline: 0;
+          border-radius: 3px;
+        }
+
+        table.roster tbody tr.selected {
+          outline-offset: -1px;
+        }
+
         /* Wide table */
 
         table.wide thead {
@@ -336,6 +401,9 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
       columns: {type: Array},
       data: {type: Array},
       narrow: {type: Boolean},
+      // Kiểu danh bạ: không bao giờ chuyển sang bảng rộng, dòng mảnh, nhiều
+      // cột trên màn hình rộng (xem CSS .roster).
+      roster: {type: Boolean},
       naturalWidth: {type: Boolean},
       breakPoint: {type: Number},
       loading: {type: Boolean},
@@ -358,6 +426,7 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
     this.data = []
     this.loading = false
     this.narrow = false
+    this.roster = false
     this.naturalWidth = false
     this.breakPoint = 600
     this.linked = false
@@ -379,7 +448,9 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
   }
 
   get _isWide() {
-    return this._containerWidth > this.breakPoint && !this.narrow
+    return (
+      this._containerWidth > this.breakPoint && !this.narrow && !this.roster
+    )
   }
 
   // Dòng có liên kết thì vào được bằng Tab; quy tắc lit-a11y không đọc được
@@ -390,7 +461,12 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
 
   render() {
     return html`
-      <div class="table-container ${this._isWide ? 'wide' : ''}">
+      <div
+        class="table-container ${classMap({
+          wide: this._isWide,
+          roster: this.roster,
+        })}"
+      >
         ${this.data.length > 0 && this.sortable && !this._isWide
           ? this._renderMobileSort()
           : ''}
@@ -400,6 +476,7 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
           class="${classMap({
             wide: this._isWide,
             linked: this.linked,
+            roster: this.roster,
           })}"
           style="${this.naturalWidth && this._isWide
             ? 'width: auto;'

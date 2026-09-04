@@ -5,7 +5,7 @@ The dropdown menu for adding objects in the top app bar
 import {html, css, LitElement} from 'lit'
 import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
-import {fireEvent, objectTypeToEndpoint} from '../util.js'
+import {openPeopleSearch} from '../pageSearch.js'
 
 // Các trang người trong họ mở thường xuyên: nạp sẵn.
 import '../views/GrampsjsViewPeople.js'
@@ -140,6 +140,8 @@ class GrampsjsPages extends GrampsjsAppStateMixin(LitElement) {
     window.removeEventListener('page:search', this._boundPageSearch)
   }
 
+  // Trang có ô tìm riêng (cây, lịch giỗ, người trong họ) tự mở ô của mình;
+  // trang khác dẫn về ô tìm tên trên trang Người trong họ.
   _handlePageSearch(event) {
     const view = this.renderRoot.querySelector('.page[active]')
     if (!view) return
@@ -148,16 +150,7 @@ class GrampsjsPages extends GrampsjsAppStateMixin(LitElement) {
       view.openSearch()
       return
     }
-    const page = this.appState.path.page
-    const type = Object.keys(objectTypeToEndpoint).find(
-      key =>
-        key === page ||
-        objectTypeToEndpoint[key] === page ||
-        (key === 'media' && page === 'medialist')
-    )
-    const search = this.renderRoot.querySelector('grampsjs-view-search')
-    search.setSearchScope(type)
-    fireEvent(this, 'nav', {path: 'search'})
+    openPeopleSearch(this)
   }
 
   render() {

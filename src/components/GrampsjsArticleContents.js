@@ -198,7 +198,7 @@ export class GrampsjsArticleContents extends LitElement {
             ${/^SBHNC\d+$/.test(this.articleId) && this.articleId !== 'SBHNC00'
               ? html`<a href="/blog/SBHNC00">Các chuyên mục nghiên cứu</a>`
               : ''}
-            <a href="/blog">Tất cả bài viết</a>
+            <a href="/blog">Toàn bộ kho sử</a>
           </div>
         </nav>
       </details>

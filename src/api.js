@@ -638,6 +638,49 @@ export async function apiGetTokens(username, password) {
   }
 }
 
+// Mở cây bằng mã dòng họ (họ tên một người trong cây): máy chủ so mã và cấp
+// token cho tài khoản khách chỉ xem, trình duyệt không cần biết tài khoản đó.
+export async function apiGetFamilyCodeTokens(code) {
+  try {
+    const resp = await fetch(`${__APIHOST__}/api/token/family-code/`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({code}),
+    })
+    if (resp.status === 401 || resp.status === 403) {
+      throw new Error('Wrong family code')
+    } else if (resp.status === 429) {
+      throw new Error('Too many attempts')
+    } else if (resp.status !== 200) {
+      let resJson
+      try {
+        resJson = await resp.json()
+      } catch {
+        resJson = {}
+      }
+      throw new Error(
+        resJson?.error?.message || resp.statusText || `Error ${resp.status}`
+      )
+    }
+    const data = await resp.json()
+    if (data.access_token === undefined) {
+      return {error: 'Access token missing in response'}
+    }
+    if (data.refresh_token === undefined) {
+      return {error: 'Refresh token missing in response'}
+    }
+    const expires = Date.now() + ACCESS_TOKEN_EXPIRY_MS
+    storeAuthToken(data.access_token, expires)
+    storeRefreshToken(data.refresh_token)
+    return {}
+  } catch (error) {
+    return {error: error.message}
+  }
+}
+
 // Creates the first tree for a user whose token has no `tree` claim yet,
 // assigns it via the one-time `PUT /users/-/` onboarding write, and
 // refreshes the stored access token so it picks up the new claim.

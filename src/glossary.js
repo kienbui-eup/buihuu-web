@@ -37,8 +37,9 @@ Khoá là chuỗi tiếng Anh gốc, đúng như Gramps gửi lên trong `gramps
 */
 export const VI_GLOSSARY = {
   // Gia phả và các nhóm dữ liệu chính
-  // Mục điều hướng tới trang cây. Tên trang là "Phả hệ Bùi Hữu", nên trang cây
-  // gọi là "Cây gia phả" ở mọi chỗ để không lẫn với tên trang.
+  // "Family Tree" của Gramps là cả cơ sở dữ liệu gia phả; trang biểu đồ gọi là
+  // "Phả đồ" (đặt thẳng trong siteNav.js và tiêu đề trang ở GrampsJs.js), tên
+  // trang là "Phả hệ Bùi Hữu", ba thứ không lẫn nhau.
   'Family Tree': 'Cây gia phả',
   'Family Tree name': 'Tên gia phả',
   'Family Tree Processing': 'Xử lý gia phả',

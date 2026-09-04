@@ -67,9 +67,15 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         .opening-grid {
           margin: 40px 0 0;
         }
+        /* Số liệu bản phả xếp hai cột trên máy tính: lời dẫn bên trái, bốn con
+           số và hai liên kết bên phải, để bốn con số không kéo dài cả khối. */
         .family-ledger {
+          display: grid;
+          grid-template-columns: minmax(240px, 0.85fr) minmax(0, 2fr);
+          gap: 12px 48px;
+          align-items: start;
           border-top: 3px solid var(--heritage-gold);
-          padding: 30px;
+          padding: 26px 30px 22px;
           background: color-mix(
             in srgb,
             var(--heritage-gold) 9%,
@@ -77,33 +83,31 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           );
         }
         .family-ledger h2 {
-          font-size: 26px;
-          margin: 0 0 14px;
+          font-size: 24px;
+          margin: 0 0 10px;
           color: var(--heritage-ink);
         }
-        .family-ledger > p:not(.section-label) {
-          max-width: 42em;
+        .ledger-intro p:not(.section-label) {
+          max-width: 26em;
           font-size: 14px;
-          line-height: 1.85;
+          line-height: 1.8;
+          margin: 0;
           color: var(--md-sys-color-on-surface-variant);
         }
-        /* Bốn số liệu xếp thành một hàng trên màn hình rộng, hai cột trên
-           điện thoại; mỗi ô có đường kẻ trên như dòng sổ. Kiểu chung của trang
-           cho "dl div" trôi trái (float) nên phải tắt để lưới hoạt động. */
+        /* Bốn số liệu một hàng, mỗi ô có đường kẻ trên như dòng sổ. Kiểu chung
+           của trang cho "dl div" trôi trái (float) nên phải tắt để lưới hoạt
+           động. */
         .family-ledger dl {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-          gap: 0 32px;
-          margin: 22px 0 8px;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 0 28px;
+          margin: 6px 0 0;
         }
         .family-ledger dl > div {
           float: none;
           margin-right: 0;
           border-top: 1px solid var(--heritage-rule);
-          padding: 14px 0;
-        }
-        .family-ledger .ledger-links {
-          clear: both;
+          padding: 12px 0 10px;
         }
         .family-ledger dt {
           font-size: 13px;
@@ -114,11 +118,22 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           padding: 0;
           color: var(--heritage-ink);
         }
+        .family-ledger dd.text {
+          font-size: 20px;
+          line-height: 1.5;
+          padding-top: 4px;
+        }
+        .family-ledger dd small {
+          display: block;
+          font: 400 12px/1.5 var(--grampsjs-body-font-family);
+          color: var(--md-sys-color-on-surface-variant);
+        }
         .family-ledger .ledger-links {
+          clear: both;
           display: flex;
           flex-wrap: wrap;
           gap: 4px 18px;
-          margin: 0;
+          margin: 4px 0 0;
         }
         .family-ledger a {
           display: inline-flex;
@@ -127,14 +142,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           font-size: 14px;
           text-decoration: underline;
           text-underline-offset: 5px;
-        }
-        .family-ledger dd.text {
-          font-size: 20px;
-        }
-        .family-ledger dd small {
-          display: block;
-          font: 400 12px/1.5 var(--grampsjs-body-font-family);
-          color: var(--md-sys-color-on-surface-variant);
         }
         .starter h3 {
           margin: 0 0 8px;
@@ -175,16 +182,36 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           margin: 0;
           color: var(--heritage-ink);
         }
+        /* Cột trái là lịch giỗ (dài nhất), cột phải xếp thủy tổ, kho sử (bài
+           mới) và mục đọc trước để hai cột cân nhau trên máy tính. Trên điện
+           thoại đổi thứ tự: lịch giỗ, đọc trước khi tra cứu, thủy tổ, kho sử. */
         .dashboard-grid {
           display: grid;
           grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+          grid-template-rows: auto auto 1fr;
+          grid-template-areas:
+            'memorial origin'
+            'memorial stories'
+            'memorial guide';
           gap: 24px;
           align-items: start;
+        }
+        .memorial {
+          grid-area: memorial;
+        }
+        .origin {
+          grid-area: origin;
+        }
+        .stories {
+          grid-area: stories;
+        }
+        .guide {
+          grid-area: guide;
         }
         .panel {
           min-width: 0;
           padding: 28px;
-          margin-bottom: 20px;
+          margin: 0;
         }
         .panel > h3 {
           margin: 0 0 12px;
@@ -211,8 +238,17 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         .home-page-image-only {
           display: flex;
           justify-content: center;
-          margin-top: 1em;
-          margin-bottom: 1.5em;
+          margin: 0 0 24px;
+        }
+
+        @media screen and (max-width: 1023px) {
+          .family-ledger {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 8px;
+          }
+          .ledger-intro p:not(.section-label) {
+            max-width: 42em;
+          }
         }
 
         @media screen and (max-width: 768px) {
@@ -220,7 +256,10 @@ export class GrampsjsViewDashboard extends GrampsjsView {
             margin: 28px 0 0;
           }
           .family-ledger {
-            padding: 22px 18px;
+            padding: 22px 18px 16px;
+          }
+          .family-ledger h2 {
+            font-size: 22px;
           }
           .family-ledger dl {
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -228,7 +267,13 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           }
           .dashboard-grid {
             grid-template-columns: minmax(0, 1fr);
-            gap: 0;
+            grid-template-rows: auto;
+            grid-template-areas:
+              'memorial'
+              'guide'
+              'origin'
+              'stories';
+            gap: 16px;
           }
           .panel {
             padding: 22px 18px;
@@ -296,93 +341,89 @@ export class GrampsjsViewDashboard extends GrampsjsView {
       <div class="dashboard-content">
         <div class="section-heading">
           <p class="section-label">Hôm nay trong họ</p>
-          <h2>Giỗ sắp tới, thủy tổ và bài viết mới</h2>
+          <h2>Giỗ sắp tới, thủy tổ và kho sử</h2>
         </div>
         <div class="dashboard-grid">
-          <div>
-            ${!hasPeople && canEdit
-              ? html`
-                  <div>
-                    <h3>Bắt đầu ghi chép gia phả</h3>
-                    <p>
-                      ${this._(
-                        'To start building your family tree, add yourself as a person or import a family tree file.'
-                      )}
-                    </p>
-                    <div class="buttons">
-                      <md-outlined-button href="/new_person"
-                        >${this._('New Person')}</md-outlined-button
-                      ><md-outlined-button href="/settings/administration"
-                        >${this._('Import Family Tree')}</md-outlined-button
-                      >
-                    </div>
-                  </div>
-                `
-              : ''}
-            ${hasPeople
-              ? html`
-                  <div class="panel memorial heritage-frame">
-                    <p class="section-label">Lịch giỗ</p>
-                    <grampsjs-view-death-anniversaries
-                      id="death-anniversaries"
-                      .appState="${this.appState}"
+          ${!hasPeople && canEdit
+            ? html`
+                <div class="memorial">
+                  <h3>Bắt đầu ghi chép gia phả</h3>
+                  <p>
+                    ${this._(
+                      'To start building your family tree, add yourself as a person or import a family tree file.'
+                    )}
+                  </p>
+                  <div class="buttons">
+                    <md-outlined-button href="/new_person"
+                      >${this._('New Person')}</md-outlined-button
+                    ><md-outlined-button href="/settings/administration"
+                      >${this._('Import Family Tree')}</md-outlined-button
                     >
-                    </grampsjs-view-death-anniversaries>
                   </div>
-                `
-              : ''}
-            <div class="panel starter heritage-frame">
-              <p class="section-label">Mới vào trang</p>
-              <h3>Đọc trước khi tra cứu</h3>
-              <ul>
-                <li>
-                  <a href="${ARTICLE_GIOI_THIEU}"
-                    >Giới thiệu dòng họ
-                    <small
-                      >Thủy tổ, các đời đầu, ba ngành năm chi và nhà thờ tổ ở
-                      Chỉ Bồ</small
-                    ></a
+                </div>
+              `
+            : ''}
+          ${hasPeople
+            ? html`
+                <div class="panel memorial heritage-frame">
+                  <p class="section-label">Lịch giỗ</p>
+                  <grampsjs-view-death-anniversaries
+                    id="death-anniversaries"
+                    .appState="${this.appState}"
                   >
-                </li>
-                <li>
-                  <a href="${ARTICLE_CACH_DOC}"
-                    >Cách đọc gia phả
-                    <small
-                      >Đời tính từ ai, ngành chi là gì, dòng trưởng, tên tự, các
-                      thẻ "Chỉ có tên", "Cần soát lại"</small
-                    ></a
-                  >
-                </li>
-                <li>
-                  <a href="${ARTICLE_HUONG_DAN}"
-                    >Hướng dẫn tra cứu trên điện thoại
-                    <small
-                      >Tìm người, đọc cây, xem giỗ, tải lịch giỗ về máy, mã dòng
-                      họ</small
-                    ></a
-                  >
-                </li>
-                <li>
-                  <a href="${ARTICLE_GOP_Y}"
-                    >Góp ý và sửa sai
-                    <small
-                      >Thấy sai tên, đời, ngày giỗ hay thiếu người thì báo thế
-                      nào</small
-                    ></a
-                  >
-                </li>
-              </ul>
-            </div>
+                  </grampsjs-view-death-anniversaries>
+                </div>
+              `
+            : ''}
+          <div class="origin">${this._renderHomePageImage()}</div>
+          <div class="panel stories heritage-frame">
+            <p class="section-label">Kho sử</p>
+            <grampsjs-view-recent-blog-posts
+              id="recent-blog"
+              .appState="${this.appState}"
+            ></grampsjs-view-recent-blog-posts>
           </div>
-          <div>
-            ${this._renderHomePageImage()}
-            <div class="panel heritage-frame">
-              <p class="section-label">Chuyện dòng họ</p>
-              <grampsjs-view-recent-blog-posts
-                id="recent-blog"
-                .appState="${this.appState}"
-              ></grampsjs-view-recent-blog-posts>
-            </div>
+          <div class="panel guide starter heritage-frame">
+            <p class="section-label">Mới vào trang</p>
+            <h3>Đọc trước khi tra cứu</h3>
+            <ul>
+              <li>
+                <a href="${ARTICLE_GIOI_THIEU}"
+                  >Giới thiệu dòng họ
+                  <small
+                    >Thủy tổ, các đời đầu, ba ngành năm chi và nhà thờ tổ ở Chỉ
+                    Bồ</small
+                  ></a
+                >
+              </li>
+              <li>
+                <a href="${ARTICLE_CACH_DOC}"
+                  >Cách đọc gia phả
+                  <small
+                    >Đời tính từ ai, ngành chi là gì, dòng trưởng, tên tự, các
+                    thẻ "Chỉ có tên", "Cần soát lại"</small
+                  ></a
+                >
+              </li>
+              <li>
+                <a href="${ARTICLE_HUONG_DAN}"
+                  >Hướng dẫn tra cứu trên điện thoại
+                  <small
+                    >Tìm người, đọc cây, xem giỗ, tải lịch giỗ về máy, mã dòng
+                    họ</small
+                  ></a
+                >
+              </li>
+              <li>
+                <a href="${ARTICLE_GOP_Y}"
+                  >Góp ý và sửa sai
+                  <small
+                    >Thấy sai tên, đời, ngày giỗ hay thiếu người thì báo thế
+                    nào</small
+                  ></a
+                >
+              </li>
+            </ul>
           </div>
         </div>
         ${canEdit
@@ -399,46 +440,50 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           : ''}
         <div class="opening-grid">
           <aside class="family-ledger" aria-label="Số liệu bản phả">
-            <p class="section-label">Bản số hóa</p>
-            <h2>Số liệu bản phả</h2>
-            <p>
-              Tính trên phần gia phả đã nhập từ các sổ chi, chưa phải điều tra
-              dân số hay xác nhận huyết thống.
-            </p>
-            <dl>
-              <div>
-                <dt>Đời</dt>
-                <dd>${GENERATIONS}</dd>
-              </div>
-              <div>
-                <dt>Ngành, chi</dt>
-                <dd class="text">${BRANCHES_LABEL}</dd>
-              </div>
-              <div>
-                <dt>Người ghi trong phả</dt>
-                <dd>
-                  ${this.appState.dbInfo?.object_counts?.people?.toLocaleString(
-                    'vi-VN'
-                  ) ?? '—'}
-                  <small>nhiều người mới có tên, chưa có dòng riêng</small>
-                </dd>
-              </div>
-              <div>
-                <dt>Cặp vợ chồng</dt>
-                <dd>
-                  ${this.appState.dbInfo?.object_counts?.families?.toLocaleString(
-                    'vi-VN'
-                  ) ?? '—'}
-                </dd>
-              </div>
-            </dl>
-            <p class="ledger-links">
-              <a href="${ARTICLE_GIOI_THIEU}"
-                >Giới thiệu dòng họ <span aria-hidden="true">&nbsp;→</span></a
-              ><a href="${ARTICLE_CACH_DOC}"
-                >Cách đọc gia phả <span aria-hidden="true">&nbsp;→</span></a
-              >
-            </p>
+            <div class="ledger-intro">
+              <p class="section-label">Bản số hóa</p>
+              <h2>Số liệu bản phả</h2>
+              <p>
+                Tính trên phần gia phả đã nhập từ các sổ chi, chưa phải điều tra
+                dân số hay xác nhận huyết thống.
+              </p>
+            </div>
+            <div class="ledger-figures">
+              <dl>
+                <div>
+                  <dt>Đời</dt>
+                  <dd>${GENERATIONS}</dd>
+                </div>
+                <div>
+                  <dt>Ngành, chi</dt>
+                  <dd class="text">${BRANCHES_LABEL}</dd>
+                </div>
+                <div>
+                  <dt>Người ghi trong phả</dt>
+                  <dd>
+                    ${this.appState.dbInfo?.object_counts?.people?.toLocaleString(
+                      'vi-VN'
+                    ) ?? '—'}
+                    <small>nhiều người mới có tên, chưa có dòng riêng</small>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Cặp vợ chồng</dt>
+                  <dd>
+                    ${this.appState.dbInfo?.object_counts?.families?.toLocaleString(
+                      'vi-VN'
+                    ) ?? '—'}
+                  </dd>
+                </div>
+              </dl>
+              <p class="ledger-links">
+                <a href="${ARTICLE_GIOI_THIEU}"
+                  >Giới thiệu dòng họ <span aria-hidden="true">&nbsp;→</span></a
+                ><a href="${ARTICLE_CACH_DOC}"
+                  >Cách đọc gia phả <span aria-hidden="true">&nbsp;→</span></a
+                >
+              </p>
+            </div>
           </aside>
         </div>
       </div>

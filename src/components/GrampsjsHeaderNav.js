@@ -1,7 +1,7 @@
 /*
 Điều hướng chính trên header.
 
-Năm mục chính (trang chủ, cây, người trong họ, lịch giỗ, bài viết) nằm cạnh
+Năm mục chính (trang chủ, cây, người trong họ, lịch giỗ, kho sử) nằm cạnh
 tên trang trên màn hình rộng. Dưới 1100 px chúng ẩn đi; mọi trang khi ấy mở
 từ nút tài khoản (GrampsjsSettingsMenu), nơi gom cả ba nhóm Danh mục và các
 mục theo quyền của người đăng nhập.

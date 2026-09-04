@@ -55,17 +55,17 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
           stroke: var(--heritage-rule);
           stroke-width: 1.25px;
           vector-effect: non-scaling-stroke;
-          filter: drop-shadow(0 2px 2px var(--grampsjs-body-font-color-20));
+          filter: drop-shadow(0 1px 2px var(--grampsjs-body-font-color-15));
           transition: fill 140ms, stroke 140ms, filter 140ms;
         }
 
         svg .tree-link {
           stroke: color-mix(
             in srgb,
-            var(--heritage-gold) 58%,
+            var(--heritage-gold) 48%,
             var(--heritage-wood)
           );
-          stroke-opacity: 0.72;
+          stroke-opacity: 0.56;
         }
 
         svg .person-living .person-card {
@@ -80,10 +80,10 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
         }
 
         svg .person-deceased .person-card {
-          fill: color-mix(in srgb, var(--heritage-wood) 88%, #6d2d22);
+          fill: color-mix(in srgb, var(--heritage-wood) 68%, #8a513a);
           stroke: var(--heritage-gold);
-          stroke-width: 1.5px;
-          filter: drop-shadow(0 4px 5px var(--grampsjs-body-font-color-30));
+          stroke-width: 1.25px;
+          filter: drop-shadow(0 2px 3px var(--grampsjs-body-font-color-20));
         }
 
         svg a:hover .person-card,
@@ -111,7 +111,7 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
 
         svg a.person-deceased:hover .person-card,
         svg a.person-deceased:focus-visible .person-card {
-          fill: color-mix(in srgb, var(--heritage-wood) 76%, #8a4833);
+          fill: color-mix(in srgb, var(--heritage-wood) 58%, #92563d);
         }
 
         svg .tree-link,
@@ -121,7 +121,6 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
         svg .nameplate-body,
         svg .living-avatar-halo,
         svg .living-avatar-icon,
-        svg .person-avatar-photo,
         svg .memorial-portrait * {
           vector-effect: non-scaling-stroke;
         }
@@ -129,7 +128,7 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
         svg .nameplate-body {
           fill: color-mix(
             in srgb,
-            var(--heritage-gold) 13%,
+            var(--heritage-gold) 10%,
             var(--md-sys-color-surface)
           );
           stroke: color-mix(
@@ -137,20 +136,20 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
             var(--heritage-gold) 58%,
             var(--heritage-rule)
           );
-          stroke-width: 1px;
-          filter: drop-shadow(0 2px 3px var(--grampsjs-body-font-color-15));
+          stroke-width: 1.1px;
+          filter: drop-shadow(0 2px 2px var(--grampsjs-body-font-color-10));
           transition: fill 140ms, stroke 140ms;
         }
 
         svg .living-avatar-halo {
           fill: color-mix(
             in srgb,
-            var(--heritage-gold) 26%,
+            var(--heritage-gold) 18%,
             var(--md-sys-color-surface)
           );
           stroke: var(--heritage-gold);
-          stroke-width: 1.25px;
-          filter: drop-shadow(0 2px 3px var(--grampsjs-body-font-color-15));
+          stroke-width: 1.5px;
+          filter: drop-shadow(0 2px 2px var(--grampsjs-body-font-color-15));
         }
 
         svg .living-avatar-icon {
@@ -158,7 +157,7 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
           opacity: 0.78;
         }
 
-        svg .person-avatar-photo {
+        svg .living-avatar-photo {
           stroke: color-mix(
             in srgb,
             var(--md-sys-color-surface) 88%,
@@ -171,14 +170,14 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
 
         svg .memorial-inset {
           fill: none;
-          stroke: color-mix(in srgb, var(--heritage-gold) 72%, transparent);
-          stroke-width: 1px;
+          stroke: color-mix(in srgb, var(--heritage-gold) 56%, transparent);
+          stroke-width: 0.8px;
         }
 
         svg .memorial-base {
           fill: none;
-          stroke: var(--heritage-gold);
-          stroke-width: 1.5px;
+          stroke: color-mix(in srgb, var(--heritage-gold) 72%, transparent);
+          stroke-width: 1px;
         }
 
         svg .memorial-crest {
@@ -190,13 +189,18 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
         }
 
         svg .memorial-portrait-bg {
-          fill: color-mix(
-            in srgb,
-            var(--heritage-gold) 16%,
-            var(--heritage-wood)
-          );
+          fill: color-mix(in srgb, var(--heritage-gold) 30%, #f7ecd7);
           stroke: var(--heritage-gold);
-          stroke-width: 1.25px;
+          stroke-width: 1px;
+          filter: drop-shadow(0 2px 2px var(--grampsjs-body-font-color-20));
+        }
+
+        svg .memorial-portrait-ring {
+          fill: none;
+          stroke: color-mix(in srgb, #fff7e8 70%, var(--heritage-gold));
+          stroke-width: 1px;
+          vector-effect: non-scaling-stroke;
+          pointer-events: none;
         }
 
         svg .memorial-portrait-icon {
@@ -208,7 +212,7 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
           stroke: var(--heritage-gold);
           stroke-width: 2.5px;
           vector-effect: non-scaling-stroke;
-          filter: drop-shadow(0 4px 6px var(--grampsjs-body-font-color-30));
+          filter: drop-shadow(0 3px 5px var(--grampsjs-body-font-color-25));
         }
 
         .tree-root.person-living .person-card {
@@ -468,13 +472,14 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
     return html`
       <mwc-menu fixed corner="BOTTOM_LEFT" menuCorner="START">
         ${children.map(
-          child => html`
-            <mwc-list-item
-              @click=${() => this._handleChild(child.person.gramps_id)}
-              @keydown=${clickKeyHandler}
-              >${child.name_given || html`&hellip;`}</mwc-list-item
-            >
-          `
+          child =>
+            html`
+              <mwc-list-item
+                @click=${() => this._handleChild(child.person.gramps_id)}
+                @keydown=${clickKeyHandler}
+                >${child.name_given || html`&hellip;`}</mwc-list-item
+              >
+            `
         )}
       </mwc-menu>
     `

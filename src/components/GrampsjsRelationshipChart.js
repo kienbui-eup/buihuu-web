@@ -50,16 +50,16 @@ class GrampsjsRelationshipChart extends GrampsjsChartBase {
           stroke: var(--heritage-rule);
           stroke-width: 1.25px;
           vector-effect: non-scaling-stroke;
-          filter: drop-shadow(0 2px 2px var(--grampsjs-body-font-color-20));
+          filter: drop-shadow(0 1px 2px var(--grampsjs-body-font-color-15));
           transition: fill 140ms, stroke 140ms, filter 140ms;
         }
         svg .edge path {
           stroke: color-mix(
             in srgb,
-            var(--heritage-gold) 58%,
+            var(--heritage-gold) 48%,
             var(--heritage-wood)
           );
-          stroke-opacity: 0.72;
+          stroke-opacity: 0.56;
         }
         svg .person-living .personBox {
           fill: transparent;
@@ -71,10 +71,10 @@ class GrampsjsRelationshipChart extends GrampsjsChartBase {
           --person-card-muted-text: #e2cda7;
         }
         svg .person-deceased .personBox {
-          fill: color-mix(in srgb, var(--heritage-wood) 88%, #6d2d22);
+          fill: color-mix(in srgb, var(--heritage-wood) 68%, #8a513a);
           stroke: var(--heritage-gold);
-          stroke-width: 1.5px;
-          filter: drop-shadow(0 4px 5px var(--grampsjs-body-font-color-30));
+          stroke-width: 1.25px;
+          filter: drop-shadow(0 2px 3px var(--grampsjs-body-font-color-20));
         }
         svg .person:hover .personBox,
         svg .person:focus-visible .personBox {
@@ -98,7 +98,7 @@ class GrampsjsRelationshipChart extends GrampsjsChartBase {
         }
         svg .person-deceased:hover .personBox,
         svg .person-deceased:focus-visible .personBox {
-          fill: color-mix(in srgb, var(--heritage-wood) 76%, #8a4833);
+          fill: color-mix(in srgb, var(--heritage-wood) 58%, #92563d);
         }
         svg .edge,
         svg .memorial-inset,
@@ -107,14 +107,13 @@ class GrampsjsRelationshipChart extends GrampsjsChartBase {
         svg .nameplate-body,
         svg .living-avatar-halo,
         svg .living-avatar-icon,
-        svg .person-avatar-photo,
         svg .memorial-portrait * {
           vector-effect: non-scaling-stroke;
         }
         svg .nameplate-body {
           fill: color-mix(
             in srgb,
-            var(--heritage-gold) 13%,
+            var(--heritage-gold) 10%,
             var(--md-sys-color-surface)
           );
           stroke: color-mix(
@@ -122,25 +121,25 @@ class GrampsjsRelationshipChart extends GrampsjsChartBase {
             var(--heritage-gold) 58%,
             var(--heritage-rule)
           );
-          stroke-width: 1px;
-          filter: drop-shadow(0 2px 3px var(--grampsjs-body-font-color-15));
+          stroke-width: 1.1px;
+          filter: drop-shadow(0 2px 2px var(--grampsjs-body-font-color-10));
           transition: fill 140ms, stroke 140ms;
         }
         svg .living-avatar-halo {
           fill: color-mix(
             in srgb,
-            var(--heritage-gold) 26%,
+            var(--heritage-gold) 18%,
             var(--md-sys-color-surface)
           );
           stroke: var(--heritage-gold);
-          stroke-width: 1.25px;
-          filter: drop-shadow(0 2px 3px var(--grampsjs-body-font-color-15));
+          stroke-width: 1.5px;
+          filter: drop-shadow(0 2px 2px var(--grampsjs-body-font-color-15));
         }
         svg .living-avatar-icon {
           fill: var(--heritage-ink);
           opacity: 0.78;
         }
-        svg .person-avatar-photo {
+        svg .living-avatar-photo {
           stroke: color-mix(
             in srgb,
             var(--md-sys-color-surface) 88%,
@@ -152,13 +151,13 @@ class GrampsjsRelationshipChart extends GrampsjsChartBase {
         }
         svg .memorial-inset {
           fill: none;
-          stroke: color-mix(in srgb, var(--heritage-gold) 72%, transparent);
-          stroke-width: 1px;
+          stroke: color-mix(in srgb, var(--heritage-gold) 56%, transparent);
+          stroke-width: 0.8px;
         }
         svg .memorial-base {
           fill: none;
-          stroke: var(--heritage-gold);
-          stroke-width: 1.5px;
+          stroke: color-mix(in srgb, var(--heritage-gold) 72%, transparent);
+          stroke-width: 1px;
         }
         svg .memorial-crest {
           fill: none;
@@ -168,13 +167,17 @@ class GrampsjsRelationshipChart extends GrampsjsChartBase {
           stroke-linejoin: round;
         }
         svg .memorial-portrait-bg {
-          fill: color-mix(
-            in srgb,
-            var(--heritage-gold) 16%,
-            var(--heritage-wood)
-          );
+          fill: color-mix(in srgb, var(--heritage-gold) 30%, #f7ecd7);
           stroke: var(--heritage-gold);
-          stroke-width: 1.25px;
+          stroke-width: 1px;
+          filter: drop-shadow(0 2px 2px var(--grampsjs-body-font-color-20));
+        }
+        svg .memorial-portrait-ring {
+          fill: none;
+          stroke: color-mix(in srgb, #fff7e8 70%, var(--heritage-gold));
+          stroke-width: 1px;
+          vector-effect: non-scaling-stroke;
+          pointer-events: none;
         }
         svg .memorial-portrait-icon {
           fill: #f1dfbd;
@@ -185,7 +188,7 @@ class GrampsjsRelationshipChart extends GrampsjsChartBase {
           stroke: var(--heritage-gold);
           stroke-width: 3px;
           vector-effect: non-scaling-stroke;
-          filter: drop-shadow(0 5px 8px var(--grampsjs-body-font-color-30));
+          filter: drop-shadow(0 3px 5px var(--grampsjs-body-font-color-25));
         }
         svg .person.selected.person-living .personBox,
         svg .person.person-living:focus-visible .personBox {
@@ -370,6 +373,33 @@ class GrampsjsRelationshipChart extends GrampsjsChartBase {
     const topInset = chartTopInset(width) / scale
     let y = rootBox.y - margin / scale - topInset
     const contentBox = toUser(content.getBoundingClientRect())
+    const personCount = svg.querySelectorAll('.person .personBox').length
+    // Với một gia đình nhỏ trên điện thoại, ưu tiên thấy trọn các thẻ gần gốc.
+    // Thu vừa đủ theo bề rộng máy, vẫn giữ chữ đọc được và tránh hai thẻ con
+    // bị cắt ở cả hai mép, vốn khiến biểu đồ trông như bị vỡ khi vừa mở.
+    if (width <= 600 && personCount <= 5) {
+      const compactPhone = width <= 360
+      const smallMargin = compactPhone ? 8 : 12
+      const smallMinScale = compactPhone ? 0.66 : 0.8
+      const contentScale = Math.min(
+        1,
+        (width - 2 * smallMargin) / contentBox.width,
+        (height - 2 * smallMargin - chartTopInset(width)) / contentBox.height
+      )
+      if (contentScale >= smallMinScale) {
+        const smallScale = Math.max(smallMinScale, contentScale)
+        const smallViewWidth = width / smallScale
+        const smallViewHeight = height / smallScale
+        const smallX = contentBox.x + contentBox.width / 2 - smallViewWidth / 2
+        const smallY =
+          contentBox.y + contentBox.height / 2 - smallViewHeight / 2
+        svg.setAttribute(
+          'viewBox',
+          `${smallX} ${smallY} ${smallViewWidth} ${smallViewHeight}`
+        )
+        return
+      }
+    }
     if (contentBox.height + 2 * margin <= viewHeight) {
       y = contentBox.y + contentBox.height / 2 - viewHeight / 2
     } else if (rootBox.y - contentBox.y > viewHeight / 3) {

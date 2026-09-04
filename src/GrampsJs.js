@@ -95,7 +95,9 @@ const PAGE_TITLES = {
   notes: 'Notes',
   medialist: 'Media',
   map: 'Map',
-  tree: 'Family Tree',
+  // Tên mục trên điều hướng (siteNav.js), không dùng "Family Tree" vì bản dịch
+  // của từ đó là cả cơ sở dữ liệu gia phả.
+  tree: 'Phả đồ',
   'dna-matches': 'DNA',
   'dna-chromosome': 'DNA',
   ydna: 'DNA',

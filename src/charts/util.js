@@ -250,6 +250,9 @@ Nội dung một ô người trong biểu đồ được rút gọn cho màn hì
 
     Bùi Hữu Văn            (họ tên đầy đủ, được xuống dòng nếu cần)
     Đời 7 · Ngành 2 · Chi 1
+    Giỗ 4/3 ÂL             (người đã khuất)
+    Sinh 1982              (người còn sống)
+
 Tên tự, húy, hiệu, thụy và ngôi vị vẫn có ở trang chi tiết. Chúng không nằm
 trong ô cây để người xem nhận ra đúng người nhanh hơn và không phải đọc dấu ba
 chấm do nội dung bị cắt.
@@ -424,6 +427,33 @@ export const getCardLineage = (person, tags = person?.extended?.tags) => {
 const yearOf = date =>
   (date || '').match(/\b(1[5-9]\d{2}|20\d{2})\b/)?.[1] || ''
 
+// Chọn độ tuổi cho chân dung mặc định. Với người đã mất, tuổi được tính ở
+// năm mất; với người còn sống, tính theo năm hiện tại. Hồ sơ lịch sử thiếu năm
+// sinh dùng nhóm cao tuổi, còn các đời gần dùng nhóm trưởng thành để tránh gán
+// khuôn mặt già cho người chưa rõ tuổi.
+export const getPortraitAgeGroup = (
+  person,
+  profile = person?.profile,
+  referenceYear = new Date().getFullYear()
+) => {
+  const birthYear = Number(yearOf(profile?.birth?.date))
+  if (!birthYear) {
+    const generation = Number(getGeneration(person))
+    return Number.isInteger(generation) && generation > 0 && generation <= 12
+      ? 'elder'
+      : 'adult'
+  }
+  const deathYear = Number(yearOf(profile?.death?.date))
+  const age = (deathYear || referenceYear) - birthYear
+  if (!Number.isFinite(age) || age < 0) {
+    return 'adult'
+  }
+  if (age < 18) {
+    return 'child'
+  }
+  return age <= 50 ? 'adult' : 'elder'
+}
+
 export const getLifeSpan = (person, profile) => {
   // Ngày giỗ âm lịch là mốc cả họ dùng để nhớ, và nhiều cụ chỉ còn mốc này.
   const memorial = attributeValue(person, 'Ngày giỗ')
@@ -470,7 +500,7 @@ export const getCardDate = (person, profile = person?.profile) => {
   return birth ? `Sinh ${birth}` : ''
 }
 
-export const personCardLines = (person, fullName) => {
+export const personCardLines = (person, profile, fullName) => {
   const lines = []
   if (fullName) {
     lines.push({text: fullName, weight: '600', size: 14, muted: false})
@@ -478,6 +508,10 @@ export const personCardLines = (person, fullName) => {
   const lineage = getCardLineage(person)
   if (lineage) {
     lines.push({text: lineage, weight: '400', size: 12, muted: true})
+  }
+  const date = getCardDate(person, profile)
+  if (date) {
+    lines.push({text: date, weight: '400', size: 12, muted: true})
   }
   return lines
 }

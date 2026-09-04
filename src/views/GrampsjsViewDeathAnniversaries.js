@@ -20,7 +20,10 @@ import {ATTR_DEATH_ANNIVERSARY, DEFAULT_LANGUAGE} from '../branding.js'
 import {collectAnniversaries} from '../gioCalendar.js'
 import {formatBranch, getBranch} from '../charts/util.js'
 
-const MAX_SHOWN = 5
+// Bảy giỗ gần nhất để cột trái trang chủ trên máy tính cân với cột phải; trên
+// điện thoại chỉ hiện năm, phần còn lại ẩn bằng CSS bên dưới.
+const MAX_SHOWN = 7
+const MAX_SHOWN_MOBILE = 5
 
 export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
   static get styles() {
@@ -35,6 +38,12 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
         p.more {
           margin-top: 0.6em;
           font-size: 0.95em;
+        }
+
+        @media (max-width: 768px) {
+          .remembrance:nth-child(n + ${MAX_SHOWN_MOBILE + 1}) {
+            display: none;
+          }
         }
       `,
       anniversaryStyles,
