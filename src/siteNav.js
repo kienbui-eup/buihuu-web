@@ -59,7 +59,7 @@ export function mainLinks(host) {
     {
       key: 'people',
       href: '/people',
-      label: 'Người trong họ',
+      label: 'Dòng họ',
       icon: mdiAccountGroup,
     },
     {key: 'lich-gio', href: '/lich-gio', label: 'Lịch giỗ', icon: mdiCandle},

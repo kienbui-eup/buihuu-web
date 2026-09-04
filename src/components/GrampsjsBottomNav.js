@@ -138,7 +138,7 @@ class GrampsjsBottomNav extends GrampsjsAppStateMixin(LitElement) {
       },
       {
         href: '/people',
-        label: this._('People'),
+        label: 'Dòng họ',
         icon: mdiAccountGroup,
         active: LIST_PAGES.has(page) || page === 'person',
       },

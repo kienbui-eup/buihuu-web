@@ -28,7 +28,7 @@ import {fireEvent} from '../util.js'
 // Đầu trang của từng danh sách: tiêu đề và đơn vị đếm, cùng nhịp với trang
 // chủ. "Người trong họ" là chữ dùng trên điều hướng chính, không dịch lại.
 const LIST_META = {
-  people: {title: 'Người trong họ', literal: true, unit: 'người'},
+  people: {title: 'Dòng họ', literal: true, unit: 'người'},
   families: {title: 'Families', unit: 'gia đình'},
   events: {title: 'Events', unit: 'sự kiện'},
   places: {title: 'Places', unit: 'địa danh'},

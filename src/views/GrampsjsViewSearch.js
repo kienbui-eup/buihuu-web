@@ -634,7 +634,7 @@ export class GrampsjsViewSearch extends GrampsjsView {
       aria-label="Phạm vi tìm nhanh"
     >
       ${[
-        {type: 'person', label: 'Người trong họ', short: 'Người'},
+        {type: 'person', label: 'Dòng họ', short: 'Người'},
         {type: 'place', label: 'Địa danh, địa chỉ', short: 'Địa danh'},
         {type: '', label: 'Tất cả', short: 'Tất cả'},
       ].map(

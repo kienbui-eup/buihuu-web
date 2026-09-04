@@ -154,7 +154,7 @@ class GrampsjsSiteFooter extends LitElement {
               </p>`
             : html`<nav aria-label="Điều hướng cuối trang">
                 <a href="/tree">Cây gia phả</a
-                ><a href="/people">Người trong họ</a
+                ><a href="/people">Dòng họ</a
                 ><a href="/lich-gio">Lịch giỗ</a><a href="/blog">Bài viết</a
                 ><a href="${ARTICLE_GIOI_THIEU}">Giới thiệu dòng họ</a
                 ><a href="${ARTICLE_HUONG_DAN}">Hướng dẫn tra cứu</a
