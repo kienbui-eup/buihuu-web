@@ -121,6 +121,7 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
         svg .nameplate-body,
         svg .living-avatar-halo,
         svg .living-avatar-icon,
+        svg .person-avatar-photo,
         svg .memorial-portrait * {
           vector-effect: non-scaling-stroke;
         }
@@ -157,7 +158,7 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
           opacity: 0.78;
         }
 
-        svg .living-avatar-photo {
+        svg .person-avatar-photo {
           stroke: color-mix(
             in srgb,
             var(--md-sys-color-surface) 88%,
@@ -467,14 +468,13 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
     return html`
       <mwc-menu fixed corner="BOTTOM_LEFT" menuCorner="START">
         ${children.map(
-          child =>
-            html`
-              <mwc-list-item
-                @click=${() => this._handleChild(child.person.gramps_id)}
-                @keydown=${clickKeyHandler}
-                >${child.name_given || html`&hellip;`}</mwc-list-item
-              >
-            `
+          child => html`
+            <mwc-list-item
+              @click=${() => this._handleChild(child.person.gramps_id)}
+              @keydown=${clickKeyHandler}
+              >${child.name_given || html`&hellip;`}</mwc-list-item
+            >
+          `
         )}
       </mwc-menu>
     `

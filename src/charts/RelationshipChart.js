@@ -14,7 +14,8 @@ import {
 import {
   appendPersonCardDecoration,
   CARD_AVATAR_X,
-  MEMORIAL_AVATAR_Y,
+  CARD_AVATAR_RADIUS,
+  CARD_AVATAR_Y,
 } from './heritageFrame.js'
 import {appendDescendantsButton} from './descendantsButton.js'
 
@@ -454,13 +455,7 @@ function remasterChart(
     }
   )
 
-  // Ô chỉ giữ tên, đời/ngành/chi và giỗ hoặc năm sinh. Tên dài xuống hai dòng
-  // thay vì bị cắt bằng dấu ba chấm.
-  const textPadding = d => {
-    const deceased = isDeceased(d.person, d.profile)
-    if (!deceased) return 14
-    return d.imageUrl ? 54 : 50
-  }
+  // Mọi bảng tên dùng cùng bố cục ảnh phía trên, tên và đời/ngành/chi phía dưới.
   // Thẻ của người có con cháu mang nút gài "Xem hậu duệ" nhô trên mép phải.
   const hasAction = d =>
     !canEdit && d.nodetype === 'person' && personHasChildren(d.person)
@@ -477,25 +472,22 @@ function remasterChart(
         d.nodetype === 'person'
     )
     .each(function drawCard(d) {
-      const deceased = isDeceased(d.person, d.profile)
-      const lineHeight = deceased ? 19 : 16
+      const lineHeight = 16
       const lines = fitPersonCardLines(
-        personCardLines(d.person, d.profile, fullName(d) || 'Chưa rõ tên'),
-        boxWidth - textPadding(d) - (deceased ? 10 : 14),
-        deceased
+        personCardLines(d.person, fullName(d) || 'Chưa rõ tên'),
+        boxWidth - 28,
+        true
       )
-      const top = deceased
-        ? (boxHeight - (lines.length - 1) * lineHeight) / 2 + lineHeight / 4
-        : boxHeight - 22 - ((lines.length - 1) * lineHeight) / 2
+      const top = boxHeight - 22 - ((lines.length - 1) * lineHeight) / 2
 
       select(this)
         .selectAll('text.card-line')
         .data(lines)
         .join('text')
         .attr('class', 'card-line')
-        .attr('x', deceased ? textPadding(d) : boxWidth / 2)
+        .attr('x', boxWidth / 2)
         .attr('y', (line, i) => top + i * lineHeight)
-        .attr('text-anchor', deceased ? 'start' : 'middle')
+        .attr('text-anchor', 'middle')
         .attr('font-size', line => line.size)
         .attr('font-weight', line => line.weight)
         .attr('fill', line =>
@@ -511,11 +503,9 @@ function remasterChart(
   nodes
     .filter(d => d.imageUrl)
     .append('circle')
-    .attr('class', d =>
-      isDeceased(d.person, d.profile) ? 'memorial-photo' : 'living-avatar-photo'
-    )
-    .attr('r', d => (isDeceased(d.person, d.profile) ? 20 : 22))
-    .attr('cy', d => (isDeceased(d.person, d.profile) ? MEMORIAL_AVATAR_Y : 8))
+    .attr('class', 'person-avatar-photo')
+    .attr('r', CARD_AVATAR_RADIUS)
+    .attr('cy', CARD_AVATAR_Y)
     .attr('cx', CARD_AVATAR_X)
     .attr('fill', d => `url(#imgpattern-${d.handle})`)
 

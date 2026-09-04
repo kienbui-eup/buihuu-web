@@ -8,6 +8,7 @@ import {
   mdiFitToScreenOutline,
   mdiCollapseAllOutline,
   mdiCrosshairsGps,
+  mdiMagnify,
 } from '@mdi/js'
 import './GrampsjsIcon.js'
 import {iconButtonColorStyles} from '../SharedStyles.js'
@@ -133,6 +134,7 @@ class GrampsjsChartToolbar extends LitElement {
       role="group"
       aria-label="Công cụ cho phạm vi đang xem"
     >
+      ${this._button('btn-search', 'Tìm theo tên', mdiMagnify, 'search')}
       ${this._button(
         'btn-overview',
         'Vừa khung',

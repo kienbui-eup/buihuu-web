@@ -250,9 +250,6 @@ Nội dung một ô người trong biểu đồ được rút gọn cho màn hì
 
     Bùi Hữu Văn            (họ tên đầy đủ, được xuống dòng nếu cần)
     Đời 7 · Ngành 2 · Chi 1
-    Giỗ 4/3 ÂL             (người đã khuất)
-    Sinh 1982              (người còn sống)
-
 Tên tự, húy, hiệu, thụy và ngôi vị vẫn có ở trang chi tiết. Chúng không nằm
 trong ô cây để người xem nhận ra đúng người nhanh hơn và không phải đọc dấu ba
 chấm do nội dung bị cắt.
@@ -473,7 +470,7 @@ export const getCardDate = (person, profile = person?.profile) => {
   return birth ? `Sinh ${birth}` : ''
 }
 
-export const personCardLines = (person, profile, fullName) => {
+export const personCardLines = (person, fullName) => {
   const lines = []
   if (fullName) {
     lines.push({text: fullName, weight: '600', size: 14, muted: false})
@@ -481,10 +478,6 @@ export const personCardLines = (person, profile, fullName) => {
   const lineage = getCardLineage(person)
   if (lineage) {
     lines.push({text: lineage, weight: '400', size: 12, muted: true})
-  }
-  const date = getCardDate(person, profile)
-  if (date) {
-    lines.push({text: date, weight: '400', size: 12, muted: true})
   }
   return lines
 }

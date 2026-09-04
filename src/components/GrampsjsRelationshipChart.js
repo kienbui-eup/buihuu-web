@@ -107,6 +107,7 @@ class GrampsjsRelationshipChart extends GrampsjsChartBase {
         svg .nameplate-body,
         svg .living-avatar-halo,
         svg .living-avatar-icon,
+        svg .person-avatar-photo,
         svg .memorial-portrait * {
           vector-effect: non-scaling-stroke;
         }
@@ -139,7 +140,7 @@ class GrampsjsRelationshipChart extends GrampsjsChartBase {
           fill: var(--heritage-ink);
           opacity: 0.78;
         }
-        svg .living-avatar-photo {
+        svg .person-avatar-photo {
           stroke: color-mix(
             in srgb,
             var(--md-sys-color-surface) 88%,

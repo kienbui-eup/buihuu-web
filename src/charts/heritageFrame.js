@@ -1,8 +1,8 @@
 import {mdiAccountOutline} from '@mdi/js'
 
 export const CARD_AVATAR_X = 28
-const LIVING_AVATAR_Y = 8
-export const MEMORIAL_AVATAR_Y = 18
+export const CARD_AVATAR_Y = 8
+export const CARD_AVATAR_RADIUS = 22
 
 const ELDER_PORTRAITS = {
   female: 'images/heritage/avatar-cu-ba.png',
@@ -59,13 +59,13 @@ export function appendPersonCardDecoration(
   nameplate
     .append('path')
     .attr('class', 'living-avatar-halo')
-    .attr('d', scallopedCirclePath(x + CARD_AVATAR_X, y + LIVING_AVATAR_Y, 25))
+    .attr('d', scallopedCirclePath(x + CARD_AVATAR_X, y + CARD_AVATAR_Y, 25))
 
   const livingPortrait = nameplate
     .filter(d => !hasImage(d))
     .append('g')
     .attr('class', 'living-avatar')
-    .attr('transform', `translate(${x + CARD_AVATAR_X},${y + LIVING_AVATAR_Y})`)
+    .attr('transform', `translate(${x + CARD_AVATAR_X},${y + CARD_AVATAR_Y})`)
   livingPortrait
     .filter(d => Boolean(elderPortrait(gender(d))))
     .append('image')
@@ -120,26 +120,26 @@ export function appendPersonCardDecoration(
     .filter(d => !hasImage(d))
     .append('g')
     .attr('class', 'memorial-portrait')
-    .attr(
-      'transform',
-      `translate(${x + CARD_AVATAR_X},${y + MEMORIAL_AVATAR_Y})`
-    )
+    .attr('transform', `translate(${x + CARD_AVATAR_X},${y + CARD_AVATAR_Y})`)
     .attr('pointer-events', 'none')
-  portrait.append('circle').attr('class', 'memorial-portrait-bg').attr('r', 20)
+  portrait
+    .append('path')
+    .attr('class', 'memorial-portrait-bg')
+    .attr('d', scallopedCirclePath(0, 0, 25))
   portrait
     .filter(d => Boolean(elderPortrait(gender(d))))
     .append('image')
     .attr('class', 'memorial-portrait-image')
     .attr('href', d => elderPortrait(gender(d)))
-    .attr('x', -21)
-    .attr('y', -21)
-    .attr('width', 42)
-    .attr('height', 42)
+    .attr('x', -25)
+    .attr('y', -25)
+    .attr('width', 50)
+    .attr('height', 50)
     .attr('preserveAspectRatio', 'xMidYMid meet')
   portrait
     .filter(d => !elderPortrait(gender(d)))
     .append('path')
     .attr('class', 'memorial-portrait-icon')
     .attr('d', mdiAccountOutline)
-    .attr('transform', 'translate(-13.2,-13.2) scale(1.1)')
+    .attr('transform', 'translate(-15.6,-15.6) scale(1.3)')
 }

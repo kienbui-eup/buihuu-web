@@ -74,13 +74,13 @@ describe('ô người trong biểu đồ cây', () => {
     expect(texts).not.toContain('Bùi')
   })
 
-  it('chỉ hiện đời, ngành/chi và ngày giỗ âm lịch', () => {
+  it('chỉ hiện đời, ngành và chi', () => {
     const svg = TreeChart(treeData, null, settings)
     const texts = cardTexts(svg)
     expect(texts).not.toContain('tự Pháp Độ')
     expect(texts).not.toContain('Chi phái 1')
     expect(texts).toContain('Đời 7 · Ngành 2 · Chi 1')
-    expect(texts).toContain('Giỗ 4/3 ÂL')
+    expect(texts).not.toContain('Giỗ 4/3 ÂL')
   })
 
   it('không cắt nội dung bằng dấu ba chấm', () => {
@@ -124,14 +124,51 @@ describe('ô người trong biểu đồ cây', () => {
     expect(living.querySelector('.living-avatar-halo')).not.toBeNull()
     expect(living.querySelector('.living-avatar-image')).not.toBeNull()
     expect(
+      living.querySelector('.living-avatar').getAttribute('transform')
+    ).toBe('translate(-74,-37)')
+    expect(
       living.querySelector('.living-avatar-image').getAttribute('href')
     ).toBe('images/heritage/avatar-cu-ong.png')
     expect(living.querySelector('.memorial-portrait')).toBeNull()
-    expect(cardTexts(svg)).toContain('Sinh 1960')
+    expect(cardTexts(svg)).not.toContain('Sinh 1960')
     expect(deceased.classList.contains('person-deceased')).toBe(true)
     expect(deceased.classList.contains('person-male')).toBe(true)
     expect(deceased.querySelector('.memorial-inset')).not.toBeNull()
     expect(deceased.querySelector('.memorial-portrait')).not.toBeNull()
     expect(deceased.querySelector('.memorial-portrait-image')).not.toBeNull()
+    expect(
+      deceased.querySelector('.memorial-portrait').getAttribute('transform')
+    ).toBe('translate(-74,-37)')
+  })
+
+  it('dùng chân dung cụ bà cho người nữ chưa có ảnh', () => {
+    const data = structuredClone(treeData)
+    data.person.gender = 0
+    data.person.attribute_list[0].value = '13'
+    data.person.profile.birth = {date: '1960'}
+    const svg = TreeChart(data, null, settings)
+    const portrait = svg.querySelector(
+      '[data-gramps-id="I0016"] .living-avatar-image'
+    )
+
+    expect(portrait.getAttribute('href')).toBe(
+      'images/heritage/avatar-cu-ba.png'
+    )
+  })
+
+  it('đặt ảnh thật cùng kích thước và vị trí trên mọi bảng tên', () => {
+    const svg = TreeChart(treeData, null, {
+      ...settings,
+      getImageUrl: () => 'data:image/png;base64,AA==',
+    })
+    const photos = [...svg.querySelectorAll('.person-avatar-photo')]
+
+    expect(photos).toHaveLength(2)
+    expect(new Set(photos.map(photo => photo.getAttribute('r')))).toEqual(
+      new Set(['22'])
+    )
+    expect(new Set(photos.map(photo => photo.getAttribute('cy')))).toEqual(
+      new Set(['-37'])
+    )
   })
 })

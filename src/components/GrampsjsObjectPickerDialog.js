@@ -17,6 +17,7 @@ import {
   objectTypePlural,
 } from '../util.js'
 import {getRecentObjects, getTreeBookmarks} from '../api.js'
+import {nameSearchRules} from '../nameSearch.js'
 import './GrampsjsSearchResultList.js'
 import './GrampsjsButtonToggle.js'
 import './GrampsjsIcon.js'
@@ -180,6 +181,7 @@ class GrampsjsObjectPickerDialog extends GrampsjsAppStateMixin(LitElement) {
       _error: {type: Boolean},
       _typeFilters: {type: Object},
       _tabIndex: {type: Number},
+      nameSearch: {type: Boolean},
     }
   }
 
@@ -193,6 +195,7 @@ class GrampsjsObjectPickerDialog extends GrampsjsAppStateMixin(LitElement) {
     this._loading = false
     this._error = false
     this._tabIndex = SIDEBAR_MODES.indexOf('changed')
+    this.nameSearch = false
     this._fetchId = 0
     this._typeFilters = Object.fromEntries(
       FILTERABLE_TYPES.map(key => [key, false])
@@ -206,7 +209,9 @@ class GrampsjsObjectPickerDialog extends GrampsjsAppStateMixin(LitElement) {
           <md-filled-text-field
             id="textfield"
             type="search"
-            label="${this._('Search')}"
+            label="${this.nameSearch
+              ? this._('Search by name')
+              : this._('Search')}"
             @input="${debounce(() => this._handleInput(), 500)}"
           >
             <grampsjs-icon
@@ -216,10 +221,10 @@ class GrampsjsObjectPickerDialog extends GrampsjsAppStateMixin(LitElement) {
             ></grampsjs-icon>
           </md-filled-text-field>
 
-          ${this._renderTabBar()}
+          ${this.nameSearch ? '' : this._renderTabBar()}
 
           <div class="dialog-body">
-            ${this._renderSidebar()}
+            ${this.nameSearch ? '' : this._renderSidebar()}
             <div class="main-panel">
               ${this._renderPills()}
               <grampsjs-search-result-list
@@ -337,7 +342,9 @@ class GrampsjsObjectPickerDialog extends GrampsjsAppStateMixin(LitElement) {
   _renderEmptyState() {
     if (this._loading) return ''
     if (this._error) return this._('Error')
-    if (this._mode === 'search' && !this._query) return ''
+    if (this._mode === 'search' && !this._query) {
+      return this.nameSearch ? this._('Type a name, accents optional') : ''
+    }
     return this._('Not found')
   }
 
@@ -345,7 +352,7 @@ class GrampsjsObjectPickerDialog extends GrampsjsAppStateMixin(LitElement) {
     const textField = this.renderRoot.getElementById('textfield')
     if (textField) textField.value = initialQuery
     this._query = initialQuery
-    if (initialQuery) {
+    if (initialQuery || this.nameSearch) {
       this._mode = 'search'
       this._tabIndex = SIDEBAR_MODES.indexOf('search')
     } else {
@@ -359,6 +366,7 @@ class GrampsjsObjectPickerDialog extends GrampsjsAppStateMixin(LitElement) {
   }
 
   _setMode(mode) {
+    if (this.nameSearch && mode !== 'search') return
     this._mode = mode
     const textField = this.renderRoot.getElementById('textfield')
     if (mode === 'search') {
@@ -411,7 +419,9 @@ class GrampsjsObjectPickerDialog extends GrampsjsAppStateMixin(LitElement) {
     this._loading = true
     this._error = false
     this._data = []
-    if (this._mode === 'recent') {
+    if (this.nameSearch) {
+      await this._fetchNameData(this._query, fetchId)
+    } else if (this._mode === 'recent') {
       await this._fetchRecentData(fetchId)
     } else if (this._mode === 'bookmarks') {
       await this._fetchBookmarksData(fetchId)
@@ -433,6 +443,37 @@ class GrampsjsObjectPickerDialog extends GrampsjsAppStateMixin(LitElement) {
         obj => !this.excludeHandles.includes(obj.handle ?? obj.object?.handle)
       )
     } else if ('error' in data) {
+      this._data = []
+      this._error = true
+    }
+  }
+
+  async _fetchNameData(value, fetchId) {
+    const query = String(value ?? '').trim()
+    if (!query) {
+      this._data = []
+      return
+    }
+    const filters = nameSearchRules(query).map(
+      // _slot chỉ dùng để quản lý ô lọc trên giao diện, không thuộc lược đồ API.
+      // eslint-disable-next-line no-unused-vars
+      ({_slot, ...rule}) => rule
+    )
+    const rules = encodeURIComponent(JSON.stringify({rules: filters}))
+    const lang = this.appState.i18n.lang || 'en'
+    const data = await this.appState.apiGet(
+      `/api/people/?rules=${rules}&locale=${lang}&profile=self&page=1&pagesize=20`
+    )
+    if (this._fetchId !== fetchId) return
+    if ('data' in data) {
+      this._data = data.data
+        .filter(person => !this.excludeHandles.includes(person.handle))
+        .map(person => ({
+          object_type: 'person',
+          object: person,
+          handle: person.handle,
+        }))
+    } else {
       this._data = []
       this._error = true
     }

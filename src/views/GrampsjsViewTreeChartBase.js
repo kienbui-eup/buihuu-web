@@ -472,6 +472,7 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
       overview: () => this._showOverview(),
       collapse: () => this._collapseLineage(),
       focus: () => this._focusSelected(),
+      search: () => this._openPersonPicker(),
       view: () => fireEvent(this, 'tree:view', {view: value}),
     }
     actions[action]?.()
@@ -573,6 +574,7 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
       ${this.renderControls()}
       <grampsjs-object-picker-dialog
         objectType="person"
+        nameSearch
         .appState="${this.appState}"
         @select-object:selected="${this._handlePersonPicked}"
       ></grampsjs-object-picker-dialog>
@@ -738,11 +740,12 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
             >
               ${map(
                 Object.values(chartNameDisplayFormat),
-                i => html` <mwc-list-item
-                  value="${i}"
-                  ?selected="${i === this.nameDisplayFormat}"
-                  >${this._(i)}</mwc-list-item
-                >`
+                i =>
+                  html` <mwc-list-item
+                    value="${i}"
+                    ?selected="${i === this.nameDisplayFormat}"
+                    >${this._(i)}</mwc-list-item
+                  >`
               )}
             </mwc-select>
           </div>
