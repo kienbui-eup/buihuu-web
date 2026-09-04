@@ -25,7 +25,8 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
         gap: 2px;
         align-items: center;
       }
-      a {
+      nav a:link,
+      nav a:visited {
         display: flex;
         align-items: center;
         min-height: 44px;
@@ -37,8 +38,8 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
         text-decoration: none;
         border-bottom: 2px solid transparent;
       }
-      a:hover,
-      a[aria-current='page'] {
+      nav a:hover,
+      nav a[aria-current='page'] {
         color: #e2c891;
         border-bottom-color: #d1af70;
       }

@@ -78,6 +78,7 @@ class GrampsjsBottomNav extends GrampsjsAppStateMixin(LitElement) {
             var(--heritage-gold) 20%,
             var(--md-sys-color-surface)
           );
+          box-shadow: inset 0 -2px var(--heritage-gold);
         }
 
         a:focus-visible {
@@ -86,12 +87,20 @@ class GrampsjsBottomNav extends GrampsjsAppStateMixin(LitElement) {
         }
 
         .pill {
-          height: 28px;
+          height: 32px;
           width: 52px;
           border-radius: 3px;
           display: flex;
           align-items: center;
           justify-content: center;
+        }
+
+        .pill grampsjs-icon {
+          --grampsjs-icon-tile: color-mix(
+            in srgb,
+            var(--heritage-gold) 12%,
+            var(--md-sys-color-surface)
+          );
         }
 
         span.label {
@@ -163,6 +172,9 @@ class GrampsjsBottomNav extends GrampsjsAppStateMixin(LitElement) {
             color="${item.active
               ? 'var(--grampsjs-color-icon-selected)'
               : 'var(--grampsjs-color-icon-default)'}"
+            width="30"
+            height="30"
+            ornament
           ></grampsjs-icon>
         </span>
         <span class="label">${item.label}</span>

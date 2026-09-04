@@ -173,6 +173,9 @@ export class GrampsJs extends LitElement {
           height: 100dvh;
           overflow-y: auto;
           overflow-x: hidden;
+          background-color: var(--md-sys-color-background);
+          background-image: var(--heritage-page-background);
+          background-attachment: local;
         }
 
         main {

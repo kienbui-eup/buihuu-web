@@ -51,6 +51,17 @@ export class GrampsjsBreadcrumbs extends GrampsjsAppStateMixin(LitElement) {
           color: var(--grampsjs-body-font-color-40);
         }
 
+        .breadcrumb grampsjs-icon.type-icon {
+          width: 28px;
+          height: 28px;
+          color: var(--md-sys-color-primary);
+          --grampsjs-icon-tile: color-mix(
+            in srgb,
+            var(--heritage-gold) 13%,
+            var(--md-sys-color-surface-container)
+          );
+        }
+
         .breadcrumb .action-buttons {
           margin-left: 10px;
           gap: 7px;
@@ -109,7 +120,14 @@ export class GrampsjsBreadcrumbs extends GrampsjsAppStateMixin(LitElement) {
   render() {
     return html`
       <div class="breadcrumb">
-        <grampsjs-icon path="${this.objectIcon}" color="currentColor">
+        <grampsjs-icon
+          class="type-icon"
+          path="${this.objectIcon}"
+          color="currentColor"
+          width="28"
+          height="28"
+          ornament
+        >
         </grampsjs-icon>
         <a href="/${this._getObjectsLink()}">${this._(this.objectsName)}</a>
         <grampsjs-icon path="${mdiChevronRight}" color="currentColor">

@@ -58,13 +58,24 @@ export const sharedStyles = css`
   }
 
   md-menu::part(elevation) {
-    box-shadow: inset 0 0 0 1px var(--md-sys-color-outline-variant);
+    box-shadow: inset 0 3px var(--heritage-gold),
+      inset 0 0 0 1px var(--md-sys-color-outline-variant),
+      var(--heritage-panel-shadow);
   }
 
   md-dialog [slot='headline'] {
     color: var(--heritage-ink);
     border-bottom: 1px solid var(--heritage-rule);
     padding-bottom: 16px;
+  }
+
+  md-dialog [slot='content'] {
+    background-image: var(--heritage-panel-background);
+  }
+
+  md-dialog [slot='actions'] {
+    border-top: 1px solid var(--heritage-rule);
+    padding-top: 10px;
   }
 
   md-list-item {
@@ -438,7 +449,24 @@ export const listAvatarStyles = css`
   grampsjs-icon[slot='start'] {
     box-sizing: border-box;
     padding: 8px;
-    background-color: var(--grampsjs-color-icon-background);
+    border-radius: 3px;
+    background: color-mix(
+      in srgb,
+      var(--heritage-gold) 18%,
+      var(--md-sys-color-surface-container)
+    );
+    box-shadow: inset 0 0 0 1px
+      color-mix(in srgb, var(--heritage-gold) 55%, transparent);
+    clip-path: polygon(
+      12% 0,
+      88% 0,
+      100% 12%,
+      100% 88%,
+      88% 100%,
+      12% 100%,
+      0 88%,
+      0 12%
+    );
   }
 `
 

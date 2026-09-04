@@ -115,7 +115,8 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
         border: 1px solid var(--heritage-rule);
         border-top: 3px solid var(--heritage-gold);
         border-radius: 0 0 4px 4px;
-        background: var(--md-sys-color-surface);
+        background-color: var(--md-sys-color-surface);
+        background-image: var(--heritage-panel-background);
         color: var(--heritage-ink);
         box-shadow: 0 12px 36px #1d140e40;
       }
@@ -228,7 +229,12 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
       }
       .item grampsjs-icon {
         flex: 0 0 auto;
-        color: var(--md-sys-color-on-surface-variant);
+        color: var(--md-sys-color-primary);
+        --grampsjs-icon-tile: color-mix(
+          in srgb,
+          var(--heritage-gold) 22%,
+          var(--md-sys-color-surface-container)
+        );
       }
       .item:hover,
       .item[aria-current='page'] {
@@ -397,8 +403,9 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
       <grampsjs-icon
         path=${icon}
         color="currentColor"
-        width="20"
-        height="20"
+        width="30"
+        height="30"
+        ornament
       ></grampsjs-icon>
       <span>${label}</span>
       ${badge && this.unreadCount > 0
@@ -549,8 +556,9 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
                 <grampsjs-icon
                   path=${mdiLogout}
                   color="currentColor"
-                  width="20"
-                  height="20"
+                  width="30"
+                  height="30"
+                  ornament
                 ></grampsjs-icon>
                 <span>${this._('Log out')}</span>
               </button>

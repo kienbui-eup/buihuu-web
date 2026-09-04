@@ -139,12 +139,18 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
 
         /* Điện thoại: mỗi dòng là một thẻ giấy, cùng khung với các khối khác. */
         table:not(.wide) tbody tr {
+          position: relative;
           margin-bottom: 12px;
           padding: 16px 12px;
           border: 1px solid var(--heritage-rule);
+          border-left: 3px solid
+            color-mix(in srgb, var(--heritage-gold) 72%, var(--heritage-rule));
           border-radius: var(--grampsjs-frame-radius);
-          background: var(--grampsjs-frame-paper);
-          box-shadow: 0 3px 16px var(--grampsjs-body-font-color-5);
+          background-color: var(--grampsjs-frame-paper);
+          background-image: var(--heritage-panel-background);
+          box-shadow: var(--heritage-panel-shadow),
+            inset 0 0 0 3px
+              color-mix(in srgb, var(--heritage-gold) 4%, transparent);
         }
 
         table.linked tbody tr:focus-visible,
@@ -164,8 +170,10 @@ export class GrampsjsTable extends GrampsjsAppStateMixin(LitElement) {
         .table-container.wide {
           border: 1px solid var(--heritage-rule);
           border-radius: var(--grampsjs-frame-radius);
-          background: var(--grampsjs-frame-paper);
-          box-shadow: 0 3px 16px var(--grampsjs-body-font-color-5);
+          background-color: var(--grampsjs-frame-paper);
+          background-image: var(--heritage-panel-background);
+          box-shadow: var(--heritage-panel-shadow),
+            inset 0 3px var(--heritage-gold);
           overflow-x: auto;
         }
 

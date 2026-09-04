@@ -8,7 +8,7 @@ import {
   hexFromArgb,
 } from '@material/material-color-utilities'
 
-export const DEFAULT_PRIMARY = '#79372e'
+export const DEFAULT_PRIMARY = '#873e32'
 export const DEFAULT_SECONDARY = '#72553c'
 
 export function getSystemTheme() {

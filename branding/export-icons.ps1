@@ -29,6 +29,14 @@ foreach ($size in $iconSizes) {
     Export-IconPng 'favicon-bui-huu-master.png' "favicon-bui-huu-$size.png" $size
 }
 
+# Ảnh ImageGen có nhiễu màu rất nhỏ dù nhìn như màu phẳng. Lượng tử hoá bảng
+# màu trước khi đóng gói ICO để icon tải nhanh và không mang hàng chục nghìn
+# màu thừa vào service worker.
+python (Join-Path $PSScriptRoot 'optimize-icons.py') $assetDirectory
+if ($LASTEXITCODE -ne 0) {
+    throw "Không tối ưu được icon bằng Pillow."
+}
+
 # ICO chứa ba PNG 16/32/48 px để trình duyệt chọn theo mật độ màn hình.
 $iconStream = [IO.File]::Create((Join-Path $assetDirectory 'favicon-bui-huu.ico'))
 $writer = [IO.BinaryWriter]::new($iconStream)

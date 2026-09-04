@@ -1,6 +1,6 @@
 # Logo và favicon Bùi Hữu
 
-Thiết kế ngày 03/09/2026 từ ảnh dấu chữ BÙI / HỮU do người dùng cung cấp.
+Thiết kế lại ngày 04/09/2026 từ ảnh dấu chữ BÙI / HỮU do người dùng cung cấp.
 Dùng công cụ ImageGen tích hợp, không dùng CLI/API dự phòng.
 
 - `logo-bui-huu-master.png`: ấn son hai hàng chữ đầy đủ, dấu tiếng Việt đã kiểm tra.
@@ -17,7 +17,9 @@ tổ bên dưới, không đưa hình ảnh hoặc thông tin người trong gia
 metadata công khai. Các file `favicon.ico`, `icon192.png`, `icon512.png` cũ
 cũng được xuất lại bằng logo mới để đồng bộ các đường dẫn còn lưu.
 
-Chạy `pwsh -File branding/export-icons.ps1` trên Windows để xuất lại kích thước.
+Chạy `pwsh -File branding/export-icons.ps1` trên Windows để xuất lại kích thước;
+script dùng Python và Pillow để bỏ nhiễu màu thừa trong ảnh ImageGen trước khi
+đóng gói favicon.
 Ảnh gốc giữ trong `branding/`, không được chép vào bản build web. Chỉ các bản
 thu nhỏ trong `images/` được dùng trên trang. Không gắn `purpose: maskable` vì
 con dấu vuông có chi tiết gần viền.
@@ -55,21 +57,21 @@ dùng ấn son để dễ nhận ra ở kích thước nhỏ.
 
 ## Prompt thiết kế
 
-Logo: Redesign the supplied two-line Vietnamese family seal as one dignified,
-memorable production logo. Exact text BÙI / HỮU, correct Vietnamese diacritics.
-Robust carved editorial serif letters, deep lacquer brick red #873E32 and
-warm ivory #FFFCF6, square upright seal, inner engraved border with restrained
-stepped corners, balanced spacing, subtle hand-cut edges. No extra text,
-Chinese characters, trees, flowers, dragons, crowns, shadows or mockups.
+Logo: Use case: logo-brand. Refine the supplied two-line Vietnamese family seal
+into a memorable ancestral-house mark. Exact text “BÙI” on the first line and
+“HỮU” on the second line, preserving every diacritic. Crisp vector-friendly
+carved seal, robust editorial serif lettering, a subtle shallow tiled-roof
+silhouette and small stepped stone-pillar corner cuts. Deep lacquer red
+#873E32, warm ivory #FFFCF6 and one restrained muted-gold #C7A35B inner accent.
+Square, symmetrical, about 7% safe padding, thick strokes readable at 32 px.
+No shadows, gradients, mockup, texture, people, trees, animals, dragons,
+Chinese characters, extra letters or watermark.
 
-Hiệu chỉnh logo: Preserve the lettering, border and proportions. The middle
-character in HỮU must be U+1EEE, uppercase U with horn and tilde: a clearly
-visible horizontal S-shaped wave with two opposite bends, never a cup/breve.
-Keep the grave accent in BÙI. Replace the checkerboard entirely with a uniform
-warm ivory background. One finished square logo with about 6% outer padding.
-
-Favicon: Create one companion square icon from the approved seal, readable at
-16x16 and 32x32. Exact text BH on one line, robust carved serif letters, broad
-strokes and large open counters, no overlap. Brick red #873E32 background
-edge-to-edge, ivory #FFFCF6 letters about 78% width, optically centered. Omit
-thin borders and ornaments. No extra text, grid, paper, shadows or mockups.
+Favicon: Use case: logo-brand. Redesign the existing BH favicon as a companion
+to the approved full seal. Exact uppercase text “BH” on one line, extremely
+large and optically centered, with broad ivory editorial serif strokes and open
+counters. Deep lacquer-red square field, a very shallow ancestral-house roof
+silhouette and one robust muted-gold inner keyline visible at 32 px. About 6%
+safe padding, flat vector-friendly shapes. No other text, accents, shadows,
+gradients, texture, mockup, people, trees, dragons, Chinese characters or
+watermark.

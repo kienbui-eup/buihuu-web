@@ -70,6 +70,16 @@ class GrampsjsAddMenu extends GrampsjsAppStateMixin(LitElement) {
           --md-menu-item-label-text-size: 14px;
           --md-menu-item-label-text-weight: 400;
         }
+
+        md-menu-item grampsjs-icon[slot='start'] {
+          width: 32px;
+          height: 32px;
+          --grampsjs-icon-tile: color-mix(
+            in srgb,
+            var(--heritage-gold) 13%,
+            var(--md-sys-color-surface-container)
+          );
+        }
       `,
     ]
   }
@@ -108,7 +118,10 @@ class GrampsjsAddMenu extends GrampsjsAppStateMixin(LitElement) {
         <grampsjs-icon
           slot="start"
           path="${iconPath}"
-          color="var(--grampsjs-body-font-color-35)"
+          color="var(--md-sys-color-primary)"
+          width="32"
+          height="32"
+          ornament
         ></grampsjs-icon>
       </md-menu-item>
     `

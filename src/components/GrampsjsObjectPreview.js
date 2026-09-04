@@ -68,13 +68,16 @@ export class GrampsjsObjectPreview extends GrampsjsAppStateMixin(LitElement) {
           width: 480px;
           max-width: calc(100vw - 16px);
           max-height: min(520px, calc(100dvh - 16px));
-          background: var(--grampsjs-frame-paper);
+          background-color: var(--grampsjs-frame-paper);
+          background-image: var(--heritage-panel-background);
           color: var(--md-sys-color-on-surface);
-          border: 1px solid var(--md-sys-color-outline-variant);
+          border: 1px solid var(--heritage-rule);
+          border-top: 3px solid var(--heritage-gold);
           border-radius: var(--grampsjs-frame-radius);
           padding: 6px;
-          box-shadow: 0 8px 24px var(--grampsjs-body-font-color-10),
-            0 2px 8px var(--grampsjs-body-font-color-10);
+          box-shadow: var(--heritage-panel-shadow),
+            inset 0 0 0 4px
+              color-mix(in srgb, var(--heritage-gold) 5%, transparent);
           box-sizing: border-box;
           visibility: hidden;
           opacity: 0;

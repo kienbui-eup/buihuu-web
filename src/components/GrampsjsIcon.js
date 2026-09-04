@@ -25,6 +25,23 @@ export class GrampsjsIcon extends LitElement {
           width: 100%;
           height: 100%;
         }
+
+        .ornament-base {
+          fill: var(
+            --grampsjs-icon-tile,
+            var(--md-sys-color-surface-container)
+          );
+          stroke: var(--grampsjs-icon-keyline, var(--heritage-gold));
+          stroke-width: 1;
+          stroke-linejoin: round;
+        }
+
+        .ornament-line {
+          fill: none;
+          stroke: color-mix(in srgb, var(--heritage-gold) 62%, transparent);
+          stroke-width: 0.75;
+          stroke-linecap: square;
+        }
       `,
     ]
   }
@@ -37,6 +54,7 @@ export class GrampsjsIcon extends LitElement {
       slot: {type: String},
       height: {type: Number},
       width: {type: Number},
+      ornament: {type: Boolean, reflect: true},
     }
   }
 
@@ -47,6 +65,7 @@ export class GrampsjsIcon extends LitElement {
     this.rotate = 0
     this.height = 24
     this.width = 24
+    this.ornament = false
   }
 
   willUpdate() {
@@ -75,7 +94,18 @@ export class GrampsjsIcon extends LitElement {
         transform="rotate(${this.rotate})"
         preserveAspectRatio="xMidYMid meet"
       >
-        <path fill="${this.color}" d="${this.path}" />
+        ${this.ornament
+          ? html`<path
+                class="ornament-base"
+                d="M3 7L5.2 5H8.2L12 2.8L15.8 5H18.8L21 7V21H3Z"
+              ></path>
+              <path class="ornament-line" d="M5 18.7H19"></path>`
+          : ''}
+        <path
+          fill="${this.color}"
+          d="${this.path}"
+          transform=${this.ornament ? 'translate(5 5) scale(0.583333)' : ''}
+        />
       </svg>
     `
   }

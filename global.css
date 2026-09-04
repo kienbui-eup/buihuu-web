@@ -4,6 +4,8 @@ body {
     padding: 0;
     height: 100%;
     background-color: var(--md-sys-color-background);
+    background-image: var(--heritage-page-background);
+    background-attachment: fixed;
 }
 
 @media print {
@@ -21,6 +23,19 @@ body {
     --heritage-gutter: clamp(16px, 3.2vw, 52px);
     --heritage-ink: #362c24;
     --heritage-rule: #d6cbb9;
+    --heritage-panel-background:
+        linear-gradient(135deg, rgba(185, 151, 89, 0.09), transparent 120px),
+        repeating-linear-gradient(0deg, transparent 0 31px, rgba(121, 55, 46, 0.018) 31px 32px);
+    --heritage-page-background:
+        radial-gradient(circle at 100% 0, rgba(185, 151, 89, 0.17), transparent 34rem),
+        radial-gradient(circle at 0 78%, rgba(166, 76, 50, 0.07), transparent 30rem),
+        repeating-linear-gradient(90deg, transparent 0 63px, rgba(121, 55, 46, 0.025) 63px 64px),
+        repeating-linear-gradient(0deg, transparent 0 63px, rgba(121, 55, 46, 0.018) 63px 64px);
+    --heritage-panel-shadow: 0 10px 30px rgba(53, 39, 31, 0.1), 0 2px 5px rgba(53, 39, 31, 0.06);
+    --heritage-chart-background:
+        radial-gradient(circle at 50% 14%, rgba(185, 151, 89, 0.12), transparent 46%),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(121, 55, 46, 0.018) 47px 48px),
+        var(--md-sys-color-background);
     color: var(--md-sys-color-on-surface);
     /* Web Awesome color token overrides.
      default.css (loaded in index.html) defines --wa-* tokens inside @layer wa-theme,
@@ -176,6 +191,19 @@ body {
     --heritage-wood: #241c17;
     --heritage-ink: #eee1cc;
     --heritage-rule: #64513d;
+    --heritage-panel-background:
+        linear-gradient(135deg, rgba(185, 151, 89, 0.08), transparent 130px),
+        repeating-linear-gradient(0deg, transparent 0 31px, rgba(255, 248, 233, 0.012) 31px 32px);
+    --heritage-page-background:
+        radial-gradient(circle at 100% 0, rgba(185, 151, 89, 0.12), transparent 34rem),
+        radial-gradient(circle at 0 78%, rgba(166, 76, 50, 0.09), transparent 32rem),
+        repeating-linear-gradient(90deg, transparent 0 63px, rgba(255, 248, 233, 0.015) 63px 64px),
+        repeating-linear-gradient(0deg, transparent 0 63px, rgba(255, 248, 233, 0.012) 63px 64px);
+    --heritage-panel-shadow: 0 12px 34px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.24);
+    --heritage-chart-background:
+        radial-gradient(circle at 50% 14%, rgba(185, 151, 89, 0.09), transparent 48%),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(255, 248, 233, 0.012) 47px 48px),
+        var(--md-sys-color-background);
     --grampsjs-top-app-bar-background-color: var(--md-sys-color-surface-container);
     --grampsjs-top-app-bar-font-color: var(--md-sys-color-on-surface);
     --grampsjs-body-font-color: rgba(255, 255, 255, 0.8);

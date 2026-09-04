@@ -11,9 +11,12 @@ export const heritageFrameStyles = css`
     position: relative;
     border: 1px solid var(--heritage-rule);
     border-radius: var(--grampsjs-frame-radius);
-    background: var(--grampsjs-frame-paper);
+    background-color: var(--grampsjs-frame-paper);
+    background-image: var(--heritage-panel-background);
     box-sizing: border-box;
-    box-shadow: 0 3px 16px var(--grampsjs-body-font-color-5);
+    box-shadow: var(--heritage-panel-shadow),
+      inset 0 0 0 4px color-mix(in srgb, var(--heritage-gold) 5%, transparent),
+      inset 0 0 0 5px color-mix(in srgb, var(--heritage-gold) 18%, transparent);
   }
   .section-label {
     margin: 0 0 12px;
@@ -26,7 +29,32 @@ export const heritageFrameStyles = css`
   /* Đầu mỗi trang: nhãn mục nhỏ, tiêu đề serif và một dòng dẫn, cùng nhịp với
      các khối trên trang chủ. Dùng .with-actions khi có nút ở mép phải. */
   .page-heading {
+    position: relative;
     margin: 0 0 24px;
+    padding: 0 0 16px 18px;
+    border-bottom: 1px solid var(--heritage-rule);
+  }
+  .page-heading::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 16px;
+    width: 4px;
+    background: linear-gradient(
+      to bottom,
+      var(--heritage-roof),
+      var(--heritage-gold)
+    );
+  }
+  .page-heading::after {
+    content: '';
+    position: absolute;
+    left: 18px;
+    bottom: -1px;
+    width: min(150px, 36vw);
+    height: 2px;
+    background: var(--heritage-gold);
   }
   .page-heading .section-label {
     margin-bottom: 6px;
@@ -67,6 +95,7 @@ export const heritageFrameStyles = css`
   @media (max-width: 768px) {
     .page-heading {
       margin-bottom: 18px;
+      padding-left: 14px;
     }
     .page-heading h2 {
       font-size: 26px;
