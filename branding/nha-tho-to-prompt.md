@@ -2,14 +2,14 @@
 
 Công cụ: ImageGen tích hợp, không dùng CLI/API dự phòng.
 Ảnh kết quả: `nha-tho-to-chi-bo.png`.
-Ảnh nền và vị trí hai cột lớn do người dùng chọn làm chuẩn; chỉ hiệu chỉnh cổng phải và lối bên trái.
+Ảnh nền và kiến trúc do người dùng chọn làm chuẩn; lần hiệu chỉnh này chỉ tăng độ rõ và cân lại phối cảnh.
 
 ## Prompt cuối đã dùng
 
-Perform an extremely localized architectural edit. Lock the entire main roof, name plaque, wooden facade, altar, main stairs, all four short porch columns, both tall pillars and courtyard exactly as they are. Change only the left passage region and far-right gate region.
+Improve fine-detail clarity and rebalance the camera view into a polished, dignified 16:9 website hero photograph. Preserve the main temple, red tiled roof, grey ridge ornaments, yellow roof plaque, the wooden Vietnamese sign with the exact two lines “Nhà Thờ Họ Bùi Hữu” and “Thôn Chỉ Bồ”, all four short porch columns, both tall ceremonial pillars, the left through-arch and side area, right rear gate, walls, trees, courtyard and central altar. Do not reinterpret or replace inscriptions.
 
-Keep the existing curved arch in the left return wall. Make it an unmistakable through-passage with a shaded inner reveal. Immediately behind and left of its threshold, create three shallow grey stone steps whose travel direction is horizontal right-to-left. The highest step begins inside the arch at porch elevation; the lowest meets the covered side yard. Shift the work table and bowls fully off the porch to the lower yard under the left lean-to roof. Keep the burner in the outside corner. Do not move either left column.
+Correct subtle perspective imperfections. Keep the ridge, eaves, sign, stair nosings and courtyard grout lines level. Keep pillars and walls vertical. Center the temple and altar optically between the tall pillars, with equal outer margins. Keep enough space around finials and courtyard while reducing excess sky or foreground. Do not crop architectural elements.
 
-Replace the right gate with a 4.5-metre vehicle gate, 4 metres high. Increase the double-leaf opening to approximately 28–32% of the main wooden facade width. The gate and its wall occupy one plane parallel to the temple's rear wall, only 1.2 metres behind the temple. It is not on the front boundary or joined to the porch. Use the narrow right-side alley and natural occlusion to show the gate is behind the house. The rear wall connects directly to both gate piers. Keep the right ceremonial pillar at its exact position and scale while keeping most of the gate visible.
+Increase realistic clarity on roof tiles, carved wood, stone reliefs, column inscriptions, altar, gate metalwork and grout lines. Smooth generation noise, warped tiles and mushy floor texture. Balance exposure so the altar remains legible. Retain natural material texture and restrained color. Avoid oversaturation, HDR halos, excessive sharpening, plastic smoothing or painterly texture.
 
-Preserve the wide 16:9 photograph. Do not introduce a sidewalk, roadway, new pillars, extra arches, signs, people, vehicles or text changes.
+Add no text, people, furniture, vehicles, banners, offerings outside the altar, pillars, gates, steps or decorative objects. The result must look like the same photograph captured with a better lens and careful architectural post-processing.
