@@ -1,11 +1,13 @@
 /*
-Menu tài khoản trên header.
+Menu tài khoản trên header, kiêm bảng Danh mục.
 
-Bấm biểu tượng hồ sơ mở một bảng giấy: tên và vai trò người đang đăng nhập,
-rồi các mục theo quyền. Con cháu vào tra cứu chỉ thấy phần Tài khoản và Hướng
-dẫn; người biên soạn thấy thêm Biên soạn (công việc, xuất, bản sửa đổi); chủ
-gia phả và quản trị thấy thêm Quản trị. Thông báo chưa đọc hiện thành huy hiệu
-trên chính biểu tượng tài khoản.
+Bấm biểu tượng tài khoản mở một bảng giấy: tên và vai trò người đang đăng
+nhập; ba nhóm Danh mục (Tra cứu, Tư liệu & nghiên cứu, Về dòng họ) lấy từ
+siteNav.js; rồi các mục theo quyền. Con cháu vào tra cứu chỉ thấy phần Tài
+khoản; người biên soạn thấy thêm Biên soạn (công việc, xuất, bản sửa đổi); chủ
+gia phả và quản trị thấy thêm Quản trị. Trên máy tính bảng và điện thoại đây
+là lối vào duy nhất tới mọi trang, nên nhóm Danh mục đứng trước nhóm tài
+khoản. Thông báo chưa đọc hiện thành huy hiệu trên chính biểu tượng tài khoản.
 */
 
 import {LitElement, html, css} from 'lit'
@@ -21,13 +23,18 @@ import {
   mdiWrench,
   mdiAccountMultiple,
   mdiInformationOutline,
-  mdiHelpCircleOutline,
   mdiLogout,
   mdiClose,
 } from '@mdi/js'
 import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
-import {ARTICLE_HUONG_DAN} from './GrampsjsSiteFooter.js'
+import {handleSearchLink} from '../pageSearch.js'
+import {
+  mainLinks,
+  researchLinks,
+  aboutLinks,
+  isCurrentLink,
+} from '../siteNav.js'
 import './GrampsjsIcon.js'
 
 // Vai trò của Gramps Web gọi theo lối của một gia phả dòng họ.
@@ -98,7 +105,7 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
         position: fixed;
         inset: auto 16px auto auto;
         top: var(--account-top, 64px);
-        width: min(340px, calc(100vw - 32px));
+        width: min(660px, calc(100vw - 32px));
         max-height: calc(100dvh - var(--account-top, 64px) - 16px);
         box-sizing: border-box;
         margin: 0;
@@ -112,17 +119,22 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
         color: var(--heritage-ink);
         box-shadow: 0 12px 36px #1d140e40;
       }
+      /* Đầu bảng dính khi cuộn để nút đóng luôn với tới trên điện thoại. */
       .identity {
+        position: sticky;
+        top: 0;
+        z-index: 1;
         display: flex;
         align-items: center;
         gap: 14px;
-        padding: 16px 8px 14px 20px;
+        padding: 14px 8px 12px 20px;
+        background: var(--md-sys-color-surface);
         border-bottom: 1px solid var(--heritage-rule);
       }
       .avatar {
-        flex: 0 0 48px;
-        width: 48px;
-        height: 48px;
+        flex: 0 0 44px;
+        width: 44px;
+        height: 44px;
         display: grid;
         place-items: center;
         border-radius: 50%;
@@ -132,7 +144,7 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
           var(--md-sys-color-surface)
         );
         color: var(--md-sys-color-primary);
-        font: 600 20px/1 var(--grampsjs-heading-font-family);
+        font: 600 19px/1 var(--grampsjs-heading-font-family);
       }
       .who {
         flex: 1;
@@ -166,11 +178,19 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
         color: var(--md-sys-color-primary);
         background: color-mix(in srgb, var(--heritage-gold) 16%, transparent);
       }
+      /* Máy tính: Danh mục bên trái, tài khoản bên phải, kẻ dọc ở giữa. */
+      .columns {
+        display: grid;
+        grid-template-columns: 1.55fr 1fr;
+      }
+      .me {
+        border-left: 1px solid var(--heritage-rule);
+      }
       section {
         padding: 10px 8px 8px;
         border-bottom: 1px solid var(--heritage-rule);
       }
-      section:last-of-type {
+      section:last-child {
         border-bottom: 0;
       }
       h3 {
@@ -179,6 +199,15 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
         letter-spacing: 0.16em;
         text-transform: uppercase;
         color: var(--md-sys-color-primary);
+      }
+      .links {
+        display: flex;
+        flex-direction: column;
+      }
+      .lookup .links {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 4px;
       }
       .item {
         display: flex;
@@ -237,11 +266,37 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
         );
       }
       @media (max-width: 760px) {
-        /* Chỉ đổi lề trái/phải; không dùng inset để không đặt lại top. */
+        /* Chỉ đổi lề trái/phải; không dùng inset để không đặt lại top. Một
+           cột, mọi nhóm xếp hai cột mục cho bảng ngắn lại. */
         #account {
           left: 8px;
           right: 8px;
           width: auto;
+        }
+        .identity {
+          padding-left: 16px;
+        }
+        .columns {
+          grid-template-columns: 1fr;
+        }
+        .me {
+          border-left: 0;
+          border-top: 1px solid var(--heritage-rule);
+        }
+        .links {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          column-gap: 4px;
+        }
+        .item {
+          gap: 10px;
+          padding-inline: 8px;
+        }
+      }
+      @media (max-width: 359px) {
+        .links,
+        .lookup .links {
+          grid-template-columns: 1fr;
         }
       }
       @media print {
@@ -321,17 +376,14 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
     if (this.open) this._loadUser()
   }
 
-  _current(href) {
-    const {page, pageId} = this.appState.path ?? {}
-    return href === (pageId ? `/${page}/${pageId}` : `/${page}`)
-  }
-
-  _link([href, label, icon, badge]) {
+  _link(link) {
+    const {href, label, icon, badge} = link
     return html`<a
       class="item"
       href=${href}
-      aria-current=${this._current(href) ? 'page' : 'false'}
+      aria-current=${isCurrentLink(this.appState.path, link) ? 'page' : 'false'}
       @click=${event => {
+        if (href === '/search') handleSearchLink(event, this)
         if (
           !event.ctrlKey &&
           !event.metaKey &&
@@ -359,11 +411,11 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
     </a>`
   }
 
-  _section(title, items) {
+  _section(title, items, cls = '') {
     if (!items.length) return ''
-    return html`<section>
+    return html`<section class=${cls}>
       <h3>${title}</h3>
-      ${items.map(item => this._link(item))}
+      <div class="links">${items.map(item => this._link(item))}</div>
     </section>`
   }
 
@@ -376,29 +428,56 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
   render() {
     const perms = this.appState.permissions ?? {}
     const account = [
-      ['/settings/user', this._('User settings'), mdiAccountCog],
-      ['/notifications', this._('Notifications'), mdiBellOutline, true],
-      ['/bookmarks', this._('_Bookmarks'), mdiBookmarkOutline],
-      ['/recent', 'Mục vừa xem', mdiHistory],
+      {
+        href: '/settings/user',
+        label: this._('User settings'),
+        icon: mdiAccountCog,
+      },
+      {
+        href: '/notifications',
+        label: this._('Notifications'),
+        icon: mdiBellOutline,
+        badge: true,
+      },
+      {
+        href: '/bookmarks',
+        label: this._('_Bookmarks'),
+        icon: mdiBookmarkOutline,
+      },
+      {href: '/recent', label: 'Mục vừa xem', icon: mdiHistory},
     ]
     const editing = perms.canEdit
       ? [
-          ['/tasks', this._('Tasks'), mdiFormatListChecks],
-          ['/export', this._('Export'), mdiDownload],
+          {href: '/tasks', label: this._('Tasks'), icon: mdiFormatListChecks},
+          {href: '/export', label: this._('Export'), icon: mdiDownload},
           ...(perms.canViewPrivate
-            ? [['/revisions', this._('Revisions'), mdiSourceCommit]]
+            ? [
+                {
+                  href: '/revisions',
+                  label: this._('Revisions'),
+                  icon: mdiSourceCommit,
+                },
+              ]
             : []),
         ]
       : []
     const admin = perms.canManageUsers
       ? [
-          ['/settings/administration', this._('Administration'), mdiWrench],
-          ['/settings/users', this._('Manage users'), mdiAccountMultiple],
-          [
-            '/settings/info',
-            this._('System Information'),
-            mdiInformationOutline,
-          ],
+          {
+            href: '/settings/administration',
+            label: this._('Administration'),
+            icon: mdiWrench,
+          },
+          {
+            href: '/settings/users',
+            label: this._('Manage users'),
+            icon: mdiAccountMultiple,
+          },
+          {
+            href: '/settings/info',
+            label: this._('System Information'),
+            icon: mdiInformationOutline,
+          },
         ]
       : []
     const name = this._user?.full_name || this._user?.name || ''
@@ -408,7 +487,7 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
         <button
           id="button_settings"
           popovertarget="account"
-          aria-label=${this._('Account')}
+          aria-label="Danh mục và tài khoản"
           aria-expanded=${this.open ? 'true' : 'false'}
           aria-controls="account"
           @click=${this._positionPanel}
@@ -451,29 +530,33 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
             ></grampsjs-icon>
           </button>
         </div>
-        ${this._section(this._('Account'), account)}
-        ${this._section('Biên soạn', editing)}
-        ${this._section('Quản trị', admin)}
-        <section>
-          ${this._link([
-            ARTICLE_HUONG_DAN,
-            'Hướng dẫn tra cứu',
-            mdiHelpCircleOutline,
-          ])}
-          <button
-            class="item logout"
-            type="button"
-            @click=${() => this.appState.signout()}
-          >
-            <grampsjs-icon
-              path=${mdiLogout}
-              color="currentColor"
-              width="20"
-              height="20"
-            ></grampsjs-icon>
-            <span>${this._('Log out')}</span>
-          </button>
-        </section>
+        <div class="columns">
+          <nav class="catalog" aria-label="Danh mục gia phả">
+            ${this._section('Tra cứu', mainLinks(this), 'lookup')}
+            ${this._section('Tư liệu & nghiên cứu', researchLinks(this))}
+            ${this._section('Về dòng họ', aboutLinks())}
+          </nav>
+          <div class="me">
+            ${this._section(this._('Account'), account)}
+            ${this._section('Biên soạn', editing)}
+            ${this._section('Quản trị', admin)}
+            <section>
+              <button
+                class="item logout"
+                type="button"
+                @click=${() => this.appState.signout()}
+              >
+                <grampsjs-icon
+                  path=${mdiLogout}
+                  color="currentColor"
+                  width="20"
+                  height="20"
+                ></grampsjs-icon>
+                <span>${this._('Log out')}</span>
+              </button>
+            </section>
+          </div>
+        </div>
       </div>
     `
   }

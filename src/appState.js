@@ -57,7 +57,7 @@ export function getInitialAppState() {
   function notifyTasks() {
     fireEvent(window, 'tasks:changed', {tasks: [...activeTasks.values()]})
     // Also update the notification bell count to include running tasks.
-    // Re-use notifications:changed so GrampsjsHeaderNav picks it up without
+    // Re-use notifications:changed so GrampsjsSettingsMenu picks it up without
     // needing a separate listener.
     fireEvent(window, 'notifications:changed', {
       notifications: [...notifications],
