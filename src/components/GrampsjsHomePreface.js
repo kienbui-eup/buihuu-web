@@ -238,6 +238,11 @@ export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
              chú kiểu bản thảo (chữ hoa đầu, dòng ký tên) hòa vào tờ sớ. */
           --md-sys-color-primary: var(--so-son);
           --md-sys-color-outline-variant: var(--so-vang);
+          background: linear-gradient(
+            180deg,
+            rgba(255, 252, 238, 0.2),
+            rgba(255, 252, 238, 0) 260px
+          );
         }
         .sheet::before {
           content: '';
@@ -271,7 +276,16 @@ export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
           right: -8px;
         }
         header {
+          position: relative;
           text-align: center;
+          padding-top: 4px;
+        }
+        .heading-seal {
+          display: block;
+          width: max-content;
+          margin: 0 auto 14px;
+          --grampsjs-mark-size: 58px;
+          filter: sepia(0.15) saturate(1.15);
         }
         .eyebrow {
           margin: 0 0 6px;
@@ -284,6 +298,23 @@ export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
           margin: 0;
           font: 700 clamp(46px, 5vw, 62px) / 1.3 'Charm', var(--so-serif);
           color: var(--so-son);
+        }
+        .family-line {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          margin: 6px 0 0;
+          font: 500 11px/1.6 var(--grampsjs-body-font-family);
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #765b34;
+        }
+        .family-line::before,
+        .family-line::after {
+          content: '';
+          width: 32px;
+          border-top: 1px solid var(--so-vang);
         }
         .ornament {
           display: flex;
@@ -315,6 +346,19 @@ export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
           --grampsjs-note-color: var(--so-ink);
           /* Khung đã có tiêu đề "Lời tựa", ẩn dòng "PHẢ HỆ HỌ BÙI HỮU" của bản chép. */
           --grampsjs-manuscript-title-display: none;
+        }
+        .text::before {
+          content: 'BÙI HỮU';
+          position: absolute;
+          z-index: -1;
+          left: 50%;
+          top: 15%;
+          transform: translateX(-50%) rotate(-8deg);
+          font: 700 clamp(72px, 17vw, 130px) / 1 var(--so-serif);
+          letter-spacing: 0.08em;
+          color: rgba(161, 48, 31, 0.035);
+          white-space: nowrap;
+          pointer-events: none;
         }
         .message {
           margin: 0 0 12px;
@@ -381,6 +425,9 @@ export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
           .sheet {
             margin-top: 8px;
             padding: 30px 18px 34px;
+          }
+          .heading-seal {
+            --grampsjs-mark-size: 50px;
           }
           .eyebrow {
             font-size: 12px;
@@ -518,8 +565,12 @@ export class GrampsjsHomePreface extends GrampsjsConnectedComponent {
             <span class="corner bl" aria-hidden="true"></span>
             <span class="corner br" aria-hidden="true"></span>
             <header>
+              <grampsjs-heritage-mark
+                class="heading-seal"
+              ></grampsjs-heritage-mark>
               <p class="eyebrow">Bản chép năm Canh Tý (2020)</p>
               <h2 id="so-title">Lời tựa</h2>
+              <p class="family-line">Phả hệ họ Bùi Hữu</p>
               <div class="ornament" aria-hidden="true"><span></span></div>
             </header>
             ${body}

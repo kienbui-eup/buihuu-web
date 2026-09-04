@@ -2,6 +2,7 @@ import {LitElement, html, css} from 'lit'
 import {sharedStyles} from '../SharedStyles.js'
 import {fireEvent} from '../util.js'
 import {PLACE_SHORT} from '../branding.js'
+import './GrampsjsHeritageMark.js'
 
 // Dùng bản ảnh nhà thờ đã phục dựng và được người dùng chọn cho giao diện.
 class GrampsjsTempleHero extends LitElement {
@@ -66,28 +67,92 @@ class GrampsjsTempleHero extends LitElement {
         line-height: 1.85;
         margin: 0;
       }
-      /* Lời tựa gộp vào phần giới thiệu: một trích đoạn mở đầu, chữ có chân
-         nghiêng như bản chép, tối đa bốn dòng; toàn văn mở bằng nút bên dưới. */
+      /* Trích đoạn như một thẻ thư tịch đặt trên nền gỗ. Toàn bộ thẻ là nút
+         mở lời tựa, giúp người dùng điện thoại không phải tìm một CTA nhỏ. */
       .preface {
-        max-width: 34em;
-        margin: 22px 0 0;
-        padding: 2px 0 2px 18px;
-        border-left: 2px solid #a58b62;
+        position: relative;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 14px;
+        width: min(100%, 38em);
+        margin: 24px 0 0;
+        padding: 16px 18px;
+        border: 1px solid rgba(226, 200, 145, 0.52);
+        border-radius: 3px;
+        background: linear-gradient(
+          115deg,
+          rgba(255, 249, 233, 0.1),
+          rgba(226, 200, 145, 0.04)
+        );
+        color: inherit;
+        text-align: left;
+        overflow: hidden;
+        isolation: isolate;
       }
-      .preface p {
+      .preface::before,
+      .preface::after {
+        content: '';
+        position: absolute;
+        pointer-events: none;
+      }
+      .preface::before {
+        inset: 5px;
+        border: 1px solid rgba(226, 200, 145, 0.17);
+        z-index: -1;
+      }
+      .preface::after {
+        width: 120px;
+        height: 120px;
+        right: -64px;
+        bottom: -72px;
+        border: 1px solid rgba(226, 200, 145, 0.28);
+        border-radius: 50%;
+        box-shadow: 0 0 0 10px rgba(226, 200, 145, 0.04),
+          0 0 0 20px rgba(226, 200, 145, 0.03);
+      }
+      .preface:hover {
+        border-color: #e2c891;
+        background: rgba(226, 200, 145, 0.13);
+        transform: translateY(-1px);
+      }
+      .preface:focus-visible {
+        outline: 2px solid #fff9e9;
+        outline-offset: 3px;
+      }
+      .quote-mark {
+        align-self: start;
+        font: 500 54px/0.9 var(--grampsjs-heading-font-family);
+        color: #e2c891;
+        opacity: 0.9;
+      }
+      .quote-copy {
+        min-width: 0;
+      }
+      .quote-text {
         display: -webkit-box;
         -webkit-line-clamp: 4;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        margin: 0;
         font: italic 400 17px/1.7 'EB Garamond x', 'Noto Serif', serif;
         color: #f1e6cf;
       }
-      .preface footer {
-        margin-top: 8px;
-        font-size: 12px;
+      .quote-source {
+        display: block;
+        margin-top: 9px;
+        font-size: 11px;
         letter-spacing: 0.08em;
+        text-transform: uppercase;
         color: #e2c891;
+      }
+      .quote-action {
+        align-self: end;
+        padding-left: 12px;
+        border-left: 1px solid rgba(226, 200, 145, 0.38);
+        font-size: 12px;
+        line-height: 1.5;
+        color: #fff9e9;
+        white-space: nowrap;
       }
       .actions {
         display: flex;
@@ -97,7 +162,7 @@ class GrampsjsTempleHero extends LitElement {
         margin-top: 28px;
       }
       a,
-      button {
+      .actions button {
         min-height: 44px;
         box-sizing: border-box;
         display: inline-flex;
@@ -117,19 +182,19 @@ class GrampsjsTempleHero extends LitElement {
       a:hover {
         background: #f0dbac;
       }
-      button {
+      .actions button {
         background: transparent;
         color: #fff9e9;
         border: 1px solid #a58b62;
         border-radius: 3px;
         padding: 12px 20px;
       }
-      button:hover {
+      .actions button:hover {
         border-color: #e2c891;
         background: rgba(226, 200, 145, 0.12);
       }
       a:focus-visible,
-      button:focus-visible {
+      .actions button:focus-visible {
         outline-color: #fff9e9;
       }
       figure {
@@ -216,12 +281,27 @@ class GrampsjsTempleHero extends LitElement {
         }
         .preface {
           margin-top: 18px;
-          padding-left: 14px;
+          grid-template-columns: auto minmax(0, 1fr);
+          gap: 10px;
+          padding: 14px;
         }
-        .preface p {
-          -webkit-line-clamp: 3;
+        .quote-mark {
+          font-size: 42px;
+        }
+        .quote-text {
+          -webkit-line-clamp: 2;
           font-size: 16px;
           line-height: 1.65;
+        }
+        .quote-source {
+          margin-top: 6px;
+          font-size: 10px;
+        }
+        .quote-action {
+          grid-column: 2;
+          justify-self: start;
+          padding: 0;
+          border: 0;
         }
         .actions {
           margin-top: 20px;
@@ -262,18 +342,27 @@ class GrampsjsTempleHero extends LitElement {
         </p>
         ${this.welcome || !this.prefaceExcerpt
           ? ''
-          : html`<blockquote class="preface">
-              <p>${this.prefaceExcerpt}</p>
-              <footer>Trích lời tựa gia phả</footer>
-            </blockquote>`}
+          : html`<button
+              class="preface"
+              type="button"
+              aria-label="Đọc toàn văn lời tựa gia phả"
+              @click=${() => fireEvent(this, 'preface:open')}
+            >
+              <span class="quote-mark" aria-hidden="true">“</span>
+              <span class="quote-copy">
+                <span class="quote-text">${this.prefaceExcerpt}</span>
+                <span class="quote-source">Trích lời tựa gia phả</span>
+              </span>
+              <span class="quote-action"
+                >Đọc toàn văn <span aria-hidden="true">→</span></span
+              >
+            </button>`}
         ${this.welcome
           ? ''
           : html`<div class="actions">
               <a href="/tree"
                 >Mở cây gia phả <span aria-hidden="true">&nbsp;→</span></a
-              ><button @click=${() => fireEvent(this, 'preface:open')}>
-                Đọc lời tựa
-              </button>
+              ><span class="action-note">17 đời · 3 ngành · 5 chi</span>
             </div>`}
       </div>
       <figure>

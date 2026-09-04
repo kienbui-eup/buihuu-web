@@ -1,5 +1,6 @@
 import {describe, it, expect} from 'vitest'
 import {prefaceExcerpt} from '../../src/components/GrampsjsHomePreface.js'
+import '../../src/components/GrampsjsTempleHero.js'
 
 // Văn bản giả, không lấy từ lời tựa thật.
 const TITLE = 'PHẢ HỆ HỌ A'
@@ -42,5 +43,33 @@ describe('prefaceExcerpt', () => {
   it('trả về chuỗi rỗng khi chưa có nội dung', () => {
     expect(prefaceExcerpt('')).to.equal('')
     expect(prefaceExcerpt(undefined)).to.equal('')
+  })
+})
+
+describe('thẻ lời tựa trên trang chủ', () => {
+  it('cho phép chạm cả trích đoạn để mở toàn văn', async () => {
+    const hero = document.createElement('grampsjs-temple-hero')
+    hero.prefaceExcerpt = OPENING
+    document.body.append(hero)
+    await hero.updateComplete
+    let opened = false
+    hero.addEventListener('preface:open', () => {
+      opened = true
+    })
+    const trigger = hero.renderRoot.querySelector('.preface')
+    expect(trigger.getAttribute('aria-label')).to.equal(
+      'Đọc toàn văn lời tựa gia phả'
+    )
+    trigger.click()
+    expect(opened).to.be.true
+    hero.remove()
+  })
+
+  it('không hiện thẻ trống khi chưa tải được trích đoạn', async () => {
+    const hero = document.createElement('grampsjs-temple-hero')
+    document.body.append(hero)
+    await hero.updateComplete
+    expect(hero.renderRoot.querySelector('.preface')).to.equal(null)
+    hero.remove()
   })
 })
