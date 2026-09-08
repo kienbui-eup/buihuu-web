@@ -1,3 +1,4 @@
+import {getPersonPortrait} from './personPortrait.js'
 import {create, select} from 'd3-selection'
 import {zoom} from 'd3-zoom'
 import {linkVertical} from 'd3-shape'
@@ -10,14 +11,13 @@ import {
   getPortraitAgeGroup,
   isDeceased,
   personCardLines,
-  personHasChildren,
 } from './util.js'
 import {
   appendPersonCardDecoration,
+  uniqueAvatarId,
   CARD_AVATAR_X,
   CARD_AVATAR_Y,
 } from './heritageFrame.js'
-import {appendDescendantsButton} from './descendantsButton.js'
 
 const layouts = new WeakMap()
 
@@ -453,7 +453,7 @@ function remasterChart(
           : 'unknown',
       ageGroup: d => getPortraitAgeGroup(d.person, d.profile),
       hasImage: d => Boolean(d.imageUrl),
-      nodeId: d => d.handle,
+      portraitUrl: d => getPersonPortrait(d.person, d.profile),
     }
   )
 
@@ -461,13 +461,9 @@ function remasterChart(
   // thay vì bị cắt bằng dấu ba chấm.
   const textPadding = d => {
     const deceased = isDeceased(d.person, d.profile)
-    if (!deceased) return 14
+    if (!deceased) return 60
     return d.imageUrl ? 60 : 58
   }
-  // Thẻ của người có con cháu mang nút gài "Xem hậu duệ" nhô trên mép phải.
-  const hasAction = d =>
-    !canEdit && d.nodetype === 'person' && personHasChildren(d.person)
-
   const fullName = d =>
     nameDisplayFormat === chartNameDisplayFormat.surnameThenGiven
       ? joinName(d.profile?.name_surname, d.profile?.name_given)
@@ -487,18 +483,17 @@ function remasterChart(
         boxWidth - textPadding(d) - (deceased ? 10 : 14),
         deceased
       )
-      const top = deceased
-        ? (boxHeight - (lines.length - 1) * lineHeight) / 2 + lineHeight / 4
-        : boxHeight - 22 - ((lines.length - 1) * lineHeight) / 2
+      const top =
+        (boxHeight - (lines.length - 1) * lineHeight) / 2 + lineHeight / 4
 
       select(this)
         .selectAll('text.card-line')
         .data(lines)
         .join('text')
         .attr('class', 'card-line')
-        .attr('x', deceased ? textPadding(d) : boxWidth / 2)
+        .attr('x', textPadding(d))
         .attr('y', (line, i) => top + i * lineHeight)
-        .attr('text-anchor', deceased ? 'start' : 'middle')
+        .attr('text-anchor', 'start')
         .attr('font-size', line => line.size)
         .attr('font-weight', line => line.weight)
         .attr('fill', line =>
@@ -510,6 +505,7 @@ function remasterChart(
         .text(line => line.text)
     })
 
+  const photoIds = new Map(nodedata.map(d => [d, uniqueAvatarId()]))
   // images
   nodes
     .filter(d => d.imageUrl)
@@ -520,7 +516,7 @@ function remasterChart(
     .attr('r', d => (isDeceased(d.person, d.profile) ? 20 : 22))
     .attr('cy', CARD_AVATAR_Y)
     .attr('cx', CARD_AVATAR_X)
-    .attr('fill', d => `url(#imgpattern-${d.handle})`)
+    .attr('fill', d => `url(#${photoIds.get(d)})`)
 
   const defs = targetsvg.append('defs')
   const imgPattern = defs
@@ -529,9 +525,11 @@ function remasterChart(
     .enter()
     .filter(d => d.nodetype === 'person' && d.imageUrl)
     .append('pattern')
-    .attr('id', d => `imgpattern-${d.handle}`)
+    .attr('id', d => photoIds.get(d))
     .attr('height', 1)
     .attr('width', 1)
+    .attr('viewBox', '0 0 1 1')
+    .attr('preserveAspectRatio', 'xMidYMid slice')
     .attr('x', '0')
     .attr('y', '0')
 
@@ -539,8 +537,9 @@ function remasterChart(
     .append('image')
     .attr('x', 0)
     .attr('y', 0)
-    .attr('height', 70)
-    .attr('width', 70)
+    .attr('height', 1)
+    .attr('width', 1)
+    .attr('preserveAspectRatio', 'xMidYMid slice')
     .attr('xlink:href', d => d.imageUrl)
 
   nodes
@@ -606,8 +605,6 @@ function remasterChart(
       14,
       d => d.handle
     )
-  } else {
-    appendDescendantsButton(nodes.filter(hasAction), boxWidth - 16, -4, clicked)
   }
 
   const linkGenerator = linkVertical()

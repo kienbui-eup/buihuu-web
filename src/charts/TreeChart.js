@@ -1,3 +1,4 @@
+import {getPersonPortrait} from './personPortrait.js'
 import {min, max} from 'd3-array'
 import {create, select} from 'd3-selection'
 import {hierarchy, tree} from 'd3-hierarchy'
@@ -11,14 +12,13 @@ import {
   getPortraitAgeGroup,
   isDeceased,
   personCardLines,
-  personHasChildren,
 } from './util.js'
 import {
   appendPersonCardDecoration,
+  uniqueAvatarId,
   CARD_AVATAR_X,
   CARD_AVATAR_Y,
 } from './heritageFrame.js'
-import {appendDescendantsButton} from './descendantsButton.js'
 
 function TreeChartCore(
   svgParent,
@@ -178,7 +178,8 @@ function TreeChartCore(
           : 'unknown',
       ageGroup: d => getPortraitAgeGroup(d.data.person, d.data.person?.profile),
       hasImage: d => Boolean(getImageUrl(d)),
-      nodeId: d => d.data.id,
+      portraitUrl: d =>
+        getPersonPortrait(d.data.person, d.data.person?.profile),
     }
   )
 
@@ -238,12 +239,9 @@ function TreeChartCore(
   const memorialPhotoRadius = 20
   const textPadding = d => {
     const deceased = isDeceased(d.data.person, d.data.person?.profile)
-    if (!deceased) return 14
+    if (!deceased) return 60
     return getImageUrl(d) ? 60 : 58
   }
-
-  // Thẻ của người có con cháu mang nút gài "Xem hậu duệ" nhô trên mép phải.
-  const hasAction = d => !canEdit && personHasChildren(d.data.person)
 
   // Ô chỉ giữ tên, đời/ngành/chi và giỗ hoặc năm sinh. Tên dài xuống hai dòng
   // thay vì bị cắt bằng dấu ba chấm.
@@ -268,23 +266,16 @@ function TreeChartCore(
       )
       // Ít dòng thì căn giữa theo chiều cao ô, để ô của người chỉ còn mỗi cái
       // tên không bị dồn lên mép trên.
-      const top = deceased
-        ? -boxHeight / 2 +
-          (boxHeight - (lines.length - 1) * lineHeight) / 2 +
-          lineHeight / 4
-        : -boxHeight / 2 +
-          boxHeight -
-          22 -
-          ((lines.length - 1) * lineHeight) / 2
+      const top = -((lines.length - 1) * lineHeight) / 2 + lineHeight / 4
 
       select(this)
         .selectAll('text.card-line')
         .data(lines)
         .join('text')
         .attr('class', 'card-line')
-        .attr('x', deceased ? -boxWidth / 2 + textPadding(d) : 0)
+        .attr('x', -boxWidth / 2 + textPadding(d))
         .attr('y', (line, i) => top + i * lineHeight)
-        .attr('text-anchor', deceased ? 'start' : 'middle')
+        .attr('text-anchor', 'start')
         .attr('font-size', line => line.size)
         .attr('font-weight', line => line.weight)
         .attr('fill', line =>
@@ -303,15 +294,9 @@ function TreeChartCore(
       -boxHeight / 2 + 14,
       d => d.data.person?.handle
     )
-  } else {
-    appendDescendantsButton(
-      node.filter(hasAction),
-      boxWidth / 2 - 16,
-      -boxHeight / 2 - 4,
-      clicked
-    )
   }
 
+  const photoIds = new Map(descendants.map(d => [d, uniqueAvatarId()]))
   node
     .filter(getImageUrl)
     .append('circle')
@@ -327,7 +312,7 @@ function TreeChartCore(
     )
     .attr('cy', -boxHeight / 2 + CARD_AVATAR_Y)
     .attr('cx', d => -boxWidth / 2 + CARD_AVATAR_X)
-    .attr('fill', d => `url(#imgpattern-${d.data.id})`)
+    .attr('fill', d => `url(#${photoIds.get(d)})`)
 
   const defs = svgParent.append('defs')
 
@@ -336,9 +321,11 @@ function TreeChartCore(
     .data(descendants)
     .enter()
     .append('pattern')
-    .attr('id', d => `imgpattern-${d.data.id}`)
+    .attr('id', d => photoIds.get(d))
     .attr('height', 1)
     .attr('width', 1)
+    .attr('viewBox', '0 0 1 1')
+    .attr('preserveAspectRatio', 'xMidYMid slice')
     .attr('x', '0')
     .attr('y', '0')
 
@@ -346,8 +333,9 @@ function TreeChartCore(
     .append('image')
     .attr('x', 0)
     .attr('y', 0)
-    .attr('height', 70)
-    .attr('width', 70)
+    .attr('height', 1)
+    .attr('width', 1)
+    .attr('preserveAspectRatio', 'xMidYMid slice')
     .attr('xlink:href', getImageUrl)
 
   // Nổi bật dòng dõi: rê chuột lên một người thì đường nối từ người đó ngược

@@ -25,32 +25,6 @@ export class GrampsjsTreeChart extends GrampsjsChartBase {
           text-decoration: none !important;
         }
 
-        /* Nút "Xem hậu duệ" ở góc trên phải thẻ người có con cháu. */
-        svg .card-action-bg {
-          fill: color-mix(
-            in srgb,
-            var(--heritage-gold) 8%,
-            var(--md-sys-color-surface)
-          );
-          stroke: var(--heritage-gold);
-          stroke-width: 1.5px;
-          vector-effect: non-scaling-stroke;
-          filter: drop-shadow(0 1px 2px var(--grampsjs-body-font-color-30));
-          transition: fill 140ms;
-        }
-
-        svg .card-action-icon {
-          fill: var(--md-sys-color-primary);
-        }
-
-        svg .card-action:hover .card-action-bg {
-          fill: color-mix(
-            in srgb,
-            var(--heritage-gold) 30%,
-            var(--md-sys-color-surface)
-          );
-        }
-
         svg .person-card {
           stroke: var(--heritage-rule);
           stroke-width: 1.25px;

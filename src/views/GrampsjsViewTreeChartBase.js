@@ -37,33 +37,16 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
           isolation: isolate;
           overflow: hidden;
           color: var(--md-sys-color-on-surface);
-          background-color: color-mix(
+          background: color-mix(
             in srgb,
-            var(--heritage-gold) 9%,
+            var(--heritage-gold) 3%,
             var(--md-sys-color-background)
           );
-          background-image: radial-gradient(
-              ellipse at 50% 0,
-              color-mix(in srgb, var(--md-sys-color-surface) 82%, transparent) 0,
-              transparent 58%
-            ),
-            linear-gradient(
-              90deg,
-              color-mix(in srgb, var(--heritage-rule) 8%, transparent) 1px,
-              transparent 1px
-            ),
-            linear-gradient(
-              color-mix(in srgb, var(--heritage-rule) 8%, transparent) 1px,
-              transparent 1px
-            );
-          background-size: auto, 64px 64px, 64px 64px;
-          box-shadow: inset 0 20px 38px -34px var(--heritage-roof),
-            inset 0 -20px 38px -34px var(--heritage-roof);
           --grampsjs-chart-height: max(
-            260px,
+            180px,
             calc(
               100dvh - var(--tree-content-top, 64px) -
-                var(--tree-bottom-inset, 0px) - 40px
+                var(--tree-bottom-inset, 0px) - var(--tree-footer-height, 40px)
             )
           );
         }
@@ -72,102 +55,10 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
           content: '';
           position: absolute;
           z-index: 2;
-          inset: 8px;
-          border: 2px solid
-            color-mix(in srgb, var(--heritage-wood) 76%, var(--heritage-roof));
-          border-radius: 3px;
-          box-shadow: inset 0 0 0 3px
-              color-mix(in srgb, var(--md-sys-color-surface) 74%, transparent),
-            inset 0 0 0 4px
-              color-mix(in srgb, var(--heritage-gold) 72%, transparent);
-          pointer-events: none;
-        }
-
-        .heritage-backdrop {
-          position: absolute;
-          z-index: 0;
           inset: 0;
-          overflow: hidden;
+          border: 1px solid
+            color-mix(in srgb, var(--heritage-rule) 50%, transparent);
           pointer-events: none;
-        }
-
-        .ancestral-watermark {
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          width: min(68vw, 680px);
-          min-width: 480px;
-          aspect-ratio: 1;
-          translate: -50% -48%;
-          color: var(--heritage-gold);
-          opacity: 0.08;
-        }
-
-        .ancestral-watermark .ring,
-        .ancestral-watermark .hall,
-        .ancestral-watermark .tree,
-        .ancestral-watermark .cloud {
-          fill: none;
-          stroke: currentcolor;
-          stroke-linecap: round;
-          stroke-linejoin: round;
-          vector-effect: non-scaling-stroke;
-        }
-
-        .ancestral-watermark .ring {
-          stroke-width: 5;
-        }
-
-        .ancestral-watermark .hall {
-          stroke-width: 8;
-        }
-
-        .ancestral-watermark .tree {
-          stroke-width: 10;
-        }
-
-        .ancestral-watermark .cloud {
-          stroke-width: 7;
-        }
-
-        .ancestral-watermark .leaf {
-          fill: currentcolor;
-        }
-
-        .corner-ornament {
-          position: absolute;
-          z-index: 3;
-          width: clamp(58px, 6vw, 86px);
-          aspect-ratio: 1;
-          background: var(--heritage-roof);
-          opacity: 0.58;
-          -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 72'%3E%3Cpath d='M4 52V4h48v4H9v44H4Zm8-11V14h27c0 8-6 14-14 14-5 0-8-3-8-7 0-3 2-6 6-6 3 0 5 2 5 5 0 2-1 3-3 4 5 0 9-4 9-9H16v26h-4Zm7-4c6 0 10 4 10 10 0 4-3 8-8 8-4 0-7-3-7-6 0-3 2-5 5-5 2 0 4 2 4 4 0 1 0 2-1 3 2-1 3-2 3-5 0-3-3-6-6-6v-3ZM37 12c10 0 18 8 18 18h-4c0-8-6-14-14-14v-4Z'/%3E%3C/svg%3E")
-            center/contain no-repeat;
-          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 72'%3E%3Cpath d='M4 52V4h48v4H9v44H4Zm8-11V14h27c0 8-6 14-14 14-5 0-8-3-8-7 0-3 2-6 6-6 3 0 5 2 5 5 0 2-1 3-3 4 5 0 9-4 9-9H16v26h-4Zm7-4c6 0 10 4 10 10 0 4-3 8-8 8-4 0-7-3-7-6 0-3 2-5 5-5 2 0 4 2 4 4 0 1 0 2-1 3 2-1 3-2 3-5 0-3-3-6-6-6v-3ZM37 12c10 0 18 8 18 18h-4c0-8-6-14-14-14v-4Z'/%3E%3C/svg%3E")
-            center/contain no-repeat;
-        }
-
-        .corner-ornament.nw {
-          left: 9px;
-          top: 9px;
-        }
-
-        .corner-ornament.ne {
-          right: 9px;
-          top: 9px;
-          rotate: 90deg;
-        }
-
-        .corner-ornament.se {
-          right: 9px;
-          bottom: 9px;
-          rotate: 180deg;
-        }
-
-        .corner-ornament.sw {
-          left: 9px;
-          bottom: 9px;
-          rotate: 270deg;
         }
 
         /* Chú thích góc dưới trái: đang xem phạm vi nào, bao nhiêu người, từ
@@ -270,41 +161,18 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
         @media (max-width: 991px) {
           .chart-shell {
             --tree-bottom-inset: calc(66px + env(safe-area-inset-bottom, 0px));
-          }
-          .chart-shell {
-            background-size: auto, 48px 48px, 48px 48px;
+            --tree-footer-height: 0px;
           }
           .chart-shell::before {
-            inset: 5px 3px;
-          }
-          .ancestral-watermark {
-            min-width: 430px;
-            opacity: 0.055;
-          }
-          .corner-ornament {
-            width: 46px;
-            opacity: 0.46;
-          }
-          .corner-ornament.nw,
-          .corner-ornament.ne {
-            top: 6px;
-          }
-          .corner-ornament.se,
-          .corner-ornament.sw {
-            bottom: 6px;
-          }
-          .corner-ornament.nw,
-          .corner-ornament.sw {
-            left: 4px;
-          }
-          .corner-ornament.ne,
-          .corner-ornament.se {
-            right: 4px;
+            content: none;
           }
           .chart-caption {
-            left: 10px;
-            bottom: 10px;
-            max-width: calc(100% - 92px);
+            left: 8px;
+            bottom: 8px;
+            max-width: calc(100% - 100px);
+            padding: 5px 8px;
+            border-left-width: 1px;
+            box-shadow: none;
           }
           .chart-caption .hint {
             display: none;
@@ -371,6 +239,12 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
           md-fab {
             bottom: calc(80px + env(safe-area-inset-bottom, 0px));
             right: 16px;
+          }
+        }
+
+        @media (max-width: 991px) and (max-height: 500px) {
+          md-fab {
+            right: 72px;
           }
         }
       `,
@@ -505,53 +379,8 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
     return this.defaults.nameDisplayFormat
   }
 
-  // Nền phả đồ lấy tinh thần từ bản phả hệ treo tường: khung hoa văn đỏ son,
-  // thủy ấn nhà thờ và cây phân nhánh. Nét đủ nhạt để thẻ người luôn là lớp
-  // thông tin chính, kể cả khi xem trên điện thoại.
-  // eslint-disable-next-line class-methods-use-this
-  renderHeritageBackdrop() {
-    return html`<div class="heritage-backdrop" aria-hidden="true">
-      <svg class="ancestral-watermark" viewBox="0 0 700 700" focusable="false">
-        <circle class="ring" cx="350" cy="350" r="282"></circle>
-        <circle class="ring" cx="350" cy="350" r="264"></circle>
-        <path
-          class="cloud"
-          d="M92 310c38-2 40-39 8-42-4-37 52-51 69-18 27-24 70-3 59 34M608 310c-38-2-40-39-8-42 4-37-52-51-69-18-27-24-70-3-59 34M100 460c28 0 36 29 13 40 15 31 60 25 67-6 30 17 68-4 58-37M600 460c-28 0-36 29-13 40-15 31-60 25-67-6-30 17-68-4-58-37"
-        ></path>
-        <g class="hall">
-          <path d="M205 222Q350 116 495 222L460 215Q350 154 240 215Z"></path>
-          <path d="M232 230H468M252 230V316M448 230V316"></path>
-          <path d="M222 316H478M265 260H435V306H265Z"></path>
-        </g>
-        <g class="tree">
-          <path d="M350 316V548"></path>
-          <path d="M350 358L270 406M350 358L430 406"></path>
-          <path d="M270 406L218 461M270 406L306 469"></path>
-          <path d="M430 406L394 469M430 406L482 461"></path>
-          <path
-            d="M350 548C318 564 290 576 262 588M350 548C382 564 410 576 438 588"
-          ></path>
-        </g>
-        <g class="leaf">
-          <circle cx="350" cy="337" r="12"></circle>
-          <circle cx="270" cy="406" r="12"></circle>
-          <circle cx="430" cy="406" r="12"></circle>
-          <circle cx="218" cy="461" r="12"></circle>
-          <circle cx="306" cy="469" r="12"></circle>
-          <circle cx="394" cy="469" r="12"></circle>
-          <circle cx="482" cy="461" r="12"></circle>
-        </g>
-      </svg>
-      <span class="corner-ornament nw"></span>
-      <span class="corner-ornament ne"></span>
-      <span class="corner-ornament se"></span>
-      <span class="corner-ornament sw"></span>
-    </div>`
-  }
-
   renderContent() {
     return html`<div class="chart-shell">
-        ${this.renderHeritageBackdrop()}
         <div id="chart">${this.renderChart()}</div>
         ${this.loading
           ? html`<div class="chart-status" role="status">

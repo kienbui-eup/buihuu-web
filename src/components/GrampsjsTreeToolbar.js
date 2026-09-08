@@ -19,11 +19,22 @@ import {iconButtonColorStyles} from '../SharedStyles.js'
 
 /*
 Công cụ của trang Cây nổi ngay trên vùng vẽ, không chiếm một hàng riêng dưới
-thanh đầu trang. Các nút xếp thành một cột bên phải, chia hai nhóm: xem (vừa
-khung, tuỳ chọn) và đi lại (về người gốc, người trước, hồ sơ, thu gọn hay tìm
-người đang xem). Chọn phạm vi (nhánh chính, ngành chi, toàn gia phả) là nút đầu
-cột do GrampsjsTreeBranchBar đảm nhiệm. Lớp phủ này không nhận sự kiện chuột,
-chỉ cột nút nhận, nên kéo hay chụm cây vẫn bình thường.
+thanh đầu trang. Các nút xếp thành một cột bên phải, chia theo tần suất dùng khi
+tra cứu phả hệ, không theo loại thao tác:
+
+- Nhóm chính (luôn hiện cả trên điện thoại lẫn máy tính): chọn nhánh, tìm theo
+  tên, quay lại, về nhánh chính. Đây là bốn việc để đi tới đúng người và lần
+  ngược lại, dùng liên tục khi lần theo các đời.
+- Nhóm phụ (máy tính xếp dưới một vạch ngăn; điện thoại gom vào nút ba chấm):
+  vừa khung, người đang xem hoặc thu gọn, mở hồ sơ, tùy chọn. Đây là việc chỉnh
+  khung nhìn và xem chi tiết, làm thi thoảng.
+
+Trước đây điện thoại giấu quay lại và về nhánh chính trong nút ba chấm còn để
+tùy chọn (đặt một lần) chiếm chỗ ngoài cùng, ngược với thứ tự dùng thật.
+
+Chọn phạm vi (nhánh chính, ngành chi, toàn gia phả) là nút đầu cột do
+GrampsjsTreeBranchBar đảm nhiệm. Lớp phủ này không nhận sự kiện chuột, chỉ cột
+nút nhận, nên kéo hay chụm cây vẫn bình thường.
 */
 class GrampsjsTreeToolbar extends LitElement {
   static properties = {state: {attribute: false}}
@@ -47,15 +58,19 @@ class GrampsjsTreeToolbar extends LitElement {
         gap: 5px;
         pointer-events: auto;
       }
-      .gap {
-        height: 8px;
+      /* Vạch ngăn nhóm chính với nhóm phụ trên cột máy tính. */
+      .divider {
+        width: 24px;
+        height: 1px;
+        margin: 3px auto;
+        background: color-mix(in srgb, var(--heritage-gold) 55%, transparent);
       }
-      .desktop-navigation {
+      .secondary-desktop {
         display: flex;
         flex-direction: column;
         gap: 5px;
       }
-      .mobile-navigation {
+      .secondary-mobile {
         position: relative;
         display: none;
       }
@@ -99,10 +114,13 @@ class GrampsjsTreeToolbar extends LitElement {
           top: 12px;
           translate: none;
         }
-        .desktop-navigation {
+        .divider {
           display: none;
         }
-        .mobile-navigation {
+        .secondary-desktop {
+          display: none;
+        }
+        .secondary-mobile {
           display: block;
         }
       }
@@ -115,6 +133,8 @@ class GrampsjsTreeToolbar extends LitElement {
   }
 
   _act(action, value) {
+    if (action === 'home' && this.state.disableHome) return
+    if (action === 'back' && this.state.disableBack) return
     this.state.onAction?.(action, value)
   }
 
@@ -136,16 +156,22 @@ class GrampsjsTreeToolbar extends LitElement {
 
   render() {
     const state = this.state
-    const navigation = [
+    // Nhóm chính: đi tới đúng người rồi lần ngược lại. Luôn hiện.
+    const primary = [
+      ['btn-search', 'Tìm theo tên', mdiMagnify, 'search'],
+      ['btn-back', 'Quay lại', mdiArrowLeft, 'back', state.disableBack],
       [
         'button-home',
-        'Về người gốc',
+        'Về nhánh chính',
         mdiHomeAccount,
         'home',
         state.disableHome,
       ],
-      ['btn-back', 'Người trước đó', mdiArrowLeft, 'back', state.disableBack],
-      ['btn-person', 'Mở hồ sơ', mdiAccountDetails, 'person'],
+    ]
+    // Nhóm phụ: chỉnh khung nhìn và xem chi tiết. Máy tính xếp dưới vạch ngăn,
+    // điện thoại gom vào nút ba chấm.
+    const secondary = [
+      ['btn-overview', 'Vừa khung', mdiFitToScreenOutline, 'overview'],
       state.view === 'main'
         ? [
             'btn-collapse',
@@ -154,6 +180,8 @@ class GrampsjsTreeToolbar extends LitElement {
             'collapse',
           ]
         : ['btn-focus', 'Người đang xem', mdiCrosshairsGps, 'focus'],
+      ['btn-person', 'Mở hồ sơ', mdiAccountDetails, 'person'],
+      ['btn-controls', 'Tùy chọn gia phả', mdiCog, 'preferences'],
     ]
     return html`<div class="stack" role="group" aria-label="Công cụ gia phả">
       <grampsjs-tree-branch-bar
@@ -162,23 +190,16 @@ class GrampsjsTreeToolbar extends LitElement {
         grampsId=${state.grampsId ?? ''}
         homePerson=${state.homePerson ?? ''}
       ></grampsjs-tree-branch-bar>
-      ${this._button('btn-search', 'Tìm theo tên', mdiMagnify, 'search')}
-      ${this._button(
-        'btn-overview',
-        'Vừa khung',
-        mdiFitToScreenOutline,
-        'overview'
-      )}
-      ${this._button('btn-controls', 'Tùy chọn gia phả', mdiCog, 'preferences')}
-      <span class="desktop-navigation">
-        <span class="gap" aria-hidden="true"></span>
-        ${navigation.map(args => this._button(...args))}
+      ${primary.map(args => this._button(...args))}
+      <span class="divider" aria-hidden="true"></span>
+      <span class="secondary-desktop">
+        ${secondary.map(args => this._button(...args))}
       </span>
-      <span class="mobile-navigation">
+      <span class="secondary-mobile">
         <md-icon-button
           id="btn-more"
-          title="Điều hướng gia phả"
-          aria-label="Điều hướng gia phả"
+          title="Thêm công cụ gia phả"
+          aria-label="Thêm công cụ gia phả"
           aria-haspopup="menu"
           @click=${this._toggleNavigationMenu}
           ><grampsjs-icon
@@ -192,9 +213,9 @@ class GrampsjsTreeToolbar extends LitElement {
           positioning="popover"
           anchor-corner="start-start"
           menu-corner="start-end"
-          aria-label="Điều hướng gia phả"
+          aria-label="Thêm công cụ gia phả"
         >
-          ${navigation.map(
+          ${secondary.map(
             ([, label, , action, disabled]) => html`<md-menu-item
               ?disabled=${disabled}
               @click=${() => this._act(action)}

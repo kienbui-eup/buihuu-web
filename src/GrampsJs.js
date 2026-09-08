@@ -219,6 +219,12 @@ export class GrampsJs extends LitElement {
           display: block;
         }
 
+        @media (max-width: 991px) {
+          .tree-footer {
+            display: none;
+          }
+        }
+
         md-linear-progress {
           --md-linear-progress-active-indicator-color: var(
             --grampsjs-color-page-loading-progress
@@ -683,6 +689,7 @@ export class GrampsJs extends LitElement {
           >
           </grampsjs-pages>
           <grampsjs-site-footer
+            class=${this.appState.path.page === 'tree' ? 'tree-footer' : ''}
             ?compact=${['tree', 'map', 'chat'].includes(
               this.appState.path.page
             )}

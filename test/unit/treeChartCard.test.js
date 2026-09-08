@@ -125,10 +125,10 @@ describe('ô người trong biểu đồ cây', () => {
     expect(living.querySelector('.living-avatar-image')).not.toBeNull()
     expect(
       living.querySelector('.living-avatar').getAttribute('transform')
-    ).toBe('translate(-72,-23)')
+    ).toBe('translate(-72,0)')
     expect(
       living.querySelector('.living-avatar-image').getAttribute('href')
-    ).toBe('images/heritage/avatar-cu-ong.png')
+    ).toBe('images/heritage/generations-v3/doi-13-nam.jpg')
     expect(living.querySelector('.memorial-portrait')).toBeNull()
     expect(cardTexts(svg)).toContain('Sinh 1960')
     expect(deceased.classList.contains('person-deceased')).toBe(true)
@@ -138,7 +138,7 @@ describe('ô người trong biểu đồ cây', () => {
     expect(deceased.querySelector('.memorial-portrait-image')).not.toBeNull()
     expect(
       deceased.querySelector('.memorial-portrait').getAttribute('transform')
-    ).toBe('translate(-72,-23)')
+    ).toBe('translate(-72,0)')
   })
 
   it('dùng chân dung cụ bà cho người nữ chưa có ảnh', () => {
@@ -152,7 +152,7 @@ describe('ô người trong biểu đồ cây', () => {
     )
 
     expect(portrait.getAttribute('href')).toBe(
-      'images/heritage/avatar-cu-ba.png'
+      'images/heritage/generations-v3/doi-13-nu.jpg'
     )
   })
 
@@ -166,7 +166,7 @@ describe('ô người trong biểu đồ cây', () => {
       adultSvg
         .querySelector('[data-gramps-id="I0016"] .living-avatar-image')
         .getAttribute('href')
-    ).toBe('images/heritage/avatar-nam-trung-nien.png')
+    ).toBe('images/heritage/generations-v3/doi-15-nam.jpg')
 
     const child = structuredClone(adult)
     child.person.gender = 0
@@ -176,6 +176,6 @@ describe('ô người trong biểu đồ cây', () => {
       childSvg
         .querySelector('[data-gramps-id="I0016"] .living-avatar-image')
         .getAttribute('href')
-    ).toBe('images/heritage/avatar-be-gai.png')
+    ).toBe('images/heritage/generations-v3/thieu-nien-nu.jpg')
   })
 })

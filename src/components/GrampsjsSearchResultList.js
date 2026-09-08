@@ -7,7 +7,12 @@ import '@material/web/list/list.js'
 import '@material/web/list/list-item.js'
 import '@material/web/divider/divider.js'
 
-import {objectDescription, fireEvent, objectDetail} from '../util.js'
+import {
+  objectDescription,
+  fireEvent,
+  objectDetail,
+  personProfileDisplayName,
+} from '../util.js'
 import {getLineage, getLifeSpan} from '../charts/util.js'
 import {renderIcon} from '../objectRender.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
@@ -173,12 +178,19 @@ export class GrampsjsSearchResultList extends GrampsjsAppStateMixin(
         locale="${this.appState.i18n.lang}"
       ></grampsjs-timedelta>`
     }
-    // Với người trong họ, dòng phụ là đời, ngành chi và ngày giỗ như trên ô
-    // cây; mã Gramps ("I0001") chỉ có nghĩa với người biên tập.
+    // Với người trong họ, dòng phụ là đời, ngành chi, tên cha và ngày giỗ như
+    // trên ô cây; mã Gramps ("I0001") chỉ có nghĩa với người biên tập. Tên cha
+    // là điểm phân biệt cuối cùng khi nhiều người trùng tên, cùng đời, cùng chi.
     if (obj.object_type === 'person') {
+      const person = obj.object || {}
+      const tags = person.extended?.tags || person.extended?.tag_list
+      const father = personProfileDisplayName(
+        person.profile?.primary_parent_family?.father
+      )
       const lineage = [
-        getLineage(obj.object),
-        getLifeSpan(obj.object, obj.object?.profile),
+        getLineage(person, tags),
+        father ? `con ông ${father}` : '',
+        getLifeSpan(person, person.profile),
       ]
         .filter(Boolean)
         .join(' · ')

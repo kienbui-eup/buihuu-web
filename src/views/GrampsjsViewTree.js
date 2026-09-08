@@ -54,7 +54,7 @@ export class GrampsjsViewTree extends GrampsjsView {
     super()
     this.grampsId = ''
     this.view = DEFAULT_TREE_VIEW
-    this._history = this.grampsId ? [this.grampsId] : []
+    this._history = []
     this._appliedTreeDefaultView = null
     this._boundSelectPerson = this._selectPerson.bind(this)
   }
@@ -133,7 +133,7 @@ export class GrampsjsViewTree extends GrampsjsView {
         .appState="${this.appState}"
         .settings=${this.settings}
         ?disableBack=${this._history.length < 2}
-        ?disableHome=${this.grampsId === this.settings.homePerson}
+        ?disableHome=${this._isHome()}
       >
       </grampsjs-view-relationship-chart>
     `
@@ -154,19 +154,31 @@ export class GrampsjsViewTree extends GrampsjsView {
         .appState="${this.appState}"
         .settings=${this.settings}
         ?disableBack=${this._history.length < 2}
-        ?disableHome=${this.grampsId === this.settings.homePerson}
+        ?disableHome=${this._isHome()}
       >
       </grampsjs-view-tree-chart>
     `
   }
 
   _prevPerson() {
-    this._history.pop()
-    this.grampsId = this._history.pop()
+    if (this._history.length < 2) return
+    this._history = this._history.slice(0, -1)
+    const previous = this._history.at(-1)
+    this.grampsId = previous.grampsId
+    this.view = previous.view
+  }
+
+  _isHome() {
+    return (
+      !this.settings.homePerson ||
+      (this.grampsId === this.settings.homePerson && this.view === 'main')
+    )
   }
 
   _backToHomePerson() {
+    if (!this.settings.homePerson) return
     this.grampsId = this.settings.homePerson
+    this.view = 'main'
   }
 
   _goToPerson() {
@@ -186,15 +198,21 @@ export class GrampsjsViewTree extends GrampsjsView {
     )
   }
 
-  update(changed) {
-    super.update(changed)
-    if (changed.has('grampsId')) {
-      this._history.push(this.grampsId)
-      // limit history to 100 people
-      this._history = this._history.slice(-100)
-    }
+  willUpdate(changed) {
+    super.willUpdate(changed)
     if (this.active && (changed.has('active') || changed.has('settings'))) {
       this._applyPreferredViewIfNeeded()
+    }
+    // Lưu cả phạm vi xem; đổi nhánh có thể giữ nguyên người gốc.
+    // Ghi trước render để trạng thái nút luôn khớp với màn hình hiện tại.
+    const current = {grampsId: this.grampsId, view: this.view}
+    const previous = this._history.at(-1)
+    if (
+      current.grampsId &&
+      (current.grampsId !== previous?.grampsId ||
+        current.view !== previous?.view)
+    ) {
+      this._history = [...this._history, current].slice(-100)
     }
   }
 

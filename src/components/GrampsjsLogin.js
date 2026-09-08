@@ -433,8 +433,9 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
   Xem bằng mã dòng họ.
 
   Các trang dòng họ ở Việt Nam đều mở phả đồ bằng một mã chung cả họ biết, không
-  bắt từng người lập tài khoản. Ở đây mã là họ tên đầy đủ của một người trong
-  cây, viết liền, không phân biệt hoa thường; máy chủ so mã với tên trong cây
+  bắt từng người lập tài khoản. Ở đây mã là mã chung cả họ (cấu hình
+  GRAMPSWEB_FAMILY_CODE_DEFAULT của API, mặc định "buihuu") hoặc họ tên đầy đủ
+  của một người trong cây, viết liền, không phân biệt hoa thường; máy chủ so mã
   (POST /api/token/family-code/) rồi cấp token cho tài khoản khách chỉ xem, nên
   trình duyệt không cần biết tài khoản đó. Tắt bằng familyCodeLogin trong
   config.js thì khối này không hiện. Không nói luật của mã ở trang công khai

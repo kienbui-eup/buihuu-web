@@ -120,7 +120,7 @@ class GrampsjsTreeBranchBar extends GrampsjsAppStateMixin(LitElement) {
         }
         md-menu {
           z-index: 8;
-          min-width: 260px;
+          min-width: min(260px, calc(100vw - 76px));
           max-width: min(340px, calc(100vw - 76px));
           max-height: min(68vh, 480px);
           color: var(--md-sys-color-on-surface);

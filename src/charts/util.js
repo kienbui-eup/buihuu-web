@@ -427,26 +427,42 @@ export const getCardLineage = (person, tags = person?.extended?.tags) => {
 const yearOf = date =>
   (date || '').match(/\b(1[5-9]\d{2}|20\d{2})\b/)?.[1] || ''
 
-// Chọn độ tuổi cho chân dung mặc định. Với người đã mất, tuổi được tính ở
-// năm mất; với người còn sống, tính theo năm hiện tại. Hồ sơ lịch sử thiếu năm
-// sinh dùng nhóm cao tuổi, còn các đời gần dùng nhóm trưởng thành để tránh gán
-// khuôn mặt già cho người chưa rõ tuổi.
+// Tuổi phục vụ chọn ảnh minh họa, không ghi ngược vào dữ liệu gia phả.
+// Đời 17 thiếu năm sinh dùng mốc khoảng 2020 do người quản lý cung cấp.
+export const getPortraitAge = (
+  person,
+  profile = person?.profile,
+  referenceYear = new Date().getFullYear()
+) => {
+  const recordedBirthYear = Number(yearOf(profile?.birth?.date))
+  const birthYear =
+    recordedBirthYear || (Number(getGeneration(person)) === 17 ? 2020 : 0)
+  if (!birthYear) return null
+  const deathYear = Number(yearOf(profile?.death?.date))
+  // Có ghi mất nhưng thiếu năm mất: không lấy năm hiện tại tính tuổi thọ.
+  if (
+    !deathYear &&
+    (String(profile?.death?.date || '').trim() ||
+      attributeValue(person, 'Ngày giỗ').trim())
+  )
+    return null
+  const age = (deathYear || referenceYear) - birthYear
+  return Number.isFinite(age) && age >= 0 ? age : null
+}
+
+// Phân nhóm để tạo kiểu cho thẻ; năm sinh thực tế luôn ưu tiên hơn số đời.
 export const getPortraitAgeGroup = (
   person,
   profile = person?.profile,
   referenceYear = new Date().getFullYear()
 ) => {
-  const birthYear = Number(yearOf(profile?.birth?.date))
-  if (!birthYear) {
+  const age = getPortraitAge(person, profile, referenceYear)
+  if (age === null) {
     const generation = Number(getGeneration(person))
+    if (generation === 17) return 'child'
     return Number.isInteger(generation) && generation > 0 && generation <= 12
       ? 'elder'
       : 'adult'
-  }
-  const deathYear = Number(yearOf(profile?.death?.date))
-  const age = (deathYear || referenceYear) - birthYear
-  if (!Number.isFinite(age) || age < 0) {
-    return 'adult'
   }
   if (age < 18) {
     return 'child'

@@ -461,8 +461,10 @@ class GrampsjsObjectPickerDialog extends GrampsjsAppStateMixin(LitElement) {
     )
     const rules = encodeURIComponent(JSON.stringify({rules: filters}))
     const lang = this.appState.i18n.lang || 'en'
+    // profile=self,families kèm extend=tag_list để kết quả mang cả cha (phân
+    // biệt người trùng tên) lẫn thẻ ngành chi; profile=self không có hai thứ đó.
     const data = await this.appState.apiGet(
-      `/api/people/?rules=${rules}&locale=${lang}&profile=self&page=1&pagesize=20`
+      `/api/people/?rules=${rules}&locale=${lang}&profile=self,families&extend=tag_list&page=1&pagesize=20`
     )
     if (this._fetchId !== fetchId) return
     if ('data' in data) {

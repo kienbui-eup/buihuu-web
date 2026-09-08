@@ -29,6 +29,7 @@ import './GrampsjsImg.js'
 import './GrampsjsEditGender.js'
 import './GrampsjsPersonRelationship.js'
 import './GrampsjsFormExternalSearch.js'
+import './GrampsjsXungHo.js'
 import {
   fireEvent,
   objectIconPath,
@@ -171,6 +172,12 @@ export class GrampsjsPerson extends GrampsjsObject {
             </p>
             ${this._renderRelation()}
           </details>`}
+      ${this.preview || this.edit
+        ? ''
+        : html`<grampsjs-xung-ho
+            .person=${this.data}
+            .appState=${this.appState}
+          ></grampsjs-xung-ho>`}
       ${this.preview ? '' : this._renderQrDialog()}
     `
   }

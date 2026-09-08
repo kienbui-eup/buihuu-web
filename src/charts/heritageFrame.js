@@ -1,45 +1,15 @@
 import {mdiAccountOutline} from '@mdi/js'
+import {generationPortrait} from './personPortrait.js'
 
 export const CARD_AVATAR_X = 30
-export const CARD_AVATAR_Y = 22
+export const CARD_AVATAR_Y = 45
 
-const PORTRAITS = {
-  elder: {
-    female: 'images/heritage/avatar-cu-ba.png',
-    male: 'images/heritage/avatar-cu-ong.png',
-  },
-  adult: {
-    female: 'images/heritage/avatar-nu-trung-nien.png',
-    male: 'images/heritage/avatar-nam-trung-nien.png',
-  },
-  child: {
-    female: 'images/heritage/avatar-be-gai.png',
-    male: 'images/heritage/avatar-be-trai.png',
-  },
-}
-
-const scallopedCirclePath = (cx, cy, radius, lobes = 12) => {
-  const points = Array.from({length: lobes * 8}, (_, index) => {
-    const angle = (index * Math.PI * 2) / (lobes * 8) - Math.PI / 2
-    const waveRadius = radius + Math.cos(lobes * angle) * 2
-    return `${cx + Math.cos(angle) * waveRadius},${
-      cy + Math.sin(angle) * waveRadius
-    }`
-  })
-  return `M${points.join('L')}Z`
-}
-
-const portraitAsset = (gender, ageGroup) =>
-  PORTRAITS[ageGroup]?.[gender] || PORTRAITS.adult[gender]
-
-const clipId = (kind, nodeId, d, index) => {
-  const value = String(nodeId(d, index) || index).replace(/[^a-z0-9_-]/giu, '-')
-  return `person-avatar-${kind}-${value}-${index}`
-}
+let nextAvatarId = 0
+export const uniqueAvatarId = () => `person-avatar-${nextAvatarId++}`
 
 // Hai kiểu ô người: bài vị gỗ cho người đã mất và bảng tên sáng cho người
-// sống/chưa rõ ngày mất. Chân dung mặc định chọn theo giới tính và nhóm tuổi,
-// được đặt ở góc trên trái để không che phần tên và thông tin trong bảng.
+// sống/chưa rõ ngày mất. Chân dung minh họa chọn theo đời, giới tính và tuổi,
+// được đặt ở bên trái, căn giữa theo chiều cao thẻ để không che phần tên và thông tin trong bảng.
 export function appendPersonCardDecoration(
   nodes,
   width,
@@ -51,7 +21,11 @@ export function appendPersonCardDecoration(
     gender = () => 'unknown',
     ageGroup = () => 'adult',
     hasImage = () => false,
-    nodeId = (_d, index) => index,
+    portraitUrl = d =>
+      generationPortrait(
+        ageGroup(d) === 'child' ? 17 : ageGroup(d) === 'elder' ? 13 : 15,
+        gender(d)
+      ),
   } = {}
 ) {
   nodes
@@ -71,15 +45,17 @@ export function appendPersonCardDecoration(
   nameplate
     .append('rect')
     .attr('class', 'nameplate-body')
-    .attr('x', x + 12)
-    .attr('y', y + 28)
-    .attr('width', width - 20)
-    .attr('height', height - 34)
-    .attr('rx', (height - 34) / 2)
+    .attr('x', x)
+    .attr('y', y)
+    .attr('width', width)
+    .attr('height', height)
+    .attr('rx', 10)
   nameplate
-    .append('path')
+    .append('circle')
     .attr('class', 'living-avatar-halo')
-    .attr('d', scallopedCirclePath(x + CARD_AVATAR_X, y + CARD_AVATAR_Y, 24))
+    .attr('cx', x + CARD_AVATAR_X)
+    .attr('cy', y + CARD_AVATAR_Y)
+    .attr('r', 24)
 
   const livingPortrait = nameplate
     .filter(d => !hasImage(d))
@@ -88,25 +64,26 @@ export function appendPersonCardDecoration(
     .attr('transform', `translate(${x + CARD_AVATAR_X},${y + CARD_AVATAR_Y})`)
   livingPortrait
     .append('clipPath')
-    .attr('id', (d, index) => clipId('living', nodeId, d, index))
+    .attr('id', uniqueAvatarId)
     .append('circle')
     .attr('r', 21)
   livingPortrait
-    .filter(d => Boolean(portraitAsset(gender(d), ageGroup(d))))
+    .filter(d => Boolean(portraitUrl(d)))
     .append('image')
     .attr('class', 'living-avatar-image')
-    .attr('href', d => portraitAsset(gender(d), ageGroup(d)))
+    .attr('href', d => portraitUrl(d))
     .attr('x', -22)
     .attr('y', -22)
     .attr('width', 44)
     .attr('height', 44)
-    .attr(
-      'clip-path',
-      (d, index) => `url(#${clipId('living', nodeId, d, index)})`
-    )
+    .attr('clip-path', function portraitClip() {
+      return `url(#${this.parentNode.querySelector('clipPath').id})`
+    })
     .attr('preserveAspectRatio', 'xMidYMid meet')
+    .append('title')
+    .text('Chân dung minh họa, không phải ảnh thật')
   livingPortrait
-    .filter(d => !portraitAsset(gender(d), ageGroup(d)))
+    .filter(d => !portraitUrl(d))
     .append('path')
     .attr('class', 'living-avatar-icon')
     .attr('d', mdiAccountOutline)
@@ -147,30 +124,31 @@ export function appendPersonCardDecoration(
   portrait.append('circle').attr('class', 'memorial-portrait-bg').attr('r', 22)
   portrait
     .append('clipPath')
-    .attr('id', (d, index) => clipId('memorial', nodeId, d, index))
+    .attr('id', uniqueAvatarId)
     .append('circle')
     .attr('r', 19.5)
   portrait
-    .filter(d => Boolean(portraitAsset(gender(d), ageGroup(d))))
+    .filter(d => Boolean(portraitUrl(d)))
     .append('image')
     .attr('class', 'memorial-portrait-image')
-    .attr('href', d => portraitAsset(gender(d), ageGroup(d)))
+    .attr('href', d => portraitUrl(d))
     .attr('x', -20)
     .attr('y', -20)
     .attr('width', 40)
     .attr('height', 40)
-    .attr(
-      'clip-path',
-      (d, index) => `url(#${clipId('memorial', nodeId, d, index)})`
-    )
+    .attr('clip-path', function portraitClip() {
+      return `url(#${this.parentNode.querySelector('clipPath').id})`
+    })
     .attr('preserveAspectRatio', 'xMidYMid meet')
+    .append('title')
+    .text('Chân dung minh họa, không phải ảnh thật')
   portrait
-    .filter(d => Boolean(portraitAsset(gender(d), ageGroup(d))))
+    .filter(d => Boolean(portraitUrl(d)))
     .append('circle')
     .attr('class', 'memorial-portrait-ring')
     .attr('r', 20)
   portrait
-    .filter(d => !portraitAsset(gender(d), ageGroup(d)))
+    .filter(d => !portraitUrl(d))
     .append('path')
     .attr('class', 'memorial-portrait-icon')
     .attr('d', mdiAccountOutline)
