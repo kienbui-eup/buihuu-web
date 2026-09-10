@@ -6,6 +6,7 @@ import {scaleSequential} from 'd3-scale'
 import {interpolateWarm} from 'd3-scale-chromatic'
 import {getThumbnailUrl, getThumbnailUrlCropped} from '../api.js'
 import {normalizeRect} from '../util.js'
+import {joinName} from '../branding.js'
 
 export const getPerson = (data, handle) =>
   data.find(person => person.handle === handle) || {}
@@ -407,6 +408,17 @@ export const getLineage = (person, tags = person?.extended?.tags) => {
     parts.push(rank)
   }
   return parts.join(' · ')
+}
+
+/*
+"con ông Bùi X": tên cha lấy từ gia đình cha mẹ chính trong profile (cần
+profile=families khi gọi API). Đây là điểm phân biệt cuối cùng khi nhiều người
+trùng tên, cùng đời, cùng chi; người là dâu (không có cha trong cây) thì trống.
+*/
+export const getFatherLine = person => {
+  const father = person?.profile?.primary_parent_family?.father
+  const name = joinName(father?.name_surname, father?.name_given)
+  return name ? `con ông ${name}` : ''
 }
 
 // Trên thẻ cây chỉ giữ thế hệ và nhánh chính thức từ thẻ dữ liệu. Ngôi vị và

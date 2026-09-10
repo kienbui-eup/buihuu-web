@@ -35,6 +35,7 @@ import '../views/GrampsjsViewRecent.js'
 import '../views/GrampsjsViewBookmarks.js'
 import '../views/GrampsjsViewMap.js'
 import '../views/GrampsjsViewTree.js'
+import '../views/GrampsjsViewNotFound.js'
 
 /*
 Các trang còn lại nạp động khi lần đầu được mở.
@@ -81,6 +82,57 @@ const LAZY_VIEWS = {
 }
 
 const loadedViews = new Set()
+
+/*
+Mọi mục có trang trong template bên dưới. Đường dẫn không nằm trong đây (liên
+kết cũ, gõ nhầm) mở trang "Không có trang này" thay vì để trắng như bản gốc.
+Các trang trước khi đăng nhập (login, register, firstrun...) do GrampsJs.js
+xử lý trước khi tới đây, không cần liệt kê.
+*/
+const KNOWN_PAGES = new Set([
+  'home',
+  'blog',
+  'lich-gio',
+  'people',
+  'families',
+  'events',
+  'places',
+  'sources',
+  'citations',
+  'repositories',
+  'notes',
+  'medialist',
+  'dna-matches',
+  'dna-chromosome',
+  'ydna',
+  'help',
+  'map',
+  'tree',
+  'person',
+  'family',
+  'event',
+  'place',
+  'source',
+  'citation',
+  'repository',
+  'note',
+  'media',
+  'chat',
+  'export',
+  'reports',
+  'report',
+  'search',
+  'recent',
+  'bookmarks',
+  'tasks',
+  'task',
+  'notifications',
+  'settings',
+  'revisions',
+  'revision',
+  'timeline',
+  ...Object.keys(LAZY_VIEWS),
+])
 
 function ensureView(page) {
   const loader = LAZY_VIEWS[page]
@@ -485,6 +537,11 @@ class GrampsjsPages extends GrampsjsAppStateMixin(LitElement) {
         ?active=${this.appState.path.page === 'timeline'}
         .appState="${this.appState}"
       ></grampsjs-view-timeline>
+      <grampsjs-view-not-found
+        class="page"
+        ?active=${!KNOWN_PAGES.has(this.appState.path.page)}
+        .appState="${this.appState}"
+      ></grampsjs-view-not-found>
     `
   }
 }

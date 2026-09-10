@@ -4,7 +4,12 @@ import '@material/web/iconbutton/icon-button.js'
 
 import {mdiLinkOff, mdiLinkPlus, mdiPencil, mdiPlus} from '@mdi/js'
 
-import {fireEvent, objectIconPath, personProfileDisplayName} from '../util.js'
+import {
+  fireEvent,
+  getAttributeValue,
+  objectIconPath,
+  personProfileDisplayName,
+} from '../util.js'
 import './GrampsjsIcon.js'
 import './GrampsjsObjectLink.js'
 import './GrampsjsFormEditFamily.js'
@@ -12,6 +17,9 @@ import './GrampsjsFormNewPerson.js'
 import './GrampsjsFormPersonRef.js'
 import {GrampsjsObject} from './GrampsjsObject.js'
 import {localizeServerValue} from '../glossary.js'
+import {getLineage} from '../charts/util.js'
+import {ATTR_DEATH_ANNIVERSARY} from '../branding.js'
+import {loadTagNames, tagNamesOf} from '../tagNames.js'
 
 export class GrampsjsFamily extends GrampsjsObject {
   static get styles() {
@@ -19,9 +27,21 @@ export class GrampsjsFamily extends GrampsjsObject {
       super.styles,
       css`
         :host {
-          .parent-dates {
+          .parent-dates,
+          .parent-lineage {
             display: block;
             font-size: 0.85em;
+          }
+
+          .parent-lineage {
+            color: var(--md-sys-color-on-surface-variant);
+          }
+
+          /* Sổ họ chép "Bà cả", "Bà hai" hay không chép gì về mẹ: nói rõ thay
+             cho dấu ba chấm. */
+          .missing {
+            color: var(--md-sys-color-on-surface-variant);
+            font-style: italic;
           }
 
           .sym {
@@ -49,12 +69,30 @@ export class GrampsjsFamily extends GrampsjsObject {
     ]
   }
 
+  static get properties() {
+    return {
+      _tagNames: {state: true},
+    }
+  }
+
   constructor() {
     super()
     this._showReferences = false
     this._objectsName = 'Families'
     this._objectEndpoint = 'families'
     this._objectIcon = objectIconPath.family
+    this._tagNames = null
+  }
+
+  // Ngành chi của hai cụ nằm ở tên thẻ, mà hồ sơ cha mẹ lồng trong gia đình
+  // chỉ mang handle thẻ; tải bảng tên thẻ một lần cho cả phiên.
+  updated(changed) {
+    super.updated(changed)
+    if (changed.has('data') && this.data?.handle && !this._tagNames) {
+      loadTagNames(this.appState).then(names => {
+        this._tagNames = names
+      })
+    }
   }
 
   _parentLabel(role) {
@@ -83,11 +121,15 @@ export class GrampsjsFamily extends GrampsjsObject {
     `
   }
 
+  // "Bùi X và Phạm Thị Y"; thiếu một bên thì chỉ ghi bên còn lại, dòng Cha hoặc
+  // Mẹ bên dưới nói rõ phả không chép. Lúc sửa giữ dấu ba chấm để thấy chỗ trống.
   _renderTitle() {
-    return html`
-      ${personProfileDisplayName(this.data?.profile?.father) || '…'} &amp;
-      ${personProfileDisplayName(this.data?.profile?.mother) || '…'}
-    `
+    const father = personProfileDisplayName(this.data?.profile?.father)
+    const mother = personProfileDisplayName(this.data?.profile?.mother)
+    if (this.edit) {
+      return html`${father || '…'} và ${mother || '…'}`
+    }
+    return [father, mother].filter(Boolean).join(' và ') || '…'
   }
 
   _renderMarriageBlock() {
@@ -166,6 +208,15 @@ export class GrampsjsFamily extends GrampsjsObject {
     const hasProfile = Object.keys(profile ?? {}).length > 0
     const birthDate = profile?.birth?.date || ''
     const deathDate = profile?.death?.date || ''
+    // Hồ sơ đầy đủ của cha hoặc mẹ (extend=all) mang thuộc tính Đời, Ngày giỗ
+    // và thẻ ngành chi; profile rút gọn chỉ có tên và ngày. Dòng thế thứ cùng
+    // cú pháp với đầu hồ sơ người: "Đời 9 · Ngành 3 · Chi 2".
+    const person = this.data?.extended?.[parent]
+    const lineage = getLineage(person, tagNamesOf(person, this._tagNames))
+    const memorial = getAttributeValue(person, ATTR_DEATH_ANNIVERSARY)
+    // Ngày mất của phả thường là chữ "Giỗ ngày 16 tháng 7 âm lịch"; chỉ in
+    // thêm dòng giỗ khi ngày mất chưa nói điều đó.
+    const showMemorial = memorial && !/giỗ/iu.test(deathDate)
 
     return html`
       <dl>
@@ -180,6 +231,9 @@ export class GrampsjsFamily extends GrampsjsObject {
                       >${personProfileDisplayName(profile) ||
                       '…'}</grampsjs-object-link
                     >
+                    ${lineage
+                      ? html`<span class="parent-lineage">${lineage}</span>`
+                      : ''}
                     ${birthDate || deathDate
                       ? html`<span class="parent-dates">
                           ${birthDate
@@ -190,8 +244,19 @@ export class GrampsjsFamily extends GrampsjsObject {
                             ? html`<span class="sym">†</span> ${deathDate}`
                             : ''}
                         </span>`
+                      : ''}
+                    ${showMemorial
+                      ? html`<span class="parent-dates"
+                          ><span class="sym">†</span> Giỗ ${memorial} âm
+                          lịch</span
+                        >`
                       : ''}`
-                : '…'}
+                : this.edit
+                ? '…'
+                : html`<span class="missing"
+                    >Phả không chép tên
+                    ${parent === 'mother' ? 'bà' : 'ông'}</span
+                  >`}
             </div>
             ${this.edit
               ? html`

@@ -11,6 +11,20 @@ import {GrampsjsView} from './GrampsjsView.js'
 import {fireEvent, objectIconPath, objectTypeToEndpoint} from '../util.js'
 import {clearDraftsWithPrefix} from '../api.js'
 import '../components/GrampsjsBreadcrumbs.js'
+import '../components/GrampsjsNotFound.js'
+
+// Tên loại hồ sơ trong câu "Bản phả không có ... mang mã ...".
+const NOT_FOUND_LABEL = {
+  person: 'hồ sơ người',
+  family: 'gia đình',
+  event: 'sự kiện',
+  place: 'địa danh',
+  source: 'nguồn',
+  citation: 'trích dẫn',
+  repository: 'kho tư liệu',
+  media: 'tư liệu',
+  note: 'ghi chú',
+}
 
 const BREADCRUMB_META = {
   person: {
@@ -128,6 +142,7 @@ export class GrampsjsViewObject extends GrampsjsView {
       _data: {type: Object},
       _className: {type: String},
       _saveButton: {type: Boolean},
+      _notFound: {type: Boolean},
     }
   }
 
@@ -138,6 +153,7 @@ export class GrampsjsViewObject extends GrampsjsView {
     this._data = {}
     this._className = ''
     this._saveButton = false
+    this._notFound = false
     this._boundDisableEditMode = this._disableEditMode.bind(this)
     this._boundDeleteSelf = this._deleteSelf.bind(this)
     this._boundToggleEditMode = this._toggleEditMode.bind(this)
@@ -168,10 +184,25 @@ export class GrampsjsViewObject extends GrampsjsView {
     `
   }
 
+  // Mã hồ sơ không có trong cây (liên kết cũ, mã QR in trên sổ đã gộp, gõ
+  // nhầm): nói rõ thay vì để trắng, và đưa ô tìm tên để đi tiếp.
+  renderNotFound() {
+    const label = NOT_FOUND_LABEL[this._className] || 'hồ sơ'
+    return html`<grampsjs-not-found
+      .appState=${this.appState}
+      heading="Không có hồ sơ này"
+      detail="Bản phả không có ${label} mang mã ${this
+        .grampsId}. Có thể liên kết đã cũ, gõ nhầm, hoặc hồ sơ đã được gộp khi soát lại sổ họ."
+    ></grampsjs-not-found>`
+  }
+
   renderContent() {
     if (Object.keys(this._data).length === 0) {
       if (this.loading) {
         return html``
+      }
+      if (this._notFound) {
+        return this.renderNotFound()
       }
       return html``
     }
@@ -288,8 +319,15 @@ export class GrampsjsViewObject extends GrampsjsView {
             this._handleObjectLoaded(this._data)
           }
         } else if ('error' in data) {
-          this.error = true
-          this._errorMessage = data.error
+          if (data.errorDetail?.status === 404) {
+            // Không phải lỗi hệ thống: trang tự giải thích, không bật thông
+            // báo đỏ ở góc màn hình.
+            this._notFound = true
+            this.error = false
+          } else {
+            this.error = true
+            this._errorMessage = data.error
+          }
         }
       })
     }
@@ -303,6 +341,7 @@ export class GrampsjsViewObject extends GrampsjsView {
 
   _clearData() {
     this._data = {}
+    this._notFound = false
   }
 
   _handleObjectLoaded() {}

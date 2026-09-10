@@ -220,6 +220,10 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
         .profile-card {
           padding: 28px;
           margin-bottom: 20px;
+          /* Các dòng dl bên trong (cha, mẹ ở trang gia đình) là float theo
+             kiểu chung; không tạo ngữ cảnh bố cục thì khung co lại còn tiêu
+             đề, chữ tràn ra ngoài viền. */
+          display: flow-root;
         }
 
         .profile-card h2 {
@@ -604,28 +608,35 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
     return html`
       ${tabKeys.map(
         (key, idx, tabKeysArray) => html`<div class="row">
-          <div class="section heritage-frame" id="section-${key}">
-            <h3>
-              ${this._(_allTabs[key].title)}
-              ${this.tocSidebar || tabKeysArray.length <= 1 || this.preview
-                ? ''
-                : html`
-                    <md-icon-button
-                      class="toc-button"
-                      @click="${this._openTocDialog}"
-                    >
-                      <grampsjs-icon
-                        .path="${mdiTableOfContents}"
-                        color="var(--grampsjs-body-font-color-40)"
-                      ></grampsjs-icon>
-                    </md-icon-button>
-                  `}
-            </h3>
-            ${this.renderSectionContent(key)}
+            <div class="section heritage-frame" id="section-${key}">
+              <h3>
+                ${this._(_allTabs[key].title)}
+                ${this.tocSidebar || tabKeysArray.length <= 1 || this.preview
+                  ? ''
+                  : html`
+                      <md-icon-button
+                        class="toc-button"
+                        @click="${this._openTocDialog}"
+                      >
+                        <grampsjs-icon
+                          .path="${mdiTableOfContents}"
+                          color="var(--grampsjs-body-font-color-40)"
+                        ></grampsjs-icon>
+                      </md-icon-button>
+                    `}
+              </h3>
+              ${this.renderSectionContent(key)}
+            </div>
           </div>
-        </div>`
+          ${this.renderAfterSection(key)}`
       )}
     `
+  }
+
+  // Khối chen giữa các mục, do lớp con quyết định (hồ sơ người đặt khối xưng
+  // hô ngay sau mục Quan hệ). Mặc định không có gì.
+  renderAfterSection(_key) {
+    return ''
   }
 
   _openTocDialog() {

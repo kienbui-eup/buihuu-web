@@ -7,6 +7,9 @@ const TOKEN_ENDPOINT = `/api/users/-/access-tokens/${SCOPE}/`
 
 function createView({apiGet, apiDelete, version = '3.18.0'} = {}) {
   const view = new GrampsjsViewSettingsUser()
+  // Phần Tài khoản chỉ vẽ khi đã biết vai trò và không phải tài khoản khách
+  // chung (vai trò 0); ở đây là một thành viên bình thường.
+  view._userInfo = {name: 'member', role: 1}
   view.appState = {
     i18n: {strings: {}},
     settings: {},
@@ -33,6 +36,28 @@ function templateMarkup(value) {
     ? String(value)
     : ''
 }
+
+describe('tài khoản khách chung xem bằng mã dòng họ', () => {
+  it('không bày phần Tài khoản và Công cụ lập trình, chỉ còn Giao diện', () => {
+    const view = createView()
+    view._userInfo = {name: 'khach', role: 0}
+    const content = templateMarkup(view.renderContent())
+
+    expect(content).not.to.contain('title="Account"')
+    expect(content).not.to.contain('title="Developer Tools"')
+    expect(content).to.contain('title="Appearance"')
+    expect(content).to.contain('mã dòng họ')
+  })
+
+  it('chưa biết vai trò thì chưa vẽ phần Tài khoản, tránh chớp form', () => {
+    const view = createView()
+    view._userInfo = {}
+    const content = templateMarkup(view.renderContent())
+
+    expect(content).not.to.contain('title="Account"')
+    expect(content).to.contain('title="Appearance"')
+  })
+})
 
 describe('persistent access token settings', () => {
   afterEach(() => {

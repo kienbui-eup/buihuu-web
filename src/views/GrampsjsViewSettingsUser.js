@@ -19,6 +19,7 @@ import '../components/GrampsjsTaskProgressIndicator.js'
 import '../components/GrampsjsTreeQuotas.js'
 import '../components/GrampsjsUsers.js'
 import {GrampsjsView} from './GrampsjsView.js'
+import {heritageFrameStyles} from '../HeritageStyles.js'
 
 import {mdiCheck, mdiContentCopy} from '@mdi/js'
 import {
@@ -46,7 +47,24 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
   static get styles() {
     return [
       ...super.styles,
+      heritageFrameStyles,
       css`
+        .guest-note {
+          max-width: 640px;
+          margin: 24px 0;
+          padding: 20px 24px;
+        }
+
+        .guest-note p {
+          margin: 0 0 10px;
+          font-size: 15px;
+          line-height: 1.7;
+        }
+
+        .guest-note p:last-child {
+          margin-bottom: 0;
+        }
+
         .token-row {
           display: flex;
           flex-wrap: wrap;
@@ -133,12 +151,65 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
     this._pendingAccessTokenScope = ''
   }
 
+  /*
+  Tài khoản khách (vai trò 0) là tài khoản dùng chung cả họ, vào bằng mã dòng
+  họ: không cho đổi tên đăng nhập, mật khẩu, thư (máy chủ cũng chặn, xem
+  user.py) và không bày công cụ lập trình. Chỉ còn phần Giao diện. Chờ biết vai
+  trò rồi mới vẽ phần tài khoản để không chớp form rồi biến mất.
+  */
   renderContent() {
+    const role = this._userInfo?.role
+    const roleKnown = Number.isInteger(role)
+    const isGuest = role === 0
     return html`
-      <p style="margin-top: 2.5em;">
-        ${this._('Changes here only affect your account.')}
-      </p>
+      ${isGuest
+        ? this._renderSharedAccountNote()
+        : html`<p style="margin-top: 2.5em;">
+            ${this._('Changes here only affect your account.')}
+          </p>`}
+      ${roleKnown && !isGuest ? this._renderAccountSection() : ''}
 
+      <grampsjs-collapsible-section
+        title="${this._('Appearance')}"
+        description="${this._('Display preferences saved on this device')}"
+      >
+        <h3>${this._('Select language')}</h3>
+        ${this.renderLangSelect()}
+        <h3>${this._('Select theme')}</h3>
+        ${this.renderThemeSelect()}
+        <h3>${this._('Family tree preferences')}</h3>
+        ${this.renderTreePreferences()}
+      </grampsjs-collapsible-section>
+
+      ${roleKnown && !isGuest
+        ? html`<grampsjs-collapsible-section
+            title="${this._('Developer Tools')}"
+            description="${this._('Access the interactive API documentation')}"
+          >
+            ${this.renderApiToken()}
+          </grampsjs-collapsible-section>`
+        : ''}
+    `
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  _renderSharedAccountNote() {
+    return html`<div class="heritage-frame guest-note">
+      <p class="section-label">Tài khoản</p>
+      <p>
+        Bạn đang xem bằng <strong>mã dòng họ</strong>. Đây là tài khoản khách
+        dùng chung cho cả họ, nên không đổi được tên đăng nhập, mật khẩu hay thư
+        điện tử ở đây.
+      </p>
+      <p>
+        Muốn có tài khoản riêng để ghi chú, đánh dấu hay góp ý sửa phả, nhắn cho
+        người giữ gia phả của chi mình.
+      </p>
+    </div>`
+  }
+
+  _renderAccountSection() {
+    return html`
       <grampsjs-collapsible-section
         title="${this._('Account')}"
         description="${this._(
@@ -178,25 +249,6 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
               ${this.renderAccessTokens()}
             `
           : ''}
-      </grampsjs-collapsible-section>
-
-      <grampsjs-collapsible-section
-        title="${this._('Appearance')}"
-        description="${this._('Display preferences saved on this device')}"
-      >
-        <h3>${this._('Select language')}</h3>
-        ${this.renderLangSelect()}
-        <h3>${this._('Select theme')}</h3>
-        ${this.renderThemeSelect()}
-        <h3>${this._('Family tree preferences')}</h3>
-        ${this.renderTreePreferences()}
-      </grampsjs-collapsible-section>
-
-      <grampsjs-collapsible-section
-        title="${this._('Developer Tools')}"
-        description="${this._('Access the interactive API documentation')}"
-      >
-        ${this.renderApiToken()}
       </grampsjs-collapsible-section>
     `
   }

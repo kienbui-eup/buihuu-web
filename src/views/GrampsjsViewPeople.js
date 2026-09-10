@@ -15,6 +15,7 @@ import {
   debounce,
 } from '../util.js'
 import {ATTR_GENERATION, ATTR_DEATH_ANNIVERSARY} from '../branding.js'
+import {getFatherLine} from '../charts/util.js'
 import {nameSearchRules, NAME_SEARCH_SLOT} from '../nameSearch.js'
 import {takePendingPeopleSearch} from '../pageSearch.js'
 import '../components/GrampsjsIcon.js'
@@ -128,12 +129,15 @@ export class GrampsjsViewPeople extends GrampsjsViewObjectsBase {
     // là dữ liệu của người biên tập, nên tắt sẵn — vẫn bật lại được ở nút cài
     // đặt cột.
     //
-    // Ba cột đánh dấu `meta` nối thành một dòng nhỏ dưới tên trên điện thoại:
-    // "Đời 13 · Ngành 3 - Chi 2 · Giỗ 12/8 ÂL", đúng thứ tự người trong họ hỏi.
+    // Bốn cột đánh dấu `meta` nối thành một dòng nhỏ dưới tên trên điện thoại:
+    // "Đời 13 · Ngành 3 - Chi 2 · con ông Bùi X · Giỗ 12/8 ÂL", đúng thứ tự
+    // người trong họ hỏi và cùng cú pháp với ô chọn người, kết quả tìm. Tên cha
+    // là điểm phân biệt cuối cùng giữa 529 người trùng tên hoàn toàn.
     this._columns = [
       {name: 'Full name', key: 'name', sortKey: 'surname'},
       {name: 'Generation', key: 'generation', meta: true},
       {name: 'Lineage branch', key: 'branch', meta: true, noLabel: true},
+      {name: 'Father', key: 'father', meta: true, noLabel: true},
       {name: 'Death anniversary', key: 'memorial', meta: true},
       {
         name: 'Birth Date',
@@ -223,10 +227,11 @@ export class GrampsjsViewPeople extends GrampsjsViewObjectsBase {
 
   get _fetchUrl() {
     // attribute_list mang "Đời" và "Ngày giỗ", tag_list mang ngành chi — không
-    // có trong profile rút gọn.
+    // có trong profile rút gọn. profile=families thêm tên cha; đo trên dữ liệu
+    // thật, một trang 40 người chỉ chậm thêm khoảng 20 ms.
     return `/api/people/?locale=${
       this.appState.i18n.lang || 'en'
-    }&profile=self&keys=gramps_id,profile,change,handle,attribute_list,tag_list`
+    }&profile=self,families&keys=gramps_id,profile,change,handle,attribute_list,tag_list`
   }
 
   _fetchData() {
@@ -371,6 +376,7 @@ export class GrampsjsViewPeople extends GrampsjsViewObjectsBase {
       name: personProfileDisplayName(row?.profile),
       generation: getAttributeValue(row, ATTR_GENERATION),
       branch: this._branchOf(row),
+      father: getFatherLine(row),
       memorial: getAttributeValue(row, ATTR_DEATH_ANNIVERSARY)
         ? `${getAttributeValue(row, ATTR_DEATH_ANNIVERSARY)} ÂL`
         : '',

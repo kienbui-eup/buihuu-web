@@ -203,6 +203,13 @@ export class GrampsjsXungHo extends GrampsjsAppStateMixin(LitElement) {
     </p>`
   }
 
+  // Cùng hàng với nút chọn hoặc đổi người mốc, để khối gọn một hàng nút.
+  _renderSoVaiButton() {
+    return html`<md-text-button @click=${this._openSoVai}
+      >So vai hai người khác</md-text-button
+    >`
+  }
+
   _displayName() {
     return (
       personProfileDisplayName(this.person?.profile) ||
@@ -231,6 +238,7 @@ export class GrampsjsXungHo extends GrampsjsAppStateMixin(LitElement) {
                 >Đổi người mốc</md-text-button
               >
               <md-text-button @click=${this._clear}>Bỏ</md-text-button>
+              ${this._renderSoVaiButton()}
             </div>
           `
         : html`
@@ -242,13 +250,9 @@ export class GrampsjsXungHo extends GrampsjsAppStateMixin(LitElement) {
               <md-outlined-button @click=${this._openPicker}
                 >Chọn người mốc</md-outlined-button
               >
+              ${this._renderSoVaiButton()}
             </div>
           `}
-      <div class="actions">
-        <md-text-button @click=${this._openSoVai}
-          >So vai hai người khác</md-text-button
-        >
-      </div>
       ${this._renderPicker()}
       <grampsjs-so-vai-dialog
         .appState=${this.appState}

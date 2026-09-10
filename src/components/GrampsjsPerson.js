@@ -84,6 +84,11 @@ export class GrampsjsPerson extends GrampsjsObject {
         .person-tools {
           margin-top: 16px;
         }
+        /* Khối xưng hô chen giữa các mục: bớt khoảng cách vì mục trước đã có
+           đệm dưới và .sections đã có gap. */
+        .sections > grampsjs-xung-ho {
+          margin-top: -1rem;
+        }
         .person-tools summary {
           min-height: 44px;
           align-content: center;
@@ -172,14 +177,34 @@ export class GrampsjsPerson extends GrampsjsObject {
             </p>
             ${this._renderRelation()}
           </details>`}
-      ${this.preview || this.edit
-        ? ''
-        : html`<grampsjs-xung-ho
-            .person=${this.data}
-            .appState=${this.appState}
-          ></grampsjs-xung-ho>`}
+      ${this._hasRelationshipsSection() ? '' : this._renderXungHo()}
       ${this.preview ? '' : this._renderQrDialog()}
     `
+  }
+
+  /*
+  Khối "Xưng hô trong họ" đứng ngay sau mục Quan hệ (cha mẹ, anh chị em, vợ
+  chồng, con). Con cháu tra một người thì hỏi "con cụ nào, có những ai" trước
+  rồi mới hỏi "tôi gọi là gì"; đặt khối này trên mục Quan hệ thì trên điện
+  thoại phải cuộn qua nó mới thấy cha mẹ. Người không có gia đình nào trong cây
+  (chỉ có tên, chưa nối) thì khối đứng ngay dưới đầu hồ sơ như cũ.
+  */
+  renderAfterSection(key) {
+    return key === 'relationships' ? this._renderXungHo() : ''
+  }
+
+  _hasRelationshipsSection() {
+    return this._getTabs(this.edit).includes('relationships')
+  }
+
+  _renderXungHo() {
+    if (this.preview || this.edit) {
+      return ''
+    }
+    return html`<grampsjs-xung-ho
+      .person=${this.data}
+      .appState=${this.appState}
+    ></grampsjs-xung-ho>`
   }
 
   renderProfile() {
