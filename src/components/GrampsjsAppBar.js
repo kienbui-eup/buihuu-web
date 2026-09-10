@@ -22,7 +22,6 @@ import '@material/web/button/text-button.js'
 import './GrampsjsAddMenu.js'
 import './GrampsjsSettingsMenu.js'
 import './GrampsjsTooltip.js'
-import './GrampsjsHeritageMark.js'
 import './GrampsjsHeaderNav.js'
 import {requestPageSearch, pageSearchLabel} from '../pageSearch.js'
 
@@ -39,6 +38,54 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
       css`
         :host {
           display: block;
+          --grampsjs-top-app-bar-font-color: #fff4df;
+        }
+        .brand-logo {
+          display: block;
+          width: 180px;
+          height: 50px;
+          object-fit: contain;
+          background: #fbf7ef;
+          border-radius: 8px;
+          padding: 0 8px;
+          box-sizing: border-box;
+          box-shadow: 0 0 0 1px #d9b77d;
+        }
+        @media (max-width: 600px) {
+          .brand-logo {
+            width: 138px;
+            height: 42px;
+          }
+        }
+        mwc-top-app-bar {
+          border-bottom: 1px solid var(--heritage-rule);
+        }
+        mwc-top-app-bar::before {
+          content: '';
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 64px;
+          z-index: 3;
+          pointer-events: none;
+          background-color: #632d27;
+          background-image: linear-gradient(
+              90deg,
+              #54241ff2 0%,
+              #74372bd9 52%,
+              #54241fe8 100%
+            ),
+            url('images/chi-bo-tree-landscape-v2.png');
+          background-size: cover;
+          background-position: center 72%;
+          border-bottom: 1px solid #c7a568;
+          box-shadow: 0 4px 18px #36201826;
+        }
+        @media (max-width: 599px) {
+          mwc-top-app-bar::before {
+            height: 56px;
+          }
         }
         #app-title {
           min-width: 0;
@@ -46,12 +93,27 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
         .brand-title {
           display: flex;
           align-items: center;
-          gap: 8px;
           min-width: 0;
         }
-        .brand-title grampsjs-heritage-mark {
-          --grampsjs-mark-size: 36px;
-          flex: 0 0 36px;
+        /* Logo ngang và tên trang là liên kết về trang chủ, nên dải điều hướng
+           không có mục "Trang chủ" riêng. Màu chữ và màu khi rê chuột lấy
+           theo các mục của GrampsjsHeaderNav để cả hàng cùng một lối. */
+        .brand-link {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          min-width: 0;
+          min-height: 44px;
+          color: inherit;
+          text-decoration: none;
+          border-radius: 4px;
+        }
+        .brand-link:hover .brand-name {
+          color: inherit;
+        }
+        .brand-link:focus-visible {
+          outline: 2px solid currentColor;
+          outline-offset: 2px;
         }
         grampsjs-header-nav {
           margin-right: 8px;
@@ -60,21 +122,6 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-        }
-        .brand-short {
-          display: none;
-        }
-        @media (max-width: 600px) {
-          .brand-title grampsjs-heritage-mark {
-            --grampsjs-mark-size: 32px;
-            flex-basis: 32px;
-          }
-          .brand-full {
-            display: none;
-          }
-          .brand-short {
-            display: inline;
-          }
         }
         :host([tree-page]) {
           position: sticky;
@@ -89,7 +136,7 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
           );
           --mdc-typography-headline6-font-weight: 600;
           --mdc-typography-headline6-font-size: 18px;
-          --mdc-theme-primary: var(--grampsjs-top-app-bar-background-color);
+          --mdc-theme-primary: transparent;
           --mdc-theme-on-primary: var(--grampsjs-top-app-bar-font-color);
         }
 
@@ -104,12 +151,8 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
           }
         }
         @media (max-width: 360px) {
-          .brand-title {
+          .brand-link {
             gap: 4px;
-          }
-          .brand-title grampsjs-heritage-mark {
-            --grampsjs-mark-size: 28px;
-            flex-basis: 28px;
           }
           grampsjs-header-nav {
             margin-right: 4px;
@@ -249,8 +292,19 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
         <div id="app-title" class="brand-title" slot="title">
           ${this.editMode && this.editTitle
             ? this.editTitle
-            : html`<grampsjs-heritage-mark></grampsjs-heritage-mark>
-                <span class="brand-name">${this._renderBrandName()}</span>`}
+            : html`<a
+                  id="brand-home"
+                  class="brand-link"
+                  href="/"
+                  aria-current=${this.appState.path.page === 'home'
+                    ? 'page'
+                    : 'false'}
+                >
+                  ${this._renderBrandName()}
+                </a>
+                <grampsjs-tooltip for="brand-home" .appState="${this.appState}"
+                  >Về trang chủ</grampsjs-tooltip
+                >`}
         </div>
         ${this.editMode ? '' : this._renderPrimaryNav()} ${savingIndicator}
         ${this.editMode
@@ -340,9 +394,15 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
 
   _renderBrandName() {
     const title = this.appState.treeConfig?.[TREE_CONFIG_APP_TITLE] || APP_NAME
-    if (title !== APP_NAME) return title
-    return html`<span class="brand-full">${APP_NAME}</span
-      ><span class="brand-short">Bùi Hữu</span>`
+    if (title !== APP_NAME)
+      return html`<span class="brand-name">${title}</span>`
+    return html`<img
+      class="brand-logo"
+      src="images/logo-bui-huu-ngang-v2.png"
+      width="180"
+      height="60"
+      alt="Phả hệ họ Bùi Hữu — Trang chủ"
+    />`
   }
 
   _renderPrimaryNav() {

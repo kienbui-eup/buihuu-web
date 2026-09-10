@@ -56,6 +56,11 @@ class GrampsjsTreeToolbar extends LitElement {
         display: flex;
         flex-direction: column;
         gap: 5px;
+        padding: 5px;
+        border: 1px solid var(--heritage-rule);
+        border-radius: 18px;
+        background: var(--md-sys-color-surface);
+        box-shadow: 0 4px 16px var(--grampsjs-body-font-color-10);
         pointer-events: auto;
       }
       /* Vạch ngăn nhóm chính với nhóm phụ trên cột máy tính. */
@@ -86,24 +91,19 @@ class GrampsjsTreeToolbar extends LitElement {
         --md-menu-item-hover-state-layer-color: var(--heritage-gold);
       }
       md-icon-button {
-        width: 42px;
-        height: 42px;
+        width: 44px;
+        height: 44px;
         color: var(--md-sys-color-primary);
         --grampsjs-icon-button-color: currentColor;
-        --md-icon-button-state-layer-width: 42px;
-        --md-icon-button-state-layer-height: 42px;
+        --md-icon-button-state-layer-width: 44px;
+        --md-icon-button-state-layer-height: 44px;
         --md-icon-button-hover-state-layer-color: var(--heritage-gold);
         --md-icon-button-pressed-state-layer-color: var(--heritage-gold);
         --md-icon-button-hover-state-layer-opacity: 0.18;
         --md-icon-button-pressed-state-layer-opacity: 0.28;
-        background: color-mix(
-          in srgb,
-          var(--heritage-gold) 8%,
-          var(--md-sys-color-surface)
-        );
-        border: 1px solid var(--heritage-rule);
+        background: transparent;
+        border: 0;
         border-radius: 11px;
-        box-shadow: 0 2px 8px var(--grampsjs-body-font-color-10);
       }
       md-icon-button[disabled] {
         opacity: 0.4;

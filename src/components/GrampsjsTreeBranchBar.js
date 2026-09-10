@@ -9,6 +9,7 @@ import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import {loadTreePeople} from '../charts/treeData.js'
 import {getBranch, formatBranch, getGeneration} from '../charts/util.js'
 import {fireEvent} from '../util.js'
+import {iconButtonColorStyles} from '../SharedStyles.js'
 import './GrampsjsIcon.js'
 
 /*
@@ -87,18 +88,19 @@ class GrampsjsTreeBranchBar extends GrampsjsAppStateMixin(LitElement) {
 
   static get styles() {
     return [
+      iconButtonColorStyles,
       css`
         :host {
           position: relative;
           display: block;
         }
         md-icon-button {
-          width: 42px;
-          height: 42px;
+          width: 44px;
+          height: 44px;
           color: var(--md-sys-color-primary);
           --grampsjs-icon-button-color: currentColor;
-          --md-icon-button-state-layer-width: 42px;
-          --md-icon-button-state-layer-height: 42px;
+          --md-icon-button-state-layer-width: 44px;
+          --md-icon-button-state-layer-height: 44px;
           --md-icon-button-hover-state-layer-color: var(--heritage-gold);
           --md-icon-button-pressed-state-layer-color: var(--heritage-gold);
           --md-icon-button-hover-state-layer-opacity: 0.18;
@@ -108,9 +110,8 @@ class GrampsjsTreeBranchBar extends GrampsjsAppStateMixin(LitElement) {
             var(--heritage-gold) 8%,
             var(--md-sys-color-surface)
           );
-          border: 1px solid var(--heritage-rule);
+          border: 0;
           border-radius: 11px;
-          box-shadow: 0 2px 8px var(--grampsjs-body-font-color-10);
         }
         md-icon-button.active {
           color: var(--md-sys-color-on-primary);

@@ -61,7 +61,9 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           margin: -4px 0 0;
         }
         .dashboard-content {
-          padding: 0 var(--heritage-gutter) 40px;
+          max-width: 1280px;
+          margin: 0 auto;
+          padding: 0 clamp(16px, 4vw, 64px) 48px;
         }
         /* Số liệu bản phả là dải thống kê cuối trang chủ, ngay trên footer. */
         .opening-grid {
@@ -74,7 +76,8 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           grid-template-columns: minmax(240px, 0.85fr) minmax(0, 2fr);
           gap: 12px 48px;
           align-items: start;
-          border-top: 3px solid var(--heritage-gold);
+          border: 1px solid var(--heritage-rule);
+          border-radius: 24px;
           padding: 26px 30px 22px;
           background: color-mix(
             in srgb,
@@ -174,7 +177,7 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         }
         .section-heading {
           border-top: 0;
-          padding-top: 36px;
+          padding-top: 32px;
           margin: 0 0 24px;
         }
         .section-heading h2 {
@@ -187,14 +190,17 @@ export class GrampsjsViewDashboard extends GrampsjsView {
            thoại đổi thứ tự: lịch giỗ, đọc trước khi tra cứu, thủy tổ, kho sử. */
         .dashboard-grid {
           display: grid;
-          grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-          grid-template-rows: auto auto 1fr;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-rows: repeat(2, 1fr);
           grid-template-areas:
-            'memorial origin'
             'memorial stories'
             'memorial guide';
           gap: 24px;
-          align-items: start;
+          align-items: stretch;
+        }
+        .dashboard-grid.has-home-image {
+          grid-template-rows: auto auto 1fr;
+          grid-template-areas: 'memorial origin' 'memorial stories' 'memorial guide';
         }
         .memorial {
           grid-area: memorial;
@@ -212,6 +218,53 @@ export class GrampsjsViewDashboard extends GrampsjsView {
           min-width: 0;
           padding: 28px;
           margin: 0;
+          border-radius: 22px;
+          box-shadow: 0 8px 28px var(--grampsjs-body-font-color-5);
+          background-image: radial-gradient(
+            ellipse at top right,
+            color-mix(in srgb, var(--heritage-gold) 9%, transparent),
+            transparent 65%
+          );
+        }
+        .panel > .section-label {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .panel > .section-label::before {
+          content: '';
+          width: 6px;
+          height: 6px;
+          background: var(--heritage-gold);
+          rotate: 45deg;
+        }
+        .starter a {
+          position: relative;
+          padding-right: 26px;
+        }
+        .starter a::after {
+          content: '›';
+          position: absolute;
+          right: 0;
+          top: 4px;
+          color: var(--heritage-gold);
+          font: 24px/1 var(--grampsjs-body-font-family);
+        }
+        .starter a:hover {
+          color: var(--heritage-accent);
+          text-decoration: underline;
+          text-underline-offset: 4px;
+        }
+        .starter small {
+          font-family: var(--grampsjs-body-font-family);
+          font-weight: 400;
+          margin-top: 4px;
+        }
+        .starter a:focus-visible,
+        .family-ledger a:focus-visible {
+          outline: 2px solid var(--heritage-accent);
+          outline-offset: 4px;
+          border-radius: 4px;
         }
         .panel > h3 {
           margin: 0 0 12px;
@@ -265,7 +318,18 @@ export class GrampsjsViewDashboard extends GrampsjsView {
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 0 20px;
           }
-          .dashboard-grid {
+          .dashboard-content {
+            padding: 0 12px 28px;
+          }
+          .section-heading {
+            padding: 24px 8px 0;
+          }
+          .section-heading h2 {
+            font-size: 26px;
+            line-height: 1.35;
+          }
+          .dashboard-grid,
+          .dashboard-grid.has-home-image {
             grid-template-columns: minmax(0, 1fr);
             grid-template-rows: auto;
             grid-template-areas:
@@ -341,9 +405,15 @@ export class GrampsjsViewDashboard extends GrampsjsView {
       <div class="dashboard-content">
         <div class="section-heading">
           <p class="section-label">Hôm nay trong họ</p>
-          <h2>Giỗ sắp tới, thủy tổ và kho sử</h2>
+          <h2>Nhớ ngày giỗ, tìm về nguồn cội</h2>
         </div>
-        <div class="dashboard-grid">
+        <div
+          class="dashboard-grid ${this.appState.treeConfig?.[
+            TREE_CONFIG_HOME_PAGE_IMAGE
+          ]
+            ? 'has-home-image'
+            : ''}"
+        >
           ${!hasPeople && canEdit
             ? html`
                 <div class="memorial">
@@ -375,7 +445,9 @@ export class GrampsjsViewDashboard extends GrampsjsView {
                 </div>
               `
             : ''}
-          <div class="origin">${this._renderHomePageImage()}</div>
+          ${this.appState.treeConfig?.[TREE_CONFIG_HOME_PAGE_IMAGE]
+            ? html`<div class="origin">${this._renderHomePageImage()}</div>`
+            : ''}
           <div class="panel stories heritage-frame">
             <p class="section-label">Kho sử</p>
             <grampsjs-view-recent-blog-posts

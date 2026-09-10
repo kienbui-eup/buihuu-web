@@ -11,11 +11,16 @@ import {
   lunarMonthSpan,
   formatSolarSpan,
   lunarToday,
+  formatSolarLong,
+  formatLunarLong,
+  buildCalendarMonth,
+  lunarSpanLabel,
+  calendarDays,
   buildGioIcs,
   foldIcsLine,
   escapeIcsText,
 } from '../../src/gioCalendar.js'
-import {lunarToSolar} from '../../src/lunar.js'
+import {lunarToSolar, solarToLunar} from '../../src/lunar.js'
 
 // Dữ liệu giả, không phải người thật trong họ.
 const people = [
@@ -155,6 +160,131 @@ describe('tra theo tháng âm', () => {
     expect(matchesQuery(mot, '4/7')).toBe(false)
     expect(matchesQuery(mot, '24/8')).toBe(false)
     expect(matchesQuery(mot, '')).toBe(true)
+  })
+})
+
+describe('lịch âm dương theo tháng dương', () => {
+  // Mốc 10/9/2026 dương là 30 tháng 7 năm Bính Ngọ; 11/9 là mùng 1 tháng 8.
+  const today = new Date(2026, 8, 10)
+  const person = (id, gio, given) => ({
+    gramps_id: id,
+    profile: {name_surname: 'Bùi', name_given: given},
+    attribute_list: [{type: 'Ngày giỗ', value: gio}],
+  })
+  const entries = collectAnniversaries(
+    [
+      person('I9201', '30/7', 'Văn Một'),
+      person('I9202', '1/8', 'Văn Hai'),
+      person('I9203', '1/8', 'Văn Ba'),
+      person('I9204', '29/8', 'Văn Bốn'),
+      person('I9205', '30/8', 'Văn Năm'),
+      person('I9206', '15/1', 'Văn Sáu'),
+    ],
+    today
+  )
+
+  it('ghi ngày dương và ngày âm dạng dài', () => {
+    expect(formatSolarLong([10, 9, 2026])).toBe('Thứ năm, 10/9/2026')
+    expect(formatLunarLong({day: 30, month: 7, year: 2026, leap: 0})).toBe(
+      '30 tháng 7 năm Bính Ngọ'
+    )
+    expect(formatLunarLong({day: 1, month: 12, year: 2026, leap: 0})).toBe(
+      '1 tháng Chạp năm Bính Ngọ'
+    )
+    expect(formatLunarLong({day: 3, month: 6, year: 2025, leap: 1})).toBe(
+      '3 tháng 6 nhuận năm Ất Tỵ'
+    )
+  })
+
+  it('lưới sáu tuần bắt đầu thứ hai, mỗi ô có ngày âm', () => {
+    const cal = buildCalendarMonth(entries, 2026, 9, today)
+    expect(cal.cells).toHaveLength(42)
+    // 1/9/2026 là thứ ba nên ô đầu là thứ hai 31/8.
+    expect(cal.cells[0].solar).toEqual([31, 8, 2026])
+    expect(cal.cells[0].inMonth).toBe(false)
+    expect(cal.cells[1]).toMatchObject({
+      solar: [1, 9, 2026],
+      inMonth: true,
+      lunar: {day: 21, month: 7, year: 2026, leap: 0},
+    })
+    const cell10 = cal.cells.find(c => c.solar[0] === 10 && c.inMonth)
+    expect(cell10.daysAway).toBe(0)
+    expect(cell10.lunar).toEqual({day: 30, month: 7, year: 2026, leap: 0})
+    expect(cal.cells.filter(c => c.inMonth)).toHaveLength(30)
+    expect(cal.cells[41].daysAway).toBe(41 - 10)
+  })
+
+  it('đặt giỗ vào đúng ô theo ngày âm, kể cả tháng đã qua', () => {
+    const cal = buildCalendarMonth(entries, 2026, 9, today)
+    const ids = cell => cell.entries.map(e => e.person.gramps_id)
+    const at = d => cal.cells.find(c => c.solar[0] === d && c.inMonth)
+    expect(ids(at(10))).toEqual(['I9201'])
+    expect(ids(at(11))).toEqual(['I9203', 'I9202'])
+    expect(ids(at(12))).toEqual([])
+    // Tháng 8 âm năm Bính Ngọ thiếu (29 ngày): giỗ 30/8 làm vào ngày 29/8.
+    const [d29, m29, y29] = lunarToSolar(29, 8, 2026)
+    expect(solarToLunar(d29 + 1, m29, y29)[0]).toBe(1)
+    const oct = buildCalendarMonth(entries, y29, m29, today)
+    const cell29 = oct.cells.find(c => c.solar[0] === d29 && c.solar[1] === m29)
+    expect(ids(cell29)).toEqual(['I9204', 'I9205'])
+    // Tháng đã qua vẫn tra được: rằm tháng Giêng 2026 là 3/3/2026.
+    const march = buildCalendarMonth(entries, 2026, 3, today)
+    const ram = march.cells.find(c => c.solar[0] === 3 && c.inMonth)
+    expect(ram.lunar).toMatchObject({day: 15, month: 1})
+    expect(ids(ram)).toEqual(['I9206'])
+    expect(ram.daysAway).toBeLessThan(0)
+  })
+
+  it('không đặt giỗ vào tháng nhuận', () => {
+    // Năm Ất Tỵ 2025 nhuận tháng 6: 6 nhuận bắt đầu 25/7/2025.
+    const leapStart = lunarToSolar(1, 6, 2025, 1)
+    expect(leapStart).not.toBeNull()
+    const list = collectAnniversaries(
+      [person('I9207', '1/6', 'Văn Bảy')],
+      today
+    )
+    const cal = buildCalendarMonth(list, leapStart[2], leapStart[1], today)
+    const cell = cal.cells.find(
+      c => c.solar[0] === leapStart[0] && c.solar[1] === leapStart[1]
+    )
+    expect(cell.lunar.leap).toBe(1)
+    expect(cell.entries).toEqual([])
+    const main = lunarToSolar(1, 6, 2025, 0)
+    const cal2 = buildCalendarMonth(list, main[2], main[1], today)
+    const cell2 = cal2.cells.find(
+      c => c.solar[0] === main[0] && c.solar[1] === main[1]
+    )
+    expect(cell2.entries.map(e => e.person.gramps_id)).toEqual(['I9207'])
+  })
+
+  it('gọi tên khoảng tháng âm của một tháng dương', () => {
+    expect(lunarSpanLabel(buildCalendarMonth([], 2026, 9, today).cells)).toBe(
+      'tháng 7 – 8 năm Bính Ngọ'
+    )
+    // Tháng 2/2027 có Tết Đinh Mùi ngày 6/2.
+    expect(lunarSpanLabel(buildCalendarMonth([], 2027, 2, today).cells)).toBe(
+      'tháng Chạp năm Bính Ngọ – tháng Giêng năm Đinh Mùi'
+    )
+    // Tháng 8/2025 nằm trọn trong tháng 6 nhuận và tháng 7 âm.
+    expect(lunarSpanLabel(buildCalendarMonth([], 2025, 8, today).cells)).toBe(
+      'tháng 6 nhuận – 7 năm Ất Tỵ'
+    )
+  })
+
+  it('gom giỗ trong tháng dương thành ô ngày, giữ nhãn 30 của tháng thiếu', () => {
+    const sept = calendarDays(buildCalendarMonth(entries, 2026, 9, today).cells)
+    expect(sept.map(d => [d.day, d.month, d.entries.length])).toEqual([
+      [30, 7, 1],
+      [1, 8, 2],
+    ])
+    expect(sept[1].solar).toEqual([11, 9, 2026])
+    expect(sept[1].daysAway).toBe(1)
+    const [d29, m29, y29] = lunarToSolar(29, 8, 2026)
+    const oct = calendarDays(buildCalendarMonth(entries, y29, m29, today).cells)
+    expect(oct.map(d => [d.day, d.solar[0]])).toEqual([
+      [29, d29],
+      [30, d29],
+    ])
   })
 })
 

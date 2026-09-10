@@ -175,9 +175,7 @@ export class GrampsJs extends LitElement {
           height: 100dvh;
           overflow-y: auto;
           overflow-x: hidden;
-          background-color: var(--md-sys-color-background);
-          background-image: var(--heritage-page-background);
-          background-attachment: local;
+          background: transparent;
         }
 
         main {
@@ -189,7 +187,8 @@ export class GrampsJs extends LitElement {
         @media (max-width: 991px) {
           main {
             --workspace-bottom-inset: calc(
-              66px + env(safe-area-inset-bottom, 0px)
+              var(--heritage-bottom-nav-space) +
+                env(safe-area-inset-bottom, 0px)
             );
           }
         }
@@ -201,7 +200,9 @@ export class GrampsJs extends LitElement {
 
         /* Chỗ trống dưới cùng để thanh điều hướng điện thoại không đè lên nội dung */
         .bottom-nav-spacer {
-          height: calc(66px + env(safe-area-inset-bottom, 0px));
+          height: calc(
+            var(--heritage-bottom-nav-space) + env(safe-area-inset-bottom, 0px)
+          );
         }
 
         grampsjs-tab-bar,

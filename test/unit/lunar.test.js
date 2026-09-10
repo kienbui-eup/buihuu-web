@@ -5,6 +5,8 @@ import {
   parseLunarDayMonth,
   nextAnniversary,
   canChiYear,
+  canChiDay,
+  canChiMonth,
 } from '../../src/lunar.js'
 
 describe('canChiYear', () => {
@@ -13,6 +15,26 @@ describe('canChiYear', () => {
     expect(canChiYear(2024)).toBe('Giáp Thìn')
     expect(canChiYear(2026)).toBe('Bính Ngọ')
     expect(canChiYear(2027)).toBe('Đinh Mùi')
+  })
+})
+
+describe('canChiDay và canChiMonth', () => {
+  it('1/1/2000 là ngày Mậu Ngọ, tháng Bính Tý, năm Kỷ Mão', () => {
+    expect(canChiDay(1, 1, 2000)).toBe('Mậu Ngọ')
+    const [, month, year] = solarToLunar(1, 1, 2000)
+    expect(canChiMonth(month, year)).toBe('Bính Tý')
+    expect(canChiYear(year)).toBe('Kỷ Mão')
+  })
+
+  it('chu kỳ ngày lặp lại sau sáu mươi ngày', () => {
+    expect(canChiDay(1, 3, 2000)).toBe(canChiDay(1, 1, 2000))
+    expect(canChiDay(2, 1, 2000)).toBe('Kỷ Mùi')
+  })
+
+  it('tháng Giêng là tháng Dần, can theo năm', () => {
+    expect(canChiMonth(1, 2026)).toBe('Canh Dần')
+    expect(canChiMonth(12, 2026)).toBe('Tân Sửu')
+    expect(canChiMonth(1, 2024)).toBe('Bính Dần')
   })
 })
 

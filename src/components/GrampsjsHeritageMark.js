@@ -1,6 +1,6 @@
 import {LitElement, html, css} from 'lit'
 
-// Ấn son Bùi Hữu dùng tài nguyên nội bộ, có bản 2x cho màn hình điện thoại.
+// Biểu tượng cây cội nguồn Bùi Hữu dùng tài nguyên nội bộ, có bản 2x cho màn hình điện thoại.
 class GrampsjsHeritageMark extends LitElement {
   static styles = css`
     :host {
@@ -17,7 +17,7 @@ class GrampsjsHeritageMark extends LitElement {
 
   render() {
     return html`<img
-      src="images/logo-bui-huu.png"
+      src="images/logo-bui-huu-v2.png"
       width="64"
       height="64"
       alt=""

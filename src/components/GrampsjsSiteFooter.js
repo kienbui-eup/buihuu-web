@@ -22,15 +22,76 @@ class GrampsjsSiteFooter extends LitElement {
         display: block;
       }
       footer {
-        background: var(--heritage-wood);
-        color: #e7ddcf;
-        border-top: 3px solid var(--heritage-gold);
+        background: #542923;
+        color: #ebdbc3;
+        border-top: 1px solid #c6a064;
+        --heritage-ink: #fff3db;
+        --heritage-muted: #ebdbc3;
+        --heritage-accent: #f0d6a4;
+        --heritage-rule: #e0bd7b38;
+      }
+      .homecoming {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        min-height: 270px;
+        display: flex;
+        align-items: center;
+        background: #f7ecd8;
+      }
+      .homecoming::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background: linear-gradient(
+            90deg,
+            #faf0db 0%,
+            #faf0dbdb 26%,
+            #faf0db00 63%
+          ),
+          url('images/chi-bo-tree-landscape-v2.png') center 72% / cover;
+      }
+      .homecoming-copy {
+        width: 100%;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 34px var(--heritage-gutter);
+        box-sizing: border-box;
+        color: #633028;
+      }
+      .homecoming .eyebrow {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        margin: 0 0 14px;
+      }
+      .homecoming h2 {
+        color: #633028;
+        font: 500 clamp(32px, 3.4vw, 46px) / 1.18
+          var(--grampsjs-heading-font-family);
+        letter-spacing: -0.025em;
+        text-transform: none;
+        margin: 0;
+      }
+      .homecoming .signature {
+        display: block;
+        width: 52px;
+        height: 2px;
+        background: #b68c4d;
+        margin-top: 22px;
+      }
+      :host([compact]) .homecoming {
+        display: none;
       }
       .body {
         display: grid;
         grid-template-columns: 1.3fr 1fr 1fr;
         gap: 36px;
-        padding: 48px var(--heritage-gutter);
+        padding: 40px var(--heritage-gutter);
+        max-width: 1280px;
+        margin: 0 auto;
       }
       .identity {
         display: flex;
@@ -43,16 +104,16 @@ class GrampsjsSiteFooter extends LitElement {
       strong {
         display: block;
         font: 500 24px/1.5 var(--grampsjs-heading-font-family);
-        color: #fff8e9;
+        color: var(--heritage-ink);
       }
       p {
-        font-size: 13px;
+        font-size: 14px;
         line-height: 1.9;
         margin: 8px 0 0;
       }
       h2 {
-        font: 500 11px/1.6 var(--grampsjs-body-font-family);
-        color: #dcbf83;
+        font: 600 12px/1.6 var(--grampsjs-body-font-family);
+        color: var(--heritage-accent);
         letter-spacing: 0.15em;
         text-transform: uppercase;
         margin: 0 0 12px;
@@ -63,14 +124,28 @@ class GrampsjsSiteFooter extends LitElement {
       }
       a:link,
       a:visited {
-        color: #f0e4d3;
-        font-size: 13px;
+        color: var(--heritage-accent);
+        font-size: 14px;
         display: inline-flex;
         align-items: center;
         min-height: 44px;
       }
+      nav a {
+        text-decoration: none;
+        border-bottom: 1px solid #e0bd7b26;
+        margin-right: 20px;
+      }
+      nav a:hover {
+        color: #fff;
+        border-bottom-color: #d9b77d;
+      }
+      a:focus-visible {
+        outline: 2px solid #d9b77d;
+        outline-offset: 3px;
+      }
       .base {
-        border-top: 1px solid #79664e;
+        background: #361e1a;
+        border-top: 1px solid var(--heritage-rule);
         padding: 16px var(--heritage-gutter);
         display: flex;
         justify-content: space-between;
@@ -96,6 +171,32 @@ class GrampsjsSiteFooter extends LitElement {
         border: 0;
       }
       @media (max-width: 760px) {
+        .homecoming {
+          min-height: 250px;
+          align-items: flex-start;
+        }
+        .homecoming::before {
+          background: linear-gradient(
+              180deg,
+              #faf0db 0%,
+              #faf0db99 26%,
+              #faf0db00 70%
+            ),
+            url('images/chi-bo-tree-landscape-v2.png') 78% 74% / auto 400px;
+        }
+        .homecoming-copy {
+          padding: 24px var(--heritage-gutter);
+        }
+        .homecoming .eyebrow {
+          margin-bottom: 10px;
+        }
+        .homecoming h2 {
+          font-size: 32px;
+          max-width: 240px;
+        }
+        .homecoming .signature {
+          display: none;
+        }
         .body {
           grid-template-columns: 1fr;
           padding-block: 32px;
@@ -134,6 +235,12 @@ class GrampsjsSiteFooter extends LitElement {
         }
       }
       @media print {
+        .homecoming {
+          display: none;
+        }
+        .base {
+          background: none;
+        }
         .body {
           display: none;
         }
@@ -147,6 +254,13 @@ class GrampsjsSiteFooter extends LitElement {
 
   render() {
     return html`<footer>
+      <section class="homecoming" aria-label="Quê hương Chỉ Bồ">
+        <div class="homecoming-copy">
+          <p class="eyebrow">Bùi Hữu · Chỉ Bồ · Thụy Trường</p>
+          <h2>Nơi con cháu<br />hướng về</h2>
+          <span class="signature" aria-hidden="true"></span>
+        </div>
+      </section>
       <div class="body">
         <div class="identity">
           <grampsjs-heritage-mark></grampsjs-heritage-mark>

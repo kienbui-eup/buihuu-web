@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="none" fill="none">
+  <defs>
+    <linearGradient id="fade" x1="0" y1="1000" x2="0" y2="640" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#b99759" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#b99759" stop-opacity="0"/>
+    </linearGradient>
+    <g id="leaves" stroke="#b99759" stroke-width="1.4">
+      <path d="M0 340C60 270 74 154 190 40M49 266C86 262 126 233 145 195M95 153C56 120 45 74 46 18"/>
+      <path d="M48 267C7 232 6 192 13 153C49 185 66 224 48 267ZM75 215C120 210 157 179 171 145C122 157 89 175 75 215ZM100 151C86 105 96 67 120 32C136 78 124 118 100 151ZM145 86C192 76 218 44 226 8C183 24 154 50 145 86Z" fill="#b99759" fill-opacity=".08"/>
+      <path d="M9 369C87 323 156 326 221 284" opacity=".6"/>
+    </g>
+  </defs>
+  <use href="#leaves" transform="translate(0 40)" opacity=".65"/>
+  <use href="#leaves" transform="translate(1600 30) scale(-1 1)" opacity=".65"/>
+  <use href="#leaves" transform="translate(0 1000) scale(1 -1)" opacity=".45"/>
+  <use href="#leaves" transform="translate(1600 1000) scale(-1 -1)" opacity=".45"/>
+  <g stroke="url(#fade)" stroke-width="1.5">
+    <path d="M800 695C765 856 491 805 420 1000M800 720C823 857 1060 822 1180 1000M800 751C768 907 658 872 645 1000M800 771C843 907 912 915 938 1000M800 800V1000"/>
+    <path d="M800 755C657 923 154 829 0 957M800 755C943 923 1446 829 1600 957M800 833C603 969 345 928 265 1000M800 833C997 969 1255 928 1335 1000"/>
+  </g>
+  <g stroke="#b99759" stroke-width="1" opacity=".4">
+    <path d="M18 72V18H86M1514 18H1582V72M18 928V982H86M1514 982H1582V928"/>
+    <path d="M27 64V27H78M1522 27H1573V64M27 936V973H78M1522 973H1573V936"/>
+  </g>
+</svg>

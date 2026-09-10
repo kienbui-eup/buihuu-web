@@ -37,6 +37,25 @@ export function appendPersonCardDecoration(
     .classed('person-adult', d => ageGroup(d) === 'adult')
     .classed('person-elder', d => ageGroup(d) === 'elder')
 
+  // Nhãn dưới chân dung không lấn vào tên, đời hoặc ngày giỗ.
+  nodes
+    .append('text')
+    .attr('class', 'life-status')
+    .attr('x', x + CARD_AVATAR_X)
+    .attr('y', y + 81)
+    .attr('text-anchor', 'middle')
+    .attr('font-size', 9)
+    .attr('font-weight', 600)
+    .attr('pointer-events', 'none')
+    .text(d => (deceased(d) ? 'Đã mất' : 'Chưa rõ'))
+  nodes
+    .append('title')
+    .text(d =>
+      deceased(d)
+        ? 'Đã mất theo thông tin trong gia phả'
+        : 'Chưa có thông tin mất; chưa xác nhận còn sống'
+    )
+
   const living = nodes.filter(d => !deceased(d))
   const nameplate = living
     .append('g')
@@ -153,4 +172,5 @@ export function appendPersonCardDecoration(
     .attr('class', 'memorial-portrait-icon')
     .attr('d', mdiAccountOutline)
     .attr('transform', 'translate(-13.2,-13.2) scale(1.1)')
+  nodes.selectAll('.life-status').raise()
 }

@@ -126,7 +126,10 @@ export class GrampsjsViewObject extends GrampsjsView {
         }
         @media (max-width: 991px) {
           md-fab {
-            bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+            bottom: calc(
+              var(--heritage-bottom-nav-space) +
+                env(safe-area-inset-bottom, 0px)
+            );
             right: 16px;
           }
         }

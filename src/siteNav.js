@@ -1,7 +1,8 @@
 /*
 Danh sách trang dùng chung cho điều hướng trên trang.
 
-Năm mục đầu của nhóm Tra cứu nằm cạnh tên trang trên màn hình rộng
+Nhóm Tra cứu, trừ Trang chủ (ấn son và tên trang trên GrampsjsAppBar đã là
+liên kết về đó) và Bản đồ, nằm cạnh tên trang trên màn hình rộng
 (GrampsjsHeaderNav); toàn bộ ba nhóm nằm trong bảng mở từ nút tài khoản
 (GrampsjsSettingsMenu), cùng với các mục theo quyền của người đăng nhập. Gom
 một chỗ để hai nơi không lệch nhau khi thêm bớt trang.

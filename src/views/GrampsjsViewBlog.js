@@ -25,7 +25,10 @@ export class GrampsjsViewBlog extends GrampsjsView {
           }
           md-fab {
             right: 16px;
-            bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+            bottom: calc(
+              var(--heritage-bottom-nav-space) +
+                env(safe-area-inset-bottom, 0px)
+            );
           }
         }
       `,

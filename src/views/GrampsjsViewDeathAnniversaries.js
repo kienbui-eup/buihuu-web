@@ -29,6 +29,7 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
   static get styles() {
     return [
       super.styles,
+      anniversaryStyles,
       css`
         h3 {
           margin: 0 0 12px;
@@ -40,13 +41,58 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
           font-size: 0.95em;
         }
 
+        .remembrance {
+          padding: 14px 0;
+          gap: 14px;
+          border-bottom-color: var(--heritage-rule);
+        }
+        .remembrance .date,
+        .remembrance .date.soon {
+          flex-basis: 56px;
+          height: 60px;
+          border: 1px solid var(--heritage-rule);
+          border-radius: 12px;
+          background: color-mix(
+            in srgb,
+            var(--heritage-gold) 10%,
+            var(--md-sys-color-surface)
+          );
+          color: var(--heritage-accent);
+        }
+        .remembrance.today .date {
+          color: #fff8ec;
+          background: #873e32;
+          border-color: var(--heritage-gold);
+        }
+        .remembrance.today .countdown {
+          color: var(--heritage-accent);
+          font-weight: 600;
+        }
+        .remembrance .name {
+          color: var(--heritage-ink);
+        }
+        .remembrance:focus-visible,
+        p.more a:focus-visible {
+          outline: 2px solid var(--heritage-accent);
+          outline-offset: 3px;
+        }
+        p.more a {
+          display: inline-flex;
+          min-height: 44px;
+          align-items: center;
+          gap: 12px;
+          color: var(--heritage-accent);
+          font-weight: 500;
+        }
+        p.more a::after {
+          content: '→';
+        }
         @media (max-width: 768px) {
           .remembrance:nth-child(n + ${MAX_SHOWN_MOBILE + 1}) {
             display: none;
           }
         }
       `,
-      anniversaryStyles,
     ]
   }
 
@@ -97,7 +143,10 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
     // các tên trùng nhau; thẻ ngành chi đã có sẵn trong extended.tags.
     const branch = formatBranch(getBranch(person.extended?.tags))
     return html`
-      <a class="remembrance" href="/person/${person.gramps_id}">
+      <a
+        class="remembrance ${next.daysAway === 0 ? 'today' : ''}"
+        href="/person/${person.gramps_id}"
+      >
         <span
           class="date ${next.daysAway <= 7 ? 'soon' : ''}"
           aria-label="${day}/${month} dương lịch"
@@ -112,7 +161,9 @@ export class GrampsjsViewDeathAnniversaries extends GrampsjsConnectedComponent {
               ? html` · ${this._('Generation')} ${generation}`
               : ''}${branch ? html` · ${branch}` : ''}</span
           >
-          <span class="meta">${this._daysAwayLabel(next.daysAway)}</span>
+          <span class="meta countdown"
+            >${this._daysAwayLabel(next.daysAway)}</span
+          >
         </span>
       </a>
     `

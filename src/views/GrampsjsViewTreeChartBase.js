@@ -37,11 +37,26 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
           isolation: isolate;
           overflow: hidden;
           color: var(--md-sys-color-on-surface);
-          background: color-mix(
-            in srgb,
-            var(--heritage-gold) 3%,
-            var(--md-sys-color-background)
-          );
+          background: var(--heritage-paper);
+        }
+
+        .chart-shell::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          pointer-events: none;
+          background-image: linear-gradient(
+              color-mix(in srgb, var(--heritage-paper) 22%, transparent),
+              color-mix(in srgb, var(--heritage-paper) 42%, transparent)
+            ),
+            url('images/chi-bo-tree-landscape-v2.png');
+          background-position: center, center bottom;
+          background-size: cover;
+          background-repeat: no-repeat;
+        }
+
+        .chart-shell {
           --grampsjs-chart-height: max(
             180px,
             calc(
@@ -51,14 +66,64 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
           );
         }
 
-        .chart-shell::before {
-          content: '';
+        .chart-heading {
           position: absolute;
           z-index: 2;
-          inset: 0;
-          border: 1px solid
-            color-mix(in srgb, var(--heritage-rule) 50%, transparent);
+          top: 18px;
+          left: 24px;
           pointer-events: none;
+          color: var(--heritage-accent);
+          padding: 12px 16px;
+          border: 1px solid var(--heritage-rule);
+          border-radius: 16px;
+          background: color-mix(
+            in srgb,
+            var(--md-sys-color-surface) 96%,
+            transparent
+          );
+          box-shadow: 0 3px 16px var(--grampsjs-body-font-color-5);
+        }
+
+        .life-legend {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-top: 8px;
+          font-size: 11px;
+          color: var(--heritage-ink);
+        }
+        .life-legend i {
+          width: 10px;
+          height: 10px;
+          border: 1px solid var(--heritage-gold);
+          border-radius: 3px;
+        }
+        .deceased-key {
+          background: #873e32;
+        }
+        .unknown-key {
+          background: var(--md-sys-color-surface);
+          margin-left: 6px;
+        }
+        .life-legend-note {
+          font-size: 10px;
+          color: var(--heritage-muted);
+          margin-top: 3px;
+        }
+        .chart-heading h1 {
+          margin: 0;
+          font-family: var(--grampsjs-heading-font-family);
+          font-size: 28px;
+          font-weight: 600;
+          line-height: 1.2;
+        }
+
+        .chart-heading span {
+          display: block;
+          margin-top: 5px;
+          color: var(--heritage-muted);
+          font-size: 11px;
+          letter-spacing: 0.06em;
         }
 
         /* Chú thích góc dưới trái: đang xem phạm vi nào, bao nhiêu người, từ
@@ -79,7 +144,7 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
           );
           border: 1px solid var(--heritage-rule);
           border-left: 3px solid var(--heritage-gold);
-          border-radius: var(--grampsjs-frame-radius);
+          border-radius: 10px;
           box-shadow: 0 2px 10px var(--grampsjs-body-font-color-10);
           backdrop-filter: blur(4px);
           font-size: 12px;
@@ -159,12 +224,35 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
         }
 
         @media (max-width: 991px) {
+          .life-legend-note {
+            display: none;
+          }
+          .chart-heading {
+            top: 10px;
+            left: 10px;
+            padding: 8px 10px;
+            border-radius: 12px;
+          }
+          .chart-heading h1 {
+            font-size: 20px;
+          }
+          .life-legend {
+            margin-top: 5px;
+          }
+          .chart-heading span {
+            display: none;
+          }
           .chart-shell {
-            --tree-bottom-inset: calc(66px + env(safe-area-inset-bottom, 0px));
+            --tree-bottom-inset: calc(
+              var(--heritage-bottom-nav-space) +
+                env(safe-area-inset-bottom, 0px)
+            );
             --tree-footer-height: 0px;
           }
           .chart-shell::before {
-            content: none;
+            background-size: 100% 100%, auto 68%;
+            background-position: center, 78% bottom;
+            mask-image: linear-gradient(to bottom, transparent 30%, #000 64%);
           }
           .chart-caption {
             left: 8px;
@@ -237,7 +325,10 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
 
         @media (max-width: 991px) {
           md-fab {
-            bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+            bottom: calc(
+              var(--heritage-bottom-nav-space) +
+                env(safe-area-inset-bottom, 0px)
+            );
             right: 16px;
           }
         }
@@ -381,6 +472,15 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
 
   renderContent() {
     return html`<div class="chart-shell">
+        <div class="chart-heading">
+          <h1>Phả đồ</h1>
+          <span>Lần theo các thế hệ</span>
+          <div class="life-legend">
+            <i class="deceased-key"></i> Đã mất <i class="unknown-key"></i> Chưa
+            rõ
+          </div>
+          <div class="life-legend-note">Chưa rõ: chưa có thông tin mất</div>
+        </div>
         <div id="chart">${this.renderChart()}</div>
         ${this.loading
           ? html`<div class="chart-status" role="status">

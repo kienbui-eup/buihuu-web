@@ -2,7 +2,6 @@ import {LitElement, html, css} from 'lit'
 import {sharedStyles} from '../SharedStyles.js'
 import {fireEvent} from '../util.js'
 import {PLACE_SHORT} from '../branding.js'
-import './GrampsjsHeritageMark.js'
 
 // Dùng bản ảnh nhà thờ đã phục dựng và được người dùng chọn cho giao diện.
 class GrampsjsTempleHero extends LitElement {
@@ -33,354 +32,286 @@ class GrampsjsTempleHero extends LitElement {
         display: block;
       }
       .hero {
-        display: grid;
-        grid-template-columns: minmax(300px, 0.8fr) minmax(0, 1.4fr);
-        background: var(--heritage-wood);
-        color: #fff9e9;
-        border-bottom: 4px solid var(--heritage-gold);
+        background: transparent;
+        color: var(--heritage-ink);
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        padding: 28px clamp(16px, 4vw, 64px) 40px;
+        border-bottom: 1px solid var(--heritage-rule);
+      }
+      .hero-content {
+        max-width: 1280px;
+        margin: 0 auto;
+        overflow: hidden;
+        border: 1px solid var(--heritage-rule);
+        border-radius: 24px;
+        background: var(--heritage-paper);
+        box-shadow: 0 16px 48px var(--grampsjs-body-font-color-10);
+      }
+      figure {
+        margin: 0 auto;
+        max-width: 1280px;
+        position: relative;
+      }
+      picture,
+      img {
+        display: block;
+        width: 100%;
+      }
+      img {
+        height: auto;
+        border-radius: 0;
+      }
+      figcaption {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 32px;
+        border-bottom: 1px solid var(--heritage-rule);
+        color: var(--heritage-muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      figcaption strong {
+        color: var(--heritage-accent);
+        font-weight: 500;
       }
       .intro {
-        padding: clamp(28px, 4vw, 64px);
-        align-content: center;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 32px;
+        box-sizing: border-box;
+        background: radial-gradient(
+          ellipse at right bottom,
+          color-mix(in srgb, var(--heritage-gold) 13%, transparent),
+          transparent 75%
+        );
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+        column-gap: clamp(24px, 4vw, 56px);
+        row-gap: 24px;
+        align-items: start;
+      }
+      .heritage-aside {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        align-self: stretch;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 24px;
+        padding-left: 28px;
+        border-left: 1px solid var(--heritage-gold);
       }
       .eyebrow {
-        color: #e2c891;
+        color: var(--heritage-accent);
         text-transform: uppercase;
         letter-spacing: 0.16em;
-        font-size: 11px;
+        font-size: 16px;
         line-height: 1.8;
-        margin: 0 0 20px;
+        margin: 0 0 10px;
       }
       h1,
       h2 {
-        color: #fff9e9;
-        font-size: clamp(36px, 4vw, 62px);
+        color: var(--heritage-ink);
+        font-size: clamp(30px, 3.2vw, 46px);
         line-height: 1.2;
-        margin: 0 0 22px;
+        margin: 0 0 16px;
         font-weight: 500;
       }
       h1 strong,
       h2 strong {
-        display: block;
         font-weight: 600;
       }
       .description {
-        max-width: 32em;
-        color: #e5d9c9;
-        font-size: 15px;
-        line-height: 1.85;
+        color: var(--heritage-muted);
+        font-size: 16px;
+        line-height: 1.8;
         margin: 0;
+        max-width: 42em;
       }
-      /* Trích đoạn như một thẻ thư tịch đặt trên nền gỗ. Toàn bộ thẻ là nút
-         mở lời tựa, giúp người dùng điện thoại không phải tìm một CTA nhỏ. */
       .preface {
-        position: relative;
         display: grid;
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        align-items: center;
-        gap: 14px;
-        width: min(100%, 38em);
-        margin: 24px 0 0;
-        padding: 16px 18px;
-        border: 1px solid rgba(226, 200, 145, 0.52);
-        border-radius: 3px;
-        background: linear-gradient(
-          115deg,
-          rgba(255, 249, 233, 0.1),
-          rgba(226, 200, 145, 0.04)
-        );
-        color: inherit;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 10px;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0;
+        margin: 0;
+        border: 0;
+        border-left: 0;
+        background: transparent;
         text-align: left;
-        overflow: hidden;
-        isolation: isolate;
-      }
-      .preface::before,
-      .preface::after {
-        content: '';
-        position: absolute;
-        pointer-events: none;
-      }
-      .preface::before {
-        inset: 5px;
-        border: 1px solid rgba(226, 200, 145, 0.17);
-        z-index: -1;
-      }
-      .preface::after {
-        width: 120px;
-        height: 120px;
-        right: -64px;
-        bottom: -72px;
-        border: 1px solid rgba(226, 200, 145, 0.28);
-        border-radius: 50%;
-        box-shadow: 0 0 0 10px rgba(226, 200, 145, 0.04),
-          0 0 0 20px rgba(226, 200, 145, 0.03);
-      }
-      .preface:hover {
-        border-color: #e2c891;
-        background: rgba(226, 200, 145, 0.13);
-        transform: translateY(-1px);
-      }
-      .preface:focus-visible {
-        outline: 2px solid #fff9e9;
-        outline-offset: 3px;
+        color: var(--heritage-ink);
+        cursor: pointer;
       }
       .quote-mark {
-        align-self: start;
-        font: 500 54px/0.9 var(--grampsjs-heading-font-family);
-        color: #e2c891;
-        opacity: 0.9;
-      }
-      .quote-copy {
-        min-width: 0;
+        font: 48px/1 var(--grampsjs-heading-font-family);
+        color: #a78348;
       }
       .quote-text {
         display: -webkit-box;
-        -webkit-line-clamp: 4;
+        -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        font: italic 400 17px/1.7 'EB Garamond x', 'Noto Serif', serif;
-        color: #f1e6cf;
+        font: italic 400 19px/1.6 'EB Garamond x', 'Noto Serif', serif;
       }
       .quote-source {
         display: block;
-        margin-top: 9px;
-        font-size: 11px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: #e2c891;
+        margin-top: 10px;
+        font-size: 16px;
+        color: var(--heritage-muted);
       }
       .quote-action {
-        align-self: end;
-        padding-left: 12px;
-        border-left: 1px solid rgba(226, 200, 145, 0.38);
-        font-size: 12px;
-        line-height: 1.5;
-        color: #fff9e9;
-        white-space: nowrap;
+        grid-column: 2;
+        font-size: 16px;
+        color: var(--heritage-accent);
       }
-      /* Thẻ người gốc (thủy tổ) đứng cạnh nút mở cây: liên kết viền mảnh tới
-         hồ sơ, không dùng nền vàng của nút chính. */
-      .founder:link,
-      .founder:visited {
-        display: inline-flex;
-        align-items: center;
-        gap: 12px;
-        min-height: 44px;
-        padding: 6px 16px 6px 8px;
-        background: transparent;
-        color: #fff9e9;
-        border: 1px solid #a58b62;
-        border-radius: 3px;
-        text-decoration: none;
-        text-align: left;
-      }
-      .founder:hover {
-        border-color: #e2c891;
-        background: rgba(226, 200, 145, 0.12);
-      }
-      .founder-mark {
-        flex: 0 0 36px;
-        width: 36px;
-        height: 36px;
-        display: grid;
-        place-items: center;
-        border-radius: 50%;
-        background: rgba(226, 200, 145, 0.18);
-        color: #e2c891;
-        font: 600 15px/1 var(--grampsjs-heading-font-family);
-      }
-      .founder-copy {
-        display: grid;
-        line-height: 1.35;
-      }
-      .founder-copy small {
-        font-size: 10px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: #e2c891;
-      }
-      .founder-copy strong {
-        font: 600 15px/1.35 var(--grampsjs-heading-font-family);
-      }
-      .founder-copy span {
-        font-size: 12px;
-        color: #e5d9c9;
+      .preface:hover .quote-action {
+        text-decoration: underline;
       }
       .actions {
+        grid-column: 1;
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         gap: 12px 20px;
-        margin-top: 28px;
+        margin-top: 0;
       }
-      a,
-      .actions button {
-        min-height: 44px;
+      .actions a {
         box-sizing: border-box;
+        min-height: 48px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font: 500 14px/1.4 var(--grampsjs-body-font-family);
-        cursor: pointer;
-      }
-      a:link,
-      a:visited {
-        background: #e2c891;
-        color: #35261d;
-        padding: 12px 20px;
-        border-radius: 3px;
+        padding: 12px 22px;
+        border-radius: 12px;
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
         text-decoration: none;
+        font: 500 16px/1.4 var(--grampsjs-body-font-family);
       }
-      a:hover {
-        background: #f0dbac;
+      .actions a:hover {
+        background: color-mix(in srgb, var(--md-sys-color-primary) 90%, black);
       }
-      .actions button {
+      .action-note {
+        font-size: 16px;
+        color: var(--heritage-muted);
+      }
+      .founder {
+        display: flex;
+        align-items: center;
+        min-height: 56px;
+        text-decoration: none;
+        border-top: 1px solid var(--heritage-rule);
+        gap: 12px;
         background: transparent;
-        color: #fff9e9;
-        border: 1px solid #a58b62;
-        border-radius: 3px;
-        padding: 12px 20px;
+        color: var(--heritage-ink);
+        padding: 20px 0 0;
+        margin-left: 0;
+        text-align: left;
       }
-      .actions button:hover {
-        border-color: #e2c891;
-        background: rgba(226, 200, 145, 0.12);
+      .founder:hover {
+        color: var(--heritage-accent);
+      }
+      .founder-mark {
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--heritage-rule);
+        border-radius: 50%;
+        color: var(--heritage-accent);
+      }
+      .founder-copy {
+        display: grid;
+        gap: 2px;
+      }
+      .founder-copy small,
+      .founder-copy span {
+        font-size: 16px;
+        color: var(--heritage-muted);
+      }
+      .founder-copy strong {
+        font: 600 16px/1.4 var(--grampsjs-heading-font-family);
       }
       a:focus-visible,
-      .actions button:focus-visible {
-        outline-color: #fff9e9;
+      button:focus-visible {
+        outline: 2px solid var(--heritage-accent);
+        outline-offset: 4px;
       }
-      figure {
-        margin: 0;
-        min-width: 0;
-        align-self: center;
-        position: relative;
-        overflow: hidden;
-      }
-      picture {
-        display: block;
-        height: 100%;
-      }
-      img {
-        display: block;
-        width: 100%;
-        height: auto;
-        min-height: 0;
-        object-fit: contain;
-        object-position: center 56%;
-      }
-      figcaption {
-        position: absolute;
-        right: 20px;
-        bottom: 18px;
-        background: #241b16e8;
-        color: #fff9e9;
-        border-left: 2px solid #d4b16e;
-        font-size: 11px;
-        letter-spacing: 0.04em;
-        line-height: 1.7;
-        padding: 8px 14px;
-      }
-      :host([welcome]) .hero {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr;
-        height: 100%;
-      }
-      :host([welcome]) figure {
-        order: -1;
-      }
-      :host([welcome]) img {
-        min-height: 0;
-        aspect-ratio: 16 / 9;
+      :host([welcome]) .heritage-aside {
+        display: none;
       }
       :host([welcome]) .intro {
-        padding: 36px 40px;
-      }
-      :host([welcome]) h2 {
-        font-size: clamp(32px, 3.5vw, 48px);
-      }
-      /* Từ 1024 đến 1199 px (laptop nhỏ, tablet ngang) cột chữ 0.8fr chỉ còn
-         hơn 300 px, thẻ trích lời tựa bẻ thành bốn dòng ba chữ; chia đôi hai
-         cột để chữ có chừng 430 px. */
-      @media (max-width: 1199px) {
-        .hero {
-          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        }
-      }
-      /* Dưới 1024 px (tablet dọc và điện thoại) cột chữ chỉ còn chừng 300 px
-         nếu vẫn chia hai cột: chữ bẻ dòng dày, nút xếp dọc, ảnh bị ép. Xếp
-         ảnh lên trên, phần giới thiệu bên dưới như trên điện thoại. */
-      @media (max-width: 1023px) {
-        .hero {
-          grid-template-columns: 1fr;
-        }
-        figure {
-          order: -1;
-        }
-        img {
-          min-height: 0;
-          height: auto;
-          aspect-ratio: 16 / 9;
-          object-fit: cover;
-        }
+        grid-template-columns: 1fr;
+        padding-bottom: 28px;
       }
       @media (max-width: 760px) {
+        .hero {
+          padding: 12px 12px 24px;
+        }
+        .hero-content {
+          border-radius: 18px;
+        }
+        .hero::before {
+          opacity: 0.2;
+        }
+        .heritage-aside {
+          order: 1;
+          margin-top: 24px;
+          padding: 20px 0 0;
+          border-left: 0;
+          border-top: 1px solid var(--heritage-rule);
+          gap: 18px;
+        }
+        img {
+          border-radius: 0;
+        }
+        figcaption {
+          margin: 0;
+          font-size: 11px;
+          padding: 12px 16px;
+        }
         .intro {
-          padding: 26px 24px 30px;
+          display: flex;
+          flex-direction: column;
+          padding: 24px 20px 28px;
+          gap: 0;
         }
         .eyebrow {
-          font-size: 10px;
-          margin-bottom: 12px;
+          font-size: 16px;
         }
         h1,
         h2 {
-          font-size: 38px;
-          margin-bottom: 14px;
-        }
-        h1 strong,
-        h2 strong {
-          display: inline;
+          font-size: 32px;
+          margin-bottom: 12px;
         }
         .description {
-          font-size: 14px;
-          line-height: 1.75;
+          font-size: 16px;
         }
         .preface {
-          margin-top: 18px;
-          grid-template-columns: auto minmax(0, 1fr);
-          gap: 10px;
-          padding: 14px;
-        }
-        .quote-mark {
-          font-size: 42px;
+          margin-top: 0;
+          padding-left: 0;
         }
         .quote-text {
+          font-size: 17px;
           -webkit-line-clamp: 2;
-          font-size: 16px;
-          line-height: 1.65;
-        }
-        .quote-source {
-          margin-top: 6px;
-          font-size: 10px;
-        }
-        .quote-action {
-          grid-column: 2;
-          justify-self: start;
-          padding: 0;
-          border: 0;
         }
         .actions {
-          margin-top: 20px;
+          order: 0;
+          gap: 14px;
+          margin-top: 22px;
         }
-        .founder:link,
-        .founder:visited {
+        .founder {
           width: 100%;
           justify-content: flex-start;
+          margin-left: 0;
         }
-        figcaption {
-          right: 10px;
-          bottom: 10px;
-          font-size: 9px;
-          padding: 5px 9px;
+        :host([welcome]) .intro {
+          padding: 20px;
         }
       }
       @media (max-width: 900px) {
@@ -410,65 +341,74 @@ class GrampsjsTempleHero extends LitElement {
 
   render() {
     return html`<section class="hero" aria-label="Nhà thờ tổ họ Bùi Hữu">
-      <div class="intro">
-        <p class="eyebrow">${PLACE_SHORT}</p>
-        ${this.welcome
-          ? html`<h2>Nhà thờ tổ <strong>họ Bùi Hữu</strong></h2>`
-          : html`<h1>Phả hệ <strong>họ Bùi Hữu</strong></h1>`}
-        <p class="description">
-          Chép từ thủy tổ Bùi Công tự Huyền Nhân đến nay đã 17 đời, chia 3
-          ngành, 5 chi.
+      <div class="hero-content">
+        <figure>
+          <picture
+            ><img
+              src="images/nha-tho-to-1600-4737852c.jpg"
+              srcset="
+                images/nha-tho-to-800-4737852c.jpg   800w,
+                images/nha-tho-to-1600-4737852c.jpg 1600w
+              "
+              sizes="(max-width: 760px) calc(100vw - 26px), (max-width: 1408px) 92vw, 1280px"
+              width="1672"
+              height="941"
+              fetchpriority="high"
+              alt="Nhà thờ tổ họ Bùi Hữu tại thôn Chỉ Bồ, mái ngói đỏ, cửa gỗ và hai cột đá trước sân"
+          /></picture>
+          <figcaption>
+            <strong>Nhà thờ họ Bùi Hữu</strong
+            ><span>Thôn Chỉ Bồ · Nơi con cháu hướng về</span>
+          </figcaption>
+        </figure>
+        <div class="intro">
+          <div class="intro-copy">
+            <p class="eyebrow">${PLACE_SHORT}</p>
+            ${this.welcome
+              ? html`<h2>Nhà thờ tổ <strong>họ Bùi Hữu</strong></h2>`
+              : html`<h1>Phả hệ <strong>họ Bùi Hữu</strong></h1>`}
+            <p class="description">
+              Chép từ thủy tổ Bùi Công tự Huyền Nhân đến nay đã 17 đời, chia 3
+              ngành, 5 chi.
+              ${this.welcome
+                ? 'Con cháu trong họ mở bằng mã dòng họ; người biên soạn đăng nhập tài khoản.'
+                : html`Bản số hóa này ghi
+                  ${this.people
+                    ? `${this.people.toLocaleString('vi-VN')} người`
+                    : 'từng người'},
+                  để con cháu tra được một người thuộc chi nào, đời mấy, con ai,
+                  giỗ ngày nào.`}
+            </p>
+          </div>
+          <div class="heritage-aside">
+            ${this.welcome || !this.prefaceExcerpt
+              ? ''
+              : html`<button
+                  class="preface"
+                  type="button"
+                  aria-label="Đọc toàn văn lời tựa gia phả"
+                  @click=${() => fireEvent(this, 'preface:open')}
+                >
+                  <span class="quote-mark" aria-hidden="true">“</span>
+                  <span class="quote-copy">
+                    <span class="quote-text">${this.prefaceExcerpt}</span>
+                    <span class="quote-source">Trích lời tựa gia phả</span>
+                  </span>
+                  <span class="quote-action"
+                    >Đọc toàn văn <span aria-hidden="true">→</span></span
+                  >
+                </button>`}
+            ${this.welcome ? '' : this._renderFounder()}
+          </div>
           ${this.welcome
-            ? 'Con cháu trong họ mở bằng mã dòng họ; người biên soạn đăng nhập tài khoản.'
-            : html`Bản số hóa này ghi
-              ${this.people
-                ? `${this.people.toLocaleString('vi-VN')} người`
-                : 'từng người'},
-              để con cháu tra được một người thuộc chi nào, đời mấy, con ai, giỗ
-              ngày nào.`}
-        </p>
-        ${this.welcome || !this.prefaceExcerpt
-          ? ''
-          : html`<button
-              class="preface"
-              type="button"
-              aria-label="Đọc toàn văn lời tựa gia phả"
-              @click=${() => fireEvent(this, 'preface:open')}
-            >
-              <span class="quote-mark" aria-hidden="true">“</span>
-              <span class="quote-copy">
-                <span class="quote-text">${this.prefaceExcerpt}</span>
-                <span class="quote-source">Trích lời tựa gia phả</span>
-              </span>
-              <span class="quote-action"
-                >Đọc toàn văn <span aria-hidden="true">→</span></span
-              >
-            </button>`}
-        ${this.welcome
-          ? ''
-          : html`<div class="actions">
-              <a href="/tree"
-                >Mở phả đồ <span aria-hidden="true">&nbsp;→</span></a
-              ><span class="action-note">17 đời · 3 ngành · 5 chi</span>
-              ${this._renderFounder()}
-            </div>`}
+            ? ''
+            : html`<div class="actions">
+                <a href="/tree"
+                  >Mở phả đồ <span aria-hidden="true">&nbsp;→</span></a
+                ><span class="action-note">17 đời · 3 ngành · 5 chi</span>
+              </div>`}
+        </div>
       </div>
-      <figure>
-        <picture
-          ><img
-            src="images/nha-tho-to-1600-4737852c.jpg"
-            srcset="
-              images/nha-tho-to-800-4737852c.jpg   800w,
-              images/nha-tho-to-1600-4737852c.jpg 1600w
-            "
-            sizes="(max-width: 1023px) 100vw, 65vw"
-            width="1672"
-            height="941"
-            fetchpriority="high"
-            alt="Nhà thờ tổ họ Bùi Hữu tại thôn Chỉ Bồ, mái ngói đỏ, cửa gỗ và hai cột đá trước sân"
-        /></picture>
-        <figcaption>Nhà thờ họ Bùi Hữu<br />Thôn Chỉ Bồ</figcaption>
-      </figure>
     </section>`
   }
 }

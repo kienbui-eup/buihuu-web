@@ -3,7 +3,7 @@ import {css} from 'lit'
 // Bề mặt sáng như tường đá, nét viền vàng trầm gợi chi tiết nhà thờ tổ.
 export const heritageFrameStyles = css`
   :host {
-    --grampsjs-frame-radius: 4px;
+    --grampsjs-frame-radius: var(--heritage-radius, 6px);
     --grampsjs-frame-paper: var(--md-sys-color-surface);
   }
 
@@ -14,9 +14,7 @@ export const heritageFrameStyles = css`
     background-color: var(--grampsjs-frame-paper);
     background-image: var(--heritage-panel-background);
     box-sizing: border-box;
-    box-shadow: var(--heritage-panel-shadow),
-      inset 0 0 0 4px color-mix(in srgb, var(--heritage-gold) 5%, transparent),
-      inset 0 0 0 5px color-mix(in srgb, var(--heritage-gold) 18%, transparent);
+    box-shadow: var(--heritage-panel-shadow);
   }
   .section-label {
     margin: 0 0 12px;
@@ -40,12 +38,8 @@ export const heritageFrameStyles = css`
     left: 0;
     top: 4px;
     bottom: 16px;
-    width: 4px;
-    background: linear-gradient(
-      to bottom,
-      var(--heritage-roof),
-      var(--heritage-gold)
-    );
+    width: 2px;
+    background: var(--heritage-gold);
   }
   .page-heading::after {
     content: '';

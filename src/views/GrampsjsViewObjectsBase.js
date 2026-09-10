@@ -90,7 +90,7 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
           margin: 24px 0 0;
           padding: 20px 16px;
           text-align: center;
-          font-size: 15px;
+          font-size: 17px;
           color: var(--md-sys-color-on-surface-variant);
           border: 1px dashed var(--heritage-rule);
           border-radius: var(--grampsjs-frame-radius);
@@ -103,7 +103,10 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
         }
         @media (max-width: 991px) {
           md-fab {
-            bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+            bottom: calc(
+              var(--heritage-bottom-nav-space) +
+                env(safe-area-inset-bottom, 0px)
+            );
             right: 16px;
           }
         }
@@ -145,7 +148,7 @@ export class GrampsjsViewObjectsBase extends GrampsjsStaleDataMixin(
           align-items: center;
           gap: 10px;
           cursor: pointer;
-          font-size: 15px;
+          font-size: 17px;
         }
       `,
     ]

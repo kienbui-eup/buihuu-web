@@ -15,6 +15,8 @@ import {
   solarToLunar,
   lunarToSolar,
   canChiYear,
+  jdFromDate,
+  jdToDate,
 } from './lunar.js'
 import {getAttributeValue, personProfileDisplayName} from './util.js'
 import {ATTR_DEATH_ANNIVERSARY, ATTR_GENERATION} from './branding.js'
@@ -203,6 +205,116 @@ export function buildMonthSections(entries, from = new Date()) {
 /* Giỗ trong `days` ngày tới, kể cả hôm nay; danh sách vào đã xếp theo ngày. */
 export function upcomingEntries(entries, days = 30) {
   return entries.filter(entry => entry.next.daysAway <= days)
+}
+
+/* "Thứ năm, 10/9/2026". */
+export function formatSolarLong(solar) {
+  const [d, m, y] = solar
+  return `${WEEKDAY_LONG[weekdayIndex(solar)]}, ${d}/${m}/${y}`
+}
+
+/* "30 tháng 7 năm Bính Ngọ", tháng nhuận ghi rõ "tháng 6 nhuận". */
+export function formatLunarLong({day, month, year, leap}) {
+  return `${day} tháng ${lunarMonthName(month)}${
+    leap ? ' nhuận' : ''
+  } năm ${canChiYear(year)}`
+}
+
+const CALENDAR_CELLS = 42
+
+/*
+Lưới lịch âm dương của một tháng dương: sáu tuần bắt đầu từ thứ hai, mỗi ô
+có ngày âm và những người giỗ ngày đó, như tờ lịch treo tường có số to là ngày
+dương và số nhỏ là ngày âm.
+
+Khác với collectAnniversaries chỉ biết lần giỗ kế tiếp, lưới này tra giỗ theo
+ngày âm của từng ô, nên lật tới tháng nào cũng đúng, kể cả tháng đã qua hay
+năm sau. Tháng nhuận không có giỗ vì giỗ làm ở tháng chính; ngày 29 của tháng
+thiếu nhận cả giỗ ngày 30, cùng cách lùi ngày của nextAnniversary.
+*/
+export function buildCalendarMonth(entries, year, month, from = new Date()) {
+  const byLunar = new Map()
+  entries.forEach(entry => {
+    const key = `${entry.lunar.day}/${entry.lunar.month}`
+    if (!byLunar.has(key)) byLunar.set(key, [])
+    byLunar.get(key).push(entry)
+  })
+  const todayJd = jdFromDate(
+    from.getDate(),
+    from.getMonth() + 1,
+    from.getFullYear()
+  )
+  const firstJd = jdFromDate(1, month, year)
+  const startJd = firstJd - ((weekdayIndex([1, month, year]) + 6) % 7)
+  const cells = []
+  for (let i = 0; i < CALENDAR_CELLS; i += 1) {
+    const jd = startJd + i
+    const solar = jdToDate(jd)
+    const [day, lunarMonth, lunarYear, leap] = solarToLunar(...solar)
+    let list = leap ? [] : byLunar.get(`${day}/${lunarMonth}`) ?? []
+    if (!leap && day === 29 && solarToLunar(...jdToDate(jd + 1))[0] === 1) {
+      list = [...list, ...(byLunar.get(`30/${lunarMonth}`) ?? [])]
+    }
+    cells.push({
+      solar,
+      lunar: {day, month: lunarMonth, year: lunarYear, leap},
+      inMonth: solar[1] === month,
+      daysAway: jd - todayJd,
+      entries: list,
+    })
+  }
+  return {year, month, cells}
+}
+
+/*
+"tháng 7 – 8 năm Bính Ngọ": những tháng âm mà một tháng dương trải qua, đọc từ
+ô đầu và ô cuối thuộc tháng. Qua Tết thì ghi cả hai năm.
+*/
+export function lunarSpanLabel(cells) {
+  const inMonth = cells.filter(cell => cell.inMonth)
+  const first = inMonth[0].lunar
+  const last = inMonth[inMonth.length - 1].lunar
+  const name = ({month, leap}) =>
+    `${lunarMonthName(month)}${leap ? ' nhuận' : ''}`
+  if (first.year !== last.year) {
+    return (
+      `tháng ${name(first)} năm ${canChiYear(first.year)} – ` +
+      `tháng ${name(last)} năm ${canChiYear(last.year)}`
+    )
+  }
+  if (first.month === last.month && first.leap === last.leap) {
+    return `tháng ${name(first)} năm ${canChiYear(first.year)}`
+  }
+  return `tháng ${name(first)} – ${name(last)} năm ${canChiYear(first.year)}`
+}
+
+/*
+Các ngày có giỗ trong tháng dương của lưới, dạng như groupByDay để giao diện
+vẽ chung một kiểu ô ngày. Giỗ ngày 30 rơi vào tháng thiếu vẫn giữ nhãn 30 và
+đứng thành ô riêng dưới ô 29 cùng ngày dương, như ở bảng theo tháng âm.
+*/
+export function calendarDays(cells) {
+  const days = []
+  cells
+    .filter(cell => cell.inMonth)
+    .forEach(cell => {
+      cell.entries.forEach(entry => {
+        const last = days[days.length - 1]
+        if (last && last.solar === cell.solar && last.day === entry.lunar.day) {
+          last.entries.push(entry)
+        } else {
+          days.push({
+            day: entry.lunar.day,
+            month: entry.lunar.month,
+            lunarYear: cell.lunar.year,
+            solar: cell.solar,
+            daysAway: cell.daysAway,
+            entries: [entry],
+          })
+        }
+      })
+    })
+  return days
 }
 
 /*

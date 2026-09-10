@@ -274,6 +274,29 @@ export function canChiYear(year) {
 }
 
 /*
+Tên can chi của một ngày dương lịch: 1/1/2000 là ngày Mậu Ngọ.
+
+Chu kỳ sáu mươi ngày chạy liền theo số ngày Julius, không phụ thuộc âm lịch,
+nên chỉ cần lấy phần dư. Lịch treo tường nào cũng in dòng này dưới ngày âm.
+*/
+export function canChiDay(dd, mm, yy) {
+  const jd = jdFromDate(dd, mm, yy)
+  return `${CAN[(jd + 9) % 10]} ${CHI[(jd + 1) % 12]}`
+}
+
+/*
+Tên can chi của một tháng âm lịch: tháng Giêng năm Bính Ngọ 2026 là Canh Dần.
+
+Chi của tháng cố định (Giêng là Dần, Chạp là Sửu); can lăn theo năm, năm Giáp
+hay Kỷ mở đầu bằng Bính Dần. Tháng nhuận mang cùng tên với tháng chính.
+*/
+export function canChiMonth(lunarMonth, lunarYear) {
+  return `${CAN[(lunarYear * 12 + lunarMonth + 3) % 10]} ${
+    CHI[(lunarMonth + 1) % 12]
+  }`
+}
+
+/*
 Đọc chuỗi ngày giỗ dạng "21/5" hoặc "21/5 nhuận".
 
 Dữ liệu nhập vào chỉ ghi ngày và tháng âm, không ghi năm — giỗ lặp lại hằng năm.

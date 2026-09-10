@@ -1,10 +1,11 @@
 /*
 Điều hướng chính trên header.
 
-Năm mục chính (trang chủ, cây, người trong họ, lịch giỗ, kho sử) nằm cạnh
-tên trang trên màn hình rộng. Dưới 1100 px chúng ẩn đi; mọi trang khi ấy mở
-từ nút tài khoản (GrampsjsSettingsMenu), nơi gom cả ba nhóm Danh mục và các
-mục theo quyền của người đăng nhập.
+Bốn mục chính (phả đồ, dòng họ, lịch giỗ, kho sử) nằm cạnh tên trang trên
+màn hình rộng. Trang chủ không có mục riêng: ấn son và tên trang ở đầu thanh
+(GrampsjsAppBar) đã là liên kết về trang chủ. Dưới 1100 px dải này ẩn đi; mọi
+trang khi ấy mở từ nút tài khoản (GrampsjsSettingsMenu), nơi gom cả ba nhóm
+Danh mục và các mục theo quyền của người đăng nhập.
 */
 
 import {LitElement, html, css} from 'lit'
@@ -22,7 +23,7 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
       }
       nav {
         display: flex;
-        gap: 2px;
+        gap: 6px;
         align-items: center;
       }
       nav a:link,
@@ -31,19 +32,21 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
         align-items: center;
         min-height: 44px;
         padding: 0 12px;
-        color: #fff8e9;
-        font-size: 14px;
+        color: var(--grampsjs-top-app-bar-font-color);
+        font-size: 16px;
         font-weight: 500;
         white-space: nowrap;
         text-decoration: none;
-        border-bottom: 2px solid transparent;
+        border: 1px solid transparent;
+        border-radius: 8px;
       }
       nav a:hover,
       nav a[aria-current='page'] {
-        color: #e2c891;
-        border-bottom-color: #d1af70;
+        color: var(--grampsjs-top-app-bar-font-color);
+        background: #fff4df12;
+        border-color: #d1af7070;
       }
-      /* Dưới 1100 px, năm mục chính không còn chỗ cạnh tên trang và các nút
+      /* Dưới 1100 px, các mục chính không còn chỗ cạnh tên trang và các nút
          bên phải; máy tính bảng nằm ngang (1024 px) vì thế cũng dùng bảng
          trong nút tài khoản, giống điện thoại. */
       @media (max-width: 1099px), print {
@@ -55,9 +58,12 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
   ]
 
   render() {
+    // Bỏ Trang chủ (đã là logo) và dừng trước Bản đồ, mục này chỉ ở bảng
+    // Danh mục.
     return html`<nav aria-label="Điều hướng chính">
       ${mainLinks(this)
-        .slice(0, 5)
+        .filter(link => link.key !== 'home')
+        .slice(0, 4)
         .map(
           link => html`<a
             href=${link.href}

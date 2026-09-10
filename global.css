@@ -4,11 +4,32 @@ body {
     padding: 0;
     height: 100%;
     background-color: var(--md-sys-color-background);
+}
+
+/* Một lớp phong cảnh duy nhất cho đăng nhập và mọi trang trong ứng dụng. */
+body {
+    position: relative;
+    isolation: isolate;
+}
+
+/* Nền cố định riêng, không nhân bản theo độ dài trang hay vùng cuộn con. */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
     background-image: var(--heritage-page-background);
-    background-attachment: fixed;
+    background-repeat: no-repeat, no-repeat;
+    background-position: center, center bottom;
+    background-size: 100% 100%, 100% auto;
 }
 
 @media print {
+    body::before {
+        display: none;
+    }
+
 
     html,
     body {
@@ -17,25 +38,23 @@ body {
 }
 
 :root {
+    --heritage-bottom-nav-space: 112px;
     --heritage-wood: #35271f;
+    --heritage-paper: #fbf7ef;
+    --heritage-accent: #873e32;
+    --heritage-muted: #65513e;
+    --heritage-radius: 6px;
     --heritage-gold: #b99759;
     --heritage-roof: #a64c32;
     --heritage-gutter: clamp(16px, 3.2vw, 52px);
     --heritage-ink: #362c24;
     --heritage-rule: #d6cbb9;
-    --heritage-panel-background:
-        linear-gradient(135deg, rgba(185, 151, 89, 0.09), transparent 120px),
-        repeating-linear-gradient(0deg, transparent 0 31px, rgba(121, 55, 46, 0.018) 31px 32px);
-    --heritage-page-background:
-        radial-gradient(circle at 100% 0, rgba(185, 151, 89, 0.17), transparent 34rem),
-        radial-gradient(circle at 0 78%, rgba(166, 76, 50, 0.07), transparent 30rem),
-        repeating-linear-gradient(90deg, transparent 0 63px, rgba(121, 55, 46, 0.025) 63px 64px),
-        repeating-linear-gradient(0deg, transparent 0 63px, rgba(121, 55, 46, 0.018) 63px 64px);
-    --heritage-panel-shadow: 0 10px 30px rgba(53, 39, 31, 0.1), 0 2px 5px rgba(53, 39, 31, 0.06);
-    --heritage-chart-background:
-        radial-gradient(circle at 50% 14%, rgba(185, 151, 89, 0.12), transparent 46%),
-        repeating-linear-gradient(90deg, transparent 0 47px, rgba(121, 55, 46, 0.018) 47px 48px),
-        var(--md-sys-color-background);
+    --heritage-panel-background: none;
+    --heritage-landscape: url('/images/chi-bo-landscape-v1.jpg');
+    --heritage-page-background: linear-gradient(#fbf7efcc, #fbf7efcc), var(--heritage-landscape);
+    --heritage-scenic-background: linear-gradient(#fbf7ef88, #fbf7ef88), var(--heritage-landscape);
+    --heritage-panel-shadow: 0 6px 22px rgba(53, 39, 31, 0.05);
+    --heritage-chart-background: var(--md-sys-color-background);
     color: var(--md-sys-color-on-surface);
     /* Web Awesome color token overrides.
      default.css (loaded in index.html) defines --wa-* tokens inside @layer wa-theme,
@@ -133,8 +152,8 @@ body {
 }
 
 :root[data-theme='light'] {
-    --grampsjs-top-app-bar-background-color: #35271f;
-    --grampsjs-top-app-bar-font-color: #fff8e9;
+    --grampsjs-top-app-bar-background-color: #fbf7ef;
+    --grampsjs-top-app-bar-font-color: #6e3027;
     --grampsjs-body-font-color: rgba(0, 0, 0, 0.8);
     --grampsjs-body-font-color-0: rgba(0, 0, 0, 0);
     --grampsjs-body-font-color-2: rgba(0, 0, 0, 0.02);
@@ -189,21 +208,16 @@ body {
 
 :root[data-theme='dark'] {
     --heritage-wood: #241c17;
+    --heritage-paper: #241f1a;
+    --heritage-accent: #edb5a6;
+    --heritage-muted: #cabaaa;
     --heritage-ink: #eee1cc;
     --heritage-rule: #64513d;
-    --heritage-panel-background:
-        linear-gradient(135deg, rgba(185, 151, 89, 0.08), transparent 130px),
-        repeating-linear-gradient(0deg, transparent 0 31px, rgba(255, 248, 233, 0.012) 31px 32px);
-    --heritage-page-background:
-        radial-gradient(circle at 100% 0, rgba(185, 151, 89, 0.12), transparent 34rem),
-        radial-gradient(circle at 0 78%, rgba(166, 76, 50, 0.09), transparent 32rem),
-        repeating-linear-gradient(90deg, transparent 0 63px, rgba(255, 248, 233, 0.015) 63px 64px),
-        repeating-linear-gradient(0deg, transparent 0 63px, rgba(255, 248, 233, 0.012) 63px 64px);
+    --heritage-panel-background: none;
+    --heritage-page-background: linear-gradient(#241f1aee, #241f1aee), var(--heritage-landscape);
+    --heritage-scenic-background: linear-gradient(#241f1add, #241f1add), var(--heritage-landscape);
     --heritage-panel-shadow: 0 12px 34px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.24);
-    --heritage-chart-background:
-        radial-gradient(circle at 50% 14%, rgba(185, 151, 89, 0.09), transparent 48%),
-        repeating-linear-gradient(90deg, transparent 0 47px, rgba(255, 248, 233, 0.012) 47px 48px),
-        var(--md-sys-color-background);
+    --heritage-chart-background: var(--md-sys-color-background);
     --grampsjs-top-app-bar-background-color: var(--md-sys-color-surface-container);
     --grampsjs-top-app-bar-font-color: var(--md-sys-color-on-surface);
     --grampsjs-body-font-color: rgba(255, 255, 255, 0.8);

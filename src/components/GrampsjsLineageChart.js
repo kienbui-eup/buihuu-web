@@ -1,4 +1,3 @@
-import {css} from 'lit'
 import {GrampsjsTreeChart} from './GrampsjsTreeChart.js'
 import {TreeChart} from '../charts/TreeChart.js'
 import {LineageIndex} from '../charts/lineage.js'
@@ -8,32 +7,6 @@ import {clampViewBox, overviewMinScale, svgUserCenter} from '../charts/util.js'
 export class GrampsjsLineageChart extends GrampsjsTreeChart {
   static get properties() {
     return {homePerson: {type: String}}
-  }
-
-  static get styles() {
-    return [
-      super.styles,
-      css`
-        .tree-selected .person-card {
-          stroke: var(--heritage-gold);
-          stroke-width: 3px;
-          vector-effect: non-scaling-stroke;
-          filter: drop-shadow(0 5px 8px var(--grampsjs-body-font-color-30));
-        }
-        .tree-selected.person-living .person-card {
-          stroke: transparent;
-          filter: none;
-        }
-        .tree-selected.person-living .nameplate-body {
-          stroke: var(--heritage-gold);
-          stroke-width: 2.5px;
-        }
-        svg a:focus-visible .person-card {
-          stroke: var(--md-sys-color-primary);
-          stroke-width: 3px;
-        }
-      `,
-    ]
   }
 
   constructor() {

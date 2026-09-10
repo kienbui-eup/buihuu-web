@@ -44,17 +44,42 @@ export class GrampsjsViewRecentBlogPosts extends GrampsjsConnectedComponent {
         }
         li {
           border-top: 1px solid var(--heritage-rule);
-          padding: 10px 0;
+          padding: 12px 0;
         }
         li:first-child {
           border-top: 0;
         }
         a.post {
+          position: relative;
+          padding-right: 24px;
           display: block;
           min-height: 44px;
           font: 600 16px/1.5 var(--grampsjs-heading-font-family);
           color: var(--md-sys-color-primary);
           text-decoration: none;
+        }
+        a.post::after {
+          content: '›';
+          position: absolute;
+          right: 0;
+          top: 4px;
+          color: var(--heritage-gold);
+          font: 24px/1 var(--grampsjs-body-font-family);
+        }
+        a:focus-visible {
+          outline: 2px solid var(--heritage-accent);
+          outline-offset: 4px;
+        }
+        p.more a {
+          display: inline-flex;
+          align-items: center;
+          min-height: 44px;
+          gap: 12px;
+          color: var(--heritage-accent);
+          font-weight: 500;
+        }
+        p.more a::after {
+          content: '→';
         }
         a.post:hover {
           text-decoration: underline;
