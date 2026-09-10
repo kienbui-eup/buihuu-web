@@ -4,45 +4,21 @@ import {mdiChevronDown, mdiBookOpenPageVariant} from '@mdi/js'
 import {GrampsjsConnectedComponent} from './GrampsjsConnectedComponent.js'
 import {heritageFrameStyles} from '../HeritageStyles.js'
 import {fireEvent} from '../util.js'
+import {
+  compareBlogCategories as compareCategories,
+  filterBlogPosts,
+  getBlogCategories as categoryList,
+} from '../blogShelves.js'
 import './GrampsjsIcon.js'
 
-const searchable = text =>
-  text.normalize('NFD').replace(/\p{M}/gu, '').replace(/đ/gi, 'd').toLowerCase()
-
+// Tên ngăn, thứ tự đọc và cách xếp bài dùng chung với trang Kho sử, xem
+// ../blogShelves.js. Bài có nhiều thẻ chuyên mục thì hiện thêm dòng nhỏ.
 const categories = post =>
   (post.extended?.tags || [])
     .map(tag => tag.name)
     .filter(name => name.startsWith('Chuyên mục:'))
     .map(name => name.slice('Chuyên mục:'.length).trim())
     .filter(Boolean)
-
-// Bài không có thẻ chuyên mục: mục lục (thẻ "Mục lục nghiên cứu") thành nhóm
-// riêng đứng đầu, còn lại (Lời tựa) vào nhóm "Văn bản gốc" ngay sau.
-const INDEX_TAG = 'Mục lục nghiên cứu'
-const ORIGINAL_TEXTS = 'Văn bản gốc'
-const LEADING_GROUPS = [INDEX_TAG, ORIGINAL_TEXTS]
-
-const isIndex = post =>
-  (post.extended?.tags || []).some(tag => tag.name === INDEX_TAG)
-
-const categoryList = post => {
-  const list = categories(post)
-  if (list.length) return list
-  return [isIndex(post) ? INDEX_TAG : ORIGINAL_TEXTS]
-}
-
-const groupRank = name => {
-  const rank = LEADING_GROUPS.indexOf(name)
-  return rank < 0 ? LEADING_GROUPS.length : rank
-}
-
-const compareCategories = (a, b) =>
-  groupRank(a) - groupRank(b) || a.localeCompare(b, 'vi')
-
-// Theo chuyên mục rồi tiêu đề.
-const comparePosts = (a, b) =>
-  compareCategories(categoryList(a)[0], categoryList(b)[0]) ||
-  (a.title || '').localeCompare(b.title || '', 'vi')
 
 export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
   static get properties() {
@@ -319,14 +295,7 @@ export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
     const options = [...new Set(posts.flatMap(categoryList))].sort(
       compareCategories
     )
-    const query = searchable(this._query.trim())
-    const matches = posts
-      .filter(
-        post =>
-          (!this._category || categoryList(post).includes(this._category)) &&
-          searchable(post.title || '').includes(query)
-      )
-      .sort(comparePosts)
+    const matches = filterBlogPosts(posts, this._query, this._category)
     return html`
       <div class="layout">
         <aside aria-label="Xem nhanh danh mục kho sử">
@@ -355,7 +324,7 @@ export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
                   this._query = event.target.value
                 }}
               />
-              <label for="article-category">Chuyên mục</label>
+              <label for="article-category">Ngăn tư liệu</label>
               <select
                 id="article-category"
                 .value=${this._category}
@@ -363,7 +332,7 @@ export class GrampsjsBlogLayout extends GrampsjsConnectedComponent {
                   this._category = event.target.value
                 }}
               >
-                <option value="">Tất cả chuyên mục</option>
+                <option value="">Tất cả các ngăn</option>
                 ${options.map(
                   option => html`<option value=${option}>${option}</option>`
                 )}

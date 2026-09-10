@@ -3,68 +3,15 @@ import {mdiArchive, mdiBookOpenPageVariant, mdiMagnify} from '@mdi/js'
 import {GrampsjsConnectedComponent} from './GrampsjsConnectedComponent.js'
 import {heritageFrameStyles} from '../HeritageStyles.js'
 import {fireEvent} from '../util.js'
+import {
+  INDEX_TAG,
+  SHELF_DESCRIPTIONS as DESCRIPTIONS,
+  compareBlogCategories,
+  filterBlogPosts,
+  getBlogCategories,
+  searchableBlogText,
+} from '../blogShelves.js'
 import './GrampsjsIcon.js'
-
-const INDEX_TAG = 'Mục lục nghiên cứu'
-const ORIGINAL_TEXTS = 'Văn bản gốc'
-const LEADING_GROUPS = [INDEX_TAG, ORIGINAL_TEXTS]
-const DESCRIPTIONS = {
-  [INDEX_TAG]: 'Lối vào toàn bộ kho sử và các hướng tra cứu chính.',
-  [ORIGINAL_TEXTS]:
-    'Văn bản do dòng họ lưu truyền, giữ riêng để tiện đối chiếu.',
-  'Gia phả và thế thứ':
-    'Các đời, ngành chi, hôn nhân, ngày giỗ và phần mộ trong gia phả.',
-  'Quê hương và di tích':
-    'Chỉ Bồ, nhà thờ tổ, di tích và những thay đổi địa danh.',
-  'Nhân vật và nguồn công khai':
-    'Nhân vật trong họ qua báo chí, lưu trữ và tư liệu công khai.',
-  'Tư liệu và tra cứu': 'Cách tìm, đọc và kiểm tra chéo các nguồn sử liệu.',
-  'Hiệu đính và bổ sung':
-    'Những điểm còn thiếu, còn khác nhau và cách con cháu góp tư liệu.',
-}
-
-export const searchableBlogText = text =>
-  (text || '')
-    .normalize('NFD')
-    .replace(/\p{M}/gu, '')
-    .replace(/đ/gi, 'd')
-    .toLowerCase()
-
-const tagNames = post => (post.extended?.tags || []).map(tag => tag.name)
-
-export const getBlogCategories = post => {
-  const named = tagNames(post)
-    .filter(name => name.startsWith('Chuyên mục:'))
-    .map(name => name.slice('Chuyên mục:'.length).trim())
-    .filter(Boolean)
-  if (named.length) return named
-  return [tagNames(post).includes(INDEX_TAG) ? INDEX_TAG : ORIGINAL_TEXTS]
-}
-
-const groupRank = name => {
-  const rank = LEADING_GROUPS.indexOf(name)
-  return rank < 0 ? LEADING_GROUPS.length : rank
-}
-
-export const compareBlogCategories = (a, b) =>
-  groupRank(a) - groupRank(b) || a.localeCompare(b, 'vi')
-
-export const filterBlogPosts = (posts, query = '', category = '') => {
-  const needle = searchableBlogText(query.trim())
-  return posts
-    .filter(
-      post =>
-        (!category || getBlogCategories(post).includes(category)) &&
-        searchableBlogText(post.title).includes(needle)
-    )
-    .sort(
-      (a, b) =>
-        compareBlogCategories(
-          getBlogCategories(a)[0],
-          getBlogCategories(b)[0]
-        ) || (a.title || '').localeCompare(b.title || '', 'vi')
-    )
-}
 
 const groupPosts = posts => {
   const groups = new Map()
@@ -476,11 +423,12 @@ export class GrampsjsBlogArchive extends GrampsjsConnectedComponent {
     )
     return html`<main class="archive">
       <header class="archive-hero">
-        <p class="eyebrow">Dòng họ Bùi Hữu · Chỉ Bồ</p>
-        <h1>Kho sử dòng họ</h1>
+        <p class="eyebrow">Thôn Chỉ Bồ · Thụy Anh · Thái Bình</p>
+        <h1>Kho sử tộc Bùi Hữu</h1>
         <p class="intro">
-          Nơi lưu giữ lời tựa gia phả, chuyện các cụ, quê hương và những tư liệu
-          đang được con cháu cùng nhau kiểm chứng, bổ sung.
+          Gia phả chữ Nho bản dịch, lời tựa, văn khấn, chuyện các cụ tổ, quê
+          hương, nhà thờ tổ và phần mộ; con cháu cùng đọc, kiểm chứng và bổ
+          sung.
         </p>
         <div class="archive-stats" aria-label="Thống kê kho sử">
           <div class="stat">
