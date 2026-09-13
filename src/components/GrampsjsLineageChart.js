@@ -2,7 +2,12 @@ import {GrampsjsTreeChart} from './GrampsjsTreeChart.js'
 import {TreeChart} from '../charts/TreeChart.js'
 import {LineageIndex} from '../charts/lineage.js'
 import {fireEvent} from '../util.js'
-import {clampViewBox, overviewMinScale, svgUserCenter} from '../charts/util.js'
+import {
+  clampViewBox,
+  getImageUrl,
+  overviewMinScale,
+  svgUserCenter,
+} from '../charts/util.js'
 
 export class GrampsjsLineageChart extends GrampsjsTreeChart {
   static get properties() {
@@ -109,7 +114,7 @@ export class GrampsjsLineageChart extends GrampsjsTreeChart {
     if (!data) return ''
     return TreeChart(data, null, {
       childrenTriangle: false,
-      getImageUrl: () => '',
+      getImageUrl: d => getImageUrl(d?.data?.person || {}, 100),
       gapX: 24,
       gapY: 30,
       bboxWidth: this.containerWidth,
