@@ -9,9 +9,8 @@ màn hình nhỏ; máy tính dùng điều hướng ngang và menu bổ sung.
 import {html, svg, css, LitElement} from 'lit'
 import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
-import {handleSearchLink, pageSearchLabel} from '../pageSearch.js'
 
-// Bộ nét riêng 24 × 24: nhà thờ, phả hệ, người thân, lịch giỗ, tìm kiếm.
+// Bộ nét riêng 24 × 24: nhà thờ, phả hệ, người thân, lịch giỗ, kho sử.
 // Dùng cùng độ dày và khoảng trống để rõ khi thu nhỏ trên điện thoại.
 const NAV_ICONS = {
   home: 'M3 10 Q6 9 12 3 Q18 9 21 10 M5 10 V20 H19 V10 M9 20 V13 H15 V20 M3 21 H21',
@@ -20,7 +19,8 @@ const NAV_ICONS = {
     'M15 6 A3 3 0 1 1 9 6 A3 3 0 1 1 15 6 M6 21 V17 A6 6 0 0 1 18 17 V21 M5 7 A2.5 2.5 0 0 0 5 12 M3 20 V17 A4 4 0 0 1 5 13 M19 7 A2.5 2.5 0 0 1 19 12 M21 20 V17 A4 4 0 0 0 19 13',
   calendar:
     'M7 3 V7 M17 3 V7 M5 5 H19 Q21 5 21 7 V19 Q21 21 19 21 H5 Q3 21 3 19 V7 Q3 5 5 5 M3 10 H21 M9 18 H15 M10 18 V14 H14 V18 M12 14 V12',
-  search: 'M17 10 A7 7 0 1 1 3 10 A7 7 0 1 1 17 10 M15 15 L21 21',
+  archive:
+    'M12 5 Q7 2 3 4 V20 Q7 18 12 21 Q17 18 21 20 V4 Q17 2 12 5 V21 M6 8 L9 9 M6 12 L9 13 M15 9 L18 8 M15 13 L18 12',
 }
 
 const LIST_PAGES = new Set([
@@ -146,6 +146,24 @@ class GrampsjsBottomNav extends GrampsjsAppStateMixin(LitElement) {
           max-width: 100%;
         }
 
+        @media (orientation: landscape) and (max-height: 500px) {
+          :host {
+            bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+            max-width: 680px;
+            padding: 4px;
+            border-radius: 18px;
+          }
+          a {
+            flex-direction: row;
+            gap: 6px;
+            min-height: 44px;
+            border-radius: 13px;
+          }
+          .nav-icon {
+            width: 23px;
+            height: 23px;
+          }
+        }
         @media (prefers-reduced-motion: reduce) {
           a {
             transition: none;
@@ -193,22 +211,17 @@ class GrampsjsBottomNav extends GrampsjsAppStateMixin(LitElement) {
         active: page === 'lich-gio',
       },
       {
-        href: '/search',
-        label: this._('Search'),
-        icon: 'search',
-        active: page === 'search',
+        href: '/blog',
+        label: 'Kho sử',
+        icon: 'archive',
+        active: page === 'blog',
       },
     ]
     return html`<nav aria-label="Điều hướng chính trên điện thoại">
       ${items.map(
         item => html`<a
           href="${item.href}"
-          aria-label=${item.href === '/search'
-            ? pageSearchLabel(page)
-            : item.label}
-          @click=${event => {
-            if (item.href === '/search') handleSearchLink(event, this)
-          }}
+          aria-label=${item.label}
           aria-current="${item.active ? 'page' : 'false'}"
         >
           <span class="pill">

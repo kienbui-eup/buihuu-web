@@ -1,7 +1,7 @@
 import {LitElement, html, css} from 'lit'
 import {sharedStyles} from '../SharedStyles.js'
 import './GrampsjsHeritageMark.js'
-import {APP_NAME, PLACE_SHORT, PLACE_FULL, PLACE_NOW} from '../branding.js'
+import {APP_NAME, PLACE_FULL, PLACE_NOW} from '../branding.js'
 
 // Ba bài giới thiệu, hướng dẫn và góp ý là bài viết trong cây (sửa được trên
 // trang), mã cố định để footer, menu tài khoản và trang chủ cùng trỏ tới.
@@ -22,105 +22,80 @@ class GrampsjsSiteFooter extends LitElement {
         display: block;
       }
       footer {
-        background: #542923;
-        color: #ebdbc3;
-        border-top: 1px solid #c6a064;
-        --heritage-ink: #fff3db;
-        --heritage-muted: #ebdbc3;
-        --heritage-accent: #f0d6a4;
-        --heritage-rule: #e0bd7b38;
-      }
-      .homecoming {
         position: relative;
         isolation: isolate;
-        overflow: hidden;
-        min-height: 270px;
-        display: flex;
-        align-items: center;
-        background: #f7ecd8;
+        background: var(--heritage-paper);
+        color: var(--heritage-ink);
+        border-top: 1px solid var(--heritage-rule);
       }
-      .homecoming::before {
+      footer::before {
         content: '';
         position: absolute;
-        inset: 0;
+        inset: 0 0 auto;
+        height: 360px;
         z-index: -1;
+        pointer-events: none;
         background: linear-gradient(
             90deg,
-            #faf0db 0%,
-            #faf0dbdb 26%,
-            #faf0db00 63%
+            var(--heritage-paper),
+            transparent 75%
           ),
-          url('images/chi-bo-tree-landscape-v2.png') center 72% / cover;
+          url('images/chi-bo-tree-landscape-v2.png') center 72% / cover
+            no-repeat;
+        mask-image: linear-gradient(#000 45%, transparent 100%);
       }
-      .homecoming-copy {
-        width: 100%;
+      .body,
+      .base {
         max-width: 1280px;
         margin: 0 auto;
-        padding: 34px var(--heritage-gutter);
         box-sizing: border-box;
-        color: #633028;
-      }
-      .homecoming .eyebrow {
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        margin: 0 0 14px;
-      }
-      .homecoming h2 {
-        color: #633028;
-        font: 500 clamp(32px, 3.4vw, 46px) / 1.18
-          var(--grampsjs-heading-font-family);
-        letter-spacing: -0.025em;
-        text-transform: none;
-        margin: 0;
-      }
-      .homecoming .signature {
-        display: block;
-        width: 52px;
-        height: 2px;
-        background: #b68c4d;
-        margin-top: 22px;
-      }
-      :host([compact]) .homecoming {
-        display: none;
       }
       .body {
         display: grid;
-        grid-template-columns: 1.3fr 1fr 1fr;
-        gap: 36px;
-        padding: 40px var(--heritage-gutter);
-        max-width: 1280px;
-        margin: 0 auto;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px 56px;
+        padding: 32px var(--heritage-gutter) 24px;
       }
       .identity {
+        grid-column: 1 / -1;
+        min-height: 235px;
         display: flex;
         align-items: flex-start;
         gap: 18px;
       }
       grampsjs-heritage-mark {
-        --grampsjs-mark-size: 56px;
+        --grampsjs-mark-size: 52px;
       }
-      strong {
+      .identity strong {
         display: block;
-        font: 500 24px/1.5 var(--grampsjs-heading-font-family);
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--heritage-accent);
+      }
+      .identity h2 {
+        font: 500 clamp(30px, 3.4vw, 44px) / 1.2
+          var(--grampsjs-heading-font-family);
         color: var(--heritage-ink);
+        text-transform: none;
+        letter-spacing: -0.025em;
+        margin: 12px 0 0;
+      }
+      h2 {
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--heritage-accent);
+        margin: 0 0 12px;
       }
       p {
         font-size: 14px;
-        line-height: 1.9;
+        line-height: 1.8;
         margin: 8px 0 0;
-      }
-      h2 {
-        font: 600 12px/1.6 var(--grampsjs-body-font-family);
-        color: var(--heritage-accent);
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        margin: 0 0 12px;
       }
       nav {
         display: grid;
         grid-template-columns: 1fr 1fr;
+        gap: 0 20px;
       }
       a:link,
       a:visited {
@@ -129,89 +104,63 @@ class GrampsjsSiteFooter extends LitElement {
         display: inline-flex;
         align-items: center;
         min-height: 44px;
-      }
-      nav a {
         text-decoration: none;
-        border-bottom: 1px solid #e0bd7b26;
-        margin-right: 20px;
+        border-bottom: 1px solid var(--heritage-rule);
       }
-      nav a:hover {
-        color: #fff;
-        border-bottom-color: #d9b77d;
+      a:hover {
+        text-decoration: underline;
       }
       a:focus-visible {
-        outline: 2px solid #d9b77d;
+        outline: 2px solid var(--heritage-gold);
         outline-offset: 3px;
       }
       .base {
-        background: #361e1a;
         border-top: 1px solid var(--heritage-rule);
         padding: 16px var(--heritage-gutter);
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
         font-size: 11px;
-        line-height: 1.6;
+        line-height: 1.8;
       }
-      /* Ba dòng ghi công nối bằng dấu chấm giữa trên màn hình rộng. */
+      .base a {
+        font-size: inherit;
+        min-height: 32px;
+        border: 0;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      :host([compact]) .base a {
+        min-height: 26px;
+      }
       .credit + .credit::before {
         content: ' · ';
       }
-      :host([compact]) .body {
+      :host([compact]) .body,
+      :host([compact]) footer::before {
         display: none;
-      }
-      :host([compact]) footer {
-        border-top-width: 1px;
       }
       :host([compact]) .base {
         height: 39px;
-        box-sizing: border-box;
-        align-items: center;
         padding-block: 6px;
         border: 0;
       }
       @media (max-width: 760px) {
-        .homecoming {
-          min-height: 250px;
-          align-items: flex-start;
-        }
-        .homecoming::before {
-          background: linear-gradient(
-              180deg,
-              #faf0db 0%,
-              #faf0db99 26%,
-              #faf0db00 70%
-            ),
-            url('images/chi-bo-tree-landscape-v2.png') 78% 74% / auto 400px;
-        }
-        .homecoming-copy {
-          padding: 24px var(--heritage-gutter);
-        }
-        .homecoming .eyebrow {
-          margin-bottom: 10px;
-        }
-        .homecoming h2 {
-          font-size: 32px;
-          max-width: 240px;
-        }
-        .homecoming .signature {
-          display: none;
+        footer::before {
+          background-position: center, 78% 74%;
+          background-size: auto, max(100%, 600px) auto;
         }
         .body {
           grid-template-columns: 1fr;
-          padding-block: 32px;
           gap: 24px;
+          padding-top: 24px;
         }
-        .base {
-          flex-wrap: wrap;
-          gap: 4px;
+        .identity {
+          min-height: 250px;
+          gap: 12px;
         }
-        /* Footer đầy đủ trên điện thoại: tên trang một dòng, rồi mỗi người
-           một dòng ngắn bên trái, để nút thêm hoặc sửa nổi ở góc phải không
-           che tên ai. */
-        :host(:not([compact])) .base {
-          flex-direction: column;
-          align-items: flex-start;
+        grampsjs-heritage-mark {
+          --grampsjs-mark-size: 44px;
+        }
+        .identity h2 {
+          font-size: 30px;
         }
         .credit {
           display: block;
@@ -219,29 +168,13 @@ class GrampsjsSiteFooter extends LitElement {
         .credit + .credit::before {
           content: none;
         }
-        /* Footer gọn trên điện thoại chỉ đủ một dòng ngắn: bỏ tên trang vì
-           header đã có, bỏ lời tựa và người biên soạn để dòng bản quyền số
-           hóa không bị nút sửa nổi ở góc phải che mất; footer đầy đủ vẫn ghi
-           cả ba tên. */
-        :host([compact]) .base span:first-child,
-        :host([compact]) .base .credit.extra {
+        :host([compact]) .credit.extra {
           display: none;
-        }
-        :host([compact]) .base .credits {
-          min-width: 0;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
         }
       }
       @media print {
-        .homecoming {
-          display: none;
-        }
-        .base {
-          background: none;
-        }
-        .body {
+        .body,
+        footer::before {
           display: none;
         }
         footer {
@@ -254,27 +187,18 @@ class GrampsjsSiteFooter extends LitElement {
 
   render() {
     return html`<footer>
-      <section class="homecoming" aria-label="Quê hương Chỉ Bồ">
-        <div class="homecoming-copy">
-          <p class="eyebrow">Bùi Hữu · Chỉ Bồ · Thụy Trường</p>
-          <h2>Nơi con cháu<br />hướng về</h2>
-          <span class="signature" aria-hidden="true"></span>
-        </div>
-      </section>
       <div class="body">
         <div class="identity">
           <grampsjs-heritage-mark></grampsjs-heritage-mark>
           <div>
             <strong>${APP_NAME}</strong>
-            <p>
-              ${PLACE_SHORT}<br />Thủy tổ Bùi Công tự Huyền Nhân · 17 đời · 3
-              ngành, 5 chi
-            </p>
+            <h2>Nơi con cháu<br />hướng về</h2>
           </div>
         </div>
         <div>
-          <h2>Nhà thờ tổ họ Bùi Hữu</h2>
+          <h2>Quê hương & cội nguồn</h2>
           <p>${PLACE_FULL}<br />(${PLACE_NOW})</p>
+          <p>Thủy tổ Bùi Công tự Huyền Nhân · 17 đời · 3 ngành, 5 chi</p>
         </div>
         <div>
           <h2>${this.public ? 'Xem và góp ý' : 'Tra cứu và tìm hiểu'}</h2>
@@ -295,11 +219,14 @@ class GrampsjsSiteFooter extends LitElement {
         </div>
       </div>
       <div class="base">
-        <span>${APP_NAME} · Thôn Chỉ Bồ</span
-        ><span class="credits"
-          ><span class="credit extra">Lời tựa: Bùi Hữu Đặng, 2020</span
-          ><span class="credit extra">Biên soạn đương thời: Bùi Hữu Lương</span
-          ><span class="credit">Số hóa: © 2026 Bùi Hữu Kiên</span></span
+        <span class="credits"
+          ><span class="credit extra"
+            >Lời tựa: <a href="/person/I0362">Bùi Hữu Đặng</a>, 2020</span
+          ><span class="credit extra"
+            >Biên soạn: <a href="/person/I0417">Bùi Hữu Lương</a></span
+          ><span class="credit"
+            >Số hóa: © 2026 <a href="/person/I0840">Bùi Hữu Kiên</a></span
+          ></span
         >
       </div>
     </footer>`

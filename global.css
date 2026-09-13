@@ -304,3 +304,8 @@ body::before {
     --mdc-checkbox-unchecked-color: var(--md-sys-color-on-surface-variant);
     --mdc-checkbox-disabled-color: rgba(229, 226, 225, 0.38);
 }
+
+/* Giữ khoảng trống đúng với thanh điều hướng khi điện thoại xoay ngang. */
+@media (orientation: landscape) and (max-height: 500px) {
+    :root { --heritage-bottom-nav-space: 76px; }
+}

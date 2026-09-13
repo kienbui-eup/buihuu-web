@@ -10,8 +10,15 @@ export class GrampsjsPillToggle extends GrampsjsAppStateMixin(LitElement) {
     return [
       sharedStyles,
       css`
+        :host {
+          display: block;
+          min-width: 0;
+          max-width: 100%;
+        }
         .container {
           display: inline-flex;
+          max-width: 100%;
+          box-sizing: border-box;
           border: 1px solid
             var(--md-sys-color-outline, var(--mdc-theme-primary));
           border-radius: var(--grampsjs-frame-radius, 4px);
@@ -41,7 +48,12 @@ export class GrampsjsPillToggle extends GrampsjsAppStateMixin(LitElement) {
           color: var(--md-sys-color-primary, var(--mdc-theme-primary));
           background: transparent;
           transition: background-color 150ms, color 150ms;
-          white-space: nowrap;
+          white-space: normal;
+          overflow-wrap: anywhere;
+          text-align: center;
+          min-width: 0;
+          min-height: 44px;
+          flex: 1 1 auto;
           -webkit-font-smoothing: antialiased;
         }
 

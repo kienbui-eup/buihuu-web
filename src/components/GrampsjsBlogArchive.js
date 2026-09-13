@@ -443,6 +443,25 @@ export class GrampsjsBlogArchive extends GrampsjsConnectedComponent {
             padding: 12px 16px;
           }
         }
+        @media (orientation: landscape) and (max-height: 500px) {
+          .archive-hero {
+            padding: 16px 20px;
+          }
+          .eyebrow {
+            margin-bottom: 6px;
+          }
+          h1 {
+            font-size: 28px;
+          }
+          .intro {
+            margin-top: 8px;
+            font-size: 15px;
+          }
+          .archive-facts {
+            margin-top: 10px;
+            padding-top: 8px;
+          }
+        }
         @media (prefers-reduced-motion: reduce) {
           .record a {
             transition: none;

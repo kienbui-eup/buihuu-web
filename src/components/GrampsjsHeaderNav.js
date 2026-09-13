@@ -49,7 +49,7 @@ class GrampsjsHeaderNav extends GrampsjsAppStateMixin(LitElement) {
       /* Dưới 1100 px, các mục chính không còn chỗ cạnh tên trang và các nút
          bên phải; máy tính bảng nằm ngang (1024 px) vì thế cũng dùng bảng
          trong nút tài khoản, giống điện thoại. */
-      @media (max-width: 1099px), print {
+      @media (max-width: 991px), print {
         :host {
           display: none;
         }

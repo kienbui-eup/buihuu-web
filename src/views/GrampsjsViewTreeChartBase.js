@@ -333,9 +333,32 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
           }
         }
 
-        @media (max-width: 991px) and (max-height: 500px) {
+        @media (orientation: landscape) and (max-height: 500px) {
+          .chart-heading {
+            top: 6px;
+            padding: 6px 10px;
+          }
+          .chart-heading h1 {
+            font-size: 18px;
+          }
+          .chart-heading span,
+          .life-legend-note {
+            display: none;
+          }
+          .chart-caption {
+            bottom: 8px;
+            max-width: calc(100% - 285px);
+            font-size: 11px;
+          }
+          .chart-caption .hint {
+            display: none;
+          }
           md-fab {
-            right: 72px;
+            right: 16px;
+            bottom: calc(
+              var(--heritage-bottom-nav-space) + 70px +
+                env(safe-area-inset-bottom, 0px)
+            );
           }
         }
       `,

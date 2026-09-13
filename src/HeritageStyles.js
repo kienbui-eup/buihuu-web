@@ -86,6 +86,22 @@ export const heritageFrameStyles = css`
     padding: 6px;
   }
 
+  @media (orientation: landscape) and (max-height: 500px) {
+    .page-heading {
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+    }
+    .page-heading h2 {
+      font-size: 26px;
+    }
+    .page-heading .lead {
+      margin-top: 4px;
+      line-height: 1.45;
+    }
+    .page-heading .section-label {
+      margin-bottom: 2px;
+    }
+  }
   @media (max-width: 768px) {
     .page-heading {
       margin-bottom: 18px;

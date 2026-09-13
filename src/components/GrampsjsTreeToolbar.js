@@ -108,7 +108,7 @@ class GrampsjsTreeToolbar extends LitElement {
       md-icon-button[disabled] {
         opacity: 0.4;
       }
-      @media (max-width: 991px) {
+      @media (max-width: 991px), (max-height: 600px) {
         .stack {
           right: 8px;
           top: 12px;
@@ -122,6 +122,17 @@ class GrampsjsTreeToolbar extends LitElement {
         }
         .secondary-mobile {
           display: block;
+        }
+      }
+      @media (orientation: landscape) and (max-height: 500px) {
+        .stack {
+          flex-direction: row;
+          top: auto;
+          bottom: 8px;
+          right: 8px;
+          translate: none;
+          gap: 2px;
+          padding: 4px;
         }
       }
     `,

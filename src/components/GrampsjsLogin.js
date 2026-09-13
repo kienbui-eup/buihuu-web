@@ -459,6 +459,36 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
           outline: 2px solid var(--heritage-accent);
           outline-offset: 3px;
         }
+        @media (orientation: landscape) and (max-height: 500px) {
+          .login-layout {
+            display: flex;
+            flex-direction: column;
+            padding: 12px 20px 24px;
+            gap: 24px;
+          }
+          .login-panel {
+            order: -1;
+            width: 100%;
+            max-width: 560px;
+            align-self: center;
+          }
+          .welcome {
+            max-width: 560px;
+            align-self: center;
+          }
+          .entry-card {
+            padding: 18px 22px;
+          }
+          .brand {
+            margin-bottom: 12px;
+          }
+          .brand h1 {
+            font-size: 28px;
+          }
+          .brand .eyebrow {
+            display: none;
+          }
+        }
         @media (prefers-reduced-motion: reduce) {
           .text-field-wrapper input,
           .text-field-wrapper label {
