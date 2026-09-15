@@ -249,10 +249,16 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
             );
             --tree-footer-height: 0px;
           }
+          /* Tranh chiếm 68% phía dưới vùng vẽ. Dùng cover trên hộp này thay
+             cho "auto 68%": màn dọc vẫn vừa chiều cao như trước, còn hộp rộng
+             hơn tranh (tablet ngang, chia đôi màn hình) thì vừa chiều rộng,
+             không còn hai mép cắt thẳng đứng giữa màn hình. */
           .chart-shell::before {
-            background-size: 100% 100%, auto 68%;
-            background-position: center, 78% bottom;
-            mask-image: linear-gradient(to bottom, transparent 30%, #000 64%);
+            inset: auto 0 0;
+            height: 68%;
+            background-size: cover;
+            background-position: 78% bottom;
+            mask-image: linear-gradient(to bottom, transparent, #000 48%);
           }
           .chart-caption {
             left: 8px;
@@ -330,6 +336,16 @@ export class GrampsjsViewTreeChartBase extends GrampsjsStaleDataMixin(
                 env(safe-area-inset-bottom, 0px)
             );
             right: 16px;
+          }
+        }
+
+        /* Màn ngang thấp: tranh đầy khung và neo đáy như máy tính để giữ
+           trọn nhà thờ, vì vùng vẽ không đủ cao cho hộp 68% và dải mờ. */
+        @media (max-width: 991px) and (orientation: landscape) {
+          .chart-shell::before {
+            height: 100%;
+            background-position: center bottom;
+            mask-image: none;
           }
         }
 
