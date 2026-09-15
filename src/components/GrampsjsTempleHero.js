@@ -2,6 +2,12 @@ import {LitElement, html, css} from 'lit'
 import {sharedStyles} from '../SharedStyles.js'
 import {fireEvent} from '../util.js'
 import {PLACE_SHORT} from '../branding.js'
+import {
+  mdiBookOpenPageVariantOutline,
+  mdiArrowRight,
+  mdiFamilyTree,
+} from '@mdi/js'
+import './GrampsjsHeritageMark.js'
 
 // Dùng bản ảnh nhà thờ đã phục dựng và được người dùng chọn cho giao diện.
 class GrampsjsTempleHero extends LitElement {
@@ -94,15 +100,13 @@ class GrampsjsTempleHero extends LitElement {
         align-items: start;
       }
       .heritage-aside {
-        grid-column: 2;
-        grid-row: 1 / span 2;
+        grid-column: 1 / -1;
+        grid-row: 2;
         align-self: stretch;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
         gap: 24px;
-        padding-left: 28px;
-        border-left: 1px solid var(--heritage-gold);
+        padding-left: 0;
       }
       .eyebrow {
         color: var(--heritage-accent);
@@ -133,46 +137,69 @@ class GrampsjsTempleHero extends LitElement {
       }
       .preface {
         display: grid;
-        grid-template-columns: auto minmax(0, 1fr);
-        gap: 10px;
+        gap: 16px;
         width: 100%;
         box-sizing: border-box;
-        padding: 0;
+        padding: 24px;
         margin: 0;
-        border: 0;
-        border-left: 0;
-        background: transparent;
+        border: 1px solid var(--heritage-gold);
+        border-radius: 20px;
+        background: var(--heritage-paper);
+        box-shadow: 0 8px 24px var(--grampsjs-body-font-color-10);
         text-align: left;
         color: var(--heritage-ink);
         cursor: pointer;
+        font-family: var(--grampsjs-body-font-family);
       }
-      .quote-mark {
-        font: 48px/1 var(--grampsjs-heading-font-family);
-        color: #a78348;
+      .preface-heading {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--heritage-accent);
+        font: 600 26px/1.3 var(--grampsjs-heading-font-family);
+      }
+      .graphic-icon {
+        width: 24px;
+        height: 24px;
+        fill: currentColor;
+        flex-shrink: 0;
+      }
+      .preface-heading .graphic-icon {
+        width: 32px;
+        height: 32px;
       }
       .quote-text {
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        font: italic 400 19px/1.6 'EB Garamond x', 'Noto Serif', serif;
+        display: block;
+        font: 400 18px/1.85 var(--grampsjs-heading-font-family);
       }
       .quote-source {
         display: block;
-        margin-top: 10px;
-        font-size: 16px;
+        margin-top: 12px;
+        font-size: 13px;
         color: var(--heritage-muted);
       }
       .quote-action {
-        grid-column: 2;
-        font-size: 16px;
-        color: var(--heritage-accent);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 48px;
+        padding: 8px 16px;
+        box-sizing: border-box;
+        border-radius: 12px;
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        font-size: 15px;
+        font-weight: 600;
       }
-      .preface:hover .quote-action {
-        text-decoration: underline;
+      .preface:hover {
+        border-color: var(--heritage-accent);
       }
       .actions {
-        grid-column: 1;
+        grid-column: 2;
+        grid-row: 1;
+        align-self: center;
+        justify-content: center;
         display: flex;
         flex-wrap: wrap;
         align-items: center;
@@ -185,6 +212,7 @@ class GrampsjsTempleHero extends LitElement {
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        gap: 12px;
         padding: 12px 22px;
         border-radius: 12px;
         background: var(--md-sys-color-primary);
@@ -200,42 +228,73 @@ class GrampsjsTempleHero extends LitElement {
         color: var(--heritage-muted);
       }
       .founder {
+        position: relative;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        min-height: 56px;
+        box-sizing: border-box;
+        width: 100%;
         text-decoration: none;
-        border-top: 1px solid var(--heritage-rule);
-        gap: 12px;
-        background: transparent;
+        border: 1px solid var(--heritage-gold);
+        border-radius: 20px;
+        gap: 16px;
+        background: radial-gradient(
+            ellipse at top,
+            color-mix(in srgb, var(--heritage-gold) 18%, transparent),
+            transparent 75%
+          ),
+          var(--heritage-paper);
         color: var(--heritage-ink);
-        padding: 20px 0 0;
-        margin-left: 0;
-        text-align: left;
+        padding: 28px 24px;
+        justify-content: center;
+        text-align: center;
+      }
+      .founder::before {
+        content: '';
+        position: absolute;
+        inset: 7px;
+        border: 1px solid var(--heritage-rule);
+        border-radius: 14px;
+        pointer-events: none;
       }
       .founder:hover {
-        color: var(--heritage-accent);
+        border-color: var(--heritage-accent);
       }
       .founder-mark {
-        flex-shrink: 0;
-        width: 40px;
-        height: 40px;
-        display: grid;
-        place-items: center;
-        border: 1px solid var(--heritage-rule);
-        border-radius: 50%;
-        color: var(--heritage-accent);
+        --grampsjs-mark-size: 80px;
       }
       .founder-copy {
         display: grid;
-        gap: 2px;
+        justify-items: center;
+        gap: 12px;
+        min-width: 0;
       }
-      .founder-copy small,
-      .founder-copy span {
-        font-size: 16px;
-        color: var(--heritage-muted);
+      .founder-copy small {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        color: var(--heritage-accent);
       }
       .founder-copy strong {
-        font: 600 16px/1.4 var(--grampsjs-heading-font-family);
+        font: 600 clamp(23px, 2vw, 28px) / 1.5
+          var(--grampsjs-heading-font-family);
+        color: var(--heritage-ink);
+        overflow-wrap: anywhere;
+      }
+      .founder-generation {
+        font-size: 14px;
+        color: var(--heritage-muted);
+      }
+      .founder-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 44px;
+        padding: 0 16px;
+        border: 1px solid var(--heritage-gold);
+        border-radius: 12px;
+        font-size: 14px;
+        color: var(--heritage-accent);
       }
       a:focus-visible,
       button:focus-visible {
@@ -260,11 +319,12 @@ class GrampsjsTempleHero extends LitElement {
           opacity: 0.2;
         }
         .heritage-aside {
+          display: flex;
+          flex-direction: column;
           order: 1;
           margin-top: 24px;
-          padding: 20px 0 0;
-          border-left: 0;
-          border-top: 1px solid var(--heritage-rule);
+          padding: 0;
+          width: 100%;
           gap: 18px;
         }
         img {
@@ -294,11 +354,11 @@ class GrampsjsTempleHero extends LitElement {
         }
         .preface {
           margin-top: 0;
-          padding-left: 0;
+          padding: 20px;
         }
         .quote-text {
           font-size: 17px;
-          -webkit-line-clamp: 2;
+          line-height: 1.8;
         }
         .actions {
           order: 0;
@@ -325,18 +385,34 @@ class GrampsjsTempleHero extends LitElement {
   _renderFounder() {
     const founder = this.founder
     if (!founder?.name) return ''
-    const initial = founder.name.trim().split(/\s+/).pop()?.[0] ?? ''
     return html`<a class="founder" href=${founder.href}>
-      <span class="founder-mark" aria-hidden="true">${initial}</span>
+      <grampsjs-heritage-mark
+        class="founder-mark"
+        aria-hidden="true"
+      ></grampsjs-heritage-mark>
       <span class="founder-copy">
         <small>${founder.label}</small>
         <strong>${founder.name}</strong>
-        <span
-          >${founder.generation ? `Đời ${founder.generation} · ` : ''}Xem hồ
-          sơ</span
+        ${founder.generation
+          ? html`<span class="founder-generation"
+              >Đời ${founder.generation}</span
+            >`
+          : ''}
+        <span class="founder-action"
+          >Kính xem hồ sơ ${this._icon(mdiArrowRight)}</span
         >
       </span>
     </a>`
+  }
+
+  _icon(path) {
+    return html`<svg
+      class="graphic-icon"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path d=${path}></path>
+    </svg>`
   }
 
   render() {
@@ -389,13 +465,16 @@ class GrampsjsTempleHero extends LitElement {
                   aria-label="Đọc toàn văn lời tựa gia phả"
                   @click=${() => fireEvent(this, 'preface:open')}
                 >
-                  <span class="quote-mark" aria-hidden="true">“</span>
+                  <span class="preface-heading"
+                    >${this._icon(mdiBookOpenPageVariantOutline)} Lời tựa gia
+                    phả</span
+                  >
                   <span class="quote-copy">
                     <span class="quote-text">${this.prefaceExcerpt}</span>
                     <span class="quote-source">Trích lời tựa gia phả</span>
                   </span>
                   <span class="quote-action"
-                    >Đọc toàn văn <span aria-hidden="true">→</span></span
+                    >Đọc trọn lời tựa ${this._icon(mdiArrowRight)}</span
                   >
                 </button>`}
             ${this.welcome ? '' : this._renderFounder()}
@@ -404,7 +483,8 @@ class GrampsjsTempleHero extends LitElement {
             ? ''
             : html`<div class="actions">
                 <a href="/tree"
-                  >Mở phả đồ <span aria-hidden="true">&nbsp;→</span></a
+                  >${this._icon(mdiFamilyTree)} Mở phả đồ
+                  ${this._icon(mdiArrowRight)}</a
                 ><span class="action-note">17 đời · 3 ngành · 5 chi</span>
               </div>`}
         </div>

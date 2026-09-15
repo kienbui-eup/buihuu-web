@@ -57,16 +57,45 @@ export const sharedStyles = css`
     --md-outlined-select-text-field-container-shape: var(
       --grampsjs-frame-radius
     );
-    --md-outlined-button-container-shape: 4px;
-    --md-filled-button-container-shape: 4px;
-    --md-filled-tonal-button-container-shape: 4px;
+    --md-outlined-button-container-shape: 14px;
+    --md-filled-button-container-shape: 14px;
+    --md-filled-tonal-button-container-shape: 14px;
     --md-assist-chip-container-shape: var(--grampsjs-frame-radius);
     --md-input-chip-container-shape: var(--grampsjs-frame-radius);
     --md-filter-chip-container-shape: var(--grampsjs-frame-radius);
     --md-suggestion-chip-container-shape: var(--grampsjs-frame-radius);
-    --md-fab-container-shape: 6px;
+    --md-fab-container-shape: 16px;
+    --md-text-button-container-shape: 12px;
+    --md-outlined-button-outline-color: var(--heritage-gold);
+    --md-filled-button-label-text-weight: 600;
+    --md-outlined-button-label-text-weight: 600;
+    --md-filled-tonal-button-label-text-weight: 600;
     --mdc-shape-small: 4px;
     --mdc-shape-medium: 4px;
+  }
+
+  /* Nút dùng chung: khung mềm, nét vàng và chiều sâu nhẹ theo nhận diện gia phả. */
+  md-filled-button,
+  md-filled-tonal-button,
+  md-outlined-button {
+    border-radius: 14px;
+  }
+  md-filled-button:not([disabled]),
+  md-filled-tonal-button:not([disabled]) {
+    box-shadow: 0 3px 8px var(--grampsjs-body-font-color-10);
+  }
+  md-outlined-button:not([disabled]) {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--heritage-gold) 10%, transparent),
+      transparent
+    );
+  }
+  md-filled-button:focus-visible,
+  md-filled-tonal-button:focus-visible,
+  md-outlined-button:focus-visible {
+    outline: 2px solid var(--heritage-accent);
+    outline-offset: 3px;
   }
 
   md-menu::part(elevation) {
